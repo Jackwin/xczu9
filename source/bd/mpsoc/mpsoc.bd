@@ -213,7 +213,8 @@
           <spirit:configurableElementValue spirit:referenceId="PSU__ENET3__PERIPHERAL__IO">MIO 64 .. 75</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__ENET3__GRP_MDIO__ENABLE">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__ENET3__GRP_MDIO__IO">MIO 76 .. 77</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__GPIO_EMIO__PERIPHERAL__ENABLE">0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PSU__GPIO_EMIO__PERIPHERAL__ENABLE">1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PSU__GPIO_EMIO__PERIPHERAL__IO">96</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__GPIO0_MIO__PERIPHERAL__ENABLE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__GPIO1_MIO__PERIPHERAL__ENABLE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__GPIO2_MIO__PERIPHERAL__ENABLE">0</spirit:configurableElementValue>
@@ -1046,7 +1047,7 @@
           <spirit:configurableElementValue spirit:referenceId="PSU__IRQ_P2F_APU_REGS__INT">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__IRQ_P2F__INTF_PPD_CCI__INT">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__IRQ_P2F__INTF_FPD_SMMU__INT">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__GPIO_EMIO_WIDTH">1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PSU__GPIO_EMIO_WIDTH">96</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__HPM0_FPD__NUM_WRITE_THREADS">4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__HPM0_FPD__NUM_READ_THREADS">4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__HPM1_FPD__NUM_WRITE_THREADS">4</spirit:configurableElementValue>
