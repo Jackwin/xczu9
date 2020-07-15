@@ -24,7 +24,7 @@ output      uart_0_txd
 
 );
 
-wire    clk_200;
+wire    clk_375;
 wire    locked;
 
 clk_wiz_0 clk_wiz_inst
@@ -32,7 +32,7 @@ clk_wiz_0 clk_wiz_inst
     .clk_in1(sys_clk_50),
     .reset(~sys_rstn), 
     .locked(locked),
-    .clk_200(clk_200)    
+    .clk_375(clk_375)    
    
     ); 
 
@@ -175,7 +175,7 @@ mpsoc mpsoc_inst (
     .emmc_data_o(emmc_data_o),
     .emmc_data_t(emmc_data_t),
 
-    .i_clk_200(clk_200),
+    .i_clk_375(clk_375),
     .i_lock(lock),
     .mdio_phy_mdc(mdio_phy_mdc),
     .mdio_phy_mdio_i(mdio_phy_mdio_i),

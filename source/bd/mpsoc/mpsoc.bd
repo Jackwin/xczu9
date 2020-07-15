@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<bd:repository xmlns:bd="http://www.xilinx.com/bd" bd:BoundaryCRC="0xD8B1F04777BBB2BB" bd:device="xczu9eg-ffvb1156-2-i" bd:isValidated="true" bd:synthFlowMode="Hierarchical" bd:tool_version="2017.4" bd:top="mpsoc" bd:version="1.00.a">
+<bd:repository xmlns:bd="http://www.xilinx.com/bd" bd:BoundaryCRC="0x541213E63F168617" bd:device="xczu9eg-ffvb1156-2-i" bd:isValidated="true" bd:synthFlowMode="Hierarchical" bd:tool_version="2017.4" bd:top="mpsoc" bd:version="1.00.a">
 
   <spirit:component xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
     <spirit:vendor>xilinx.com</spirit:vendor>
@@ -49,7 +49,7 @@
         <spirit:abstractionType spirit:library="interface" spirit:name="rgmii_rtl" spirit:vendor="xilinx.com" spirit:version="1.0"/>
       </spirit:busInterface>
       <spirit:busInterface>
-        <spirit:name>CLK.I_CLK_200</spirit:name>
+        <spirit:name>CLK.I_CLK_375</spirit:name>
         <spirit:displayName>Clk</spirit:displayName>
         <spirit:description>Clock</spirit:description>
         <spirit:busType spirit:library="signal" spirit:name="clock" spirit:vendor="xilinx.com" spirit:version="1.0"/>
@@ -61,14 +61,14 @@
               <spirit:name>CLK</spirit:name>
             </spirit:logicalPort>
             <spirit:physicalPort>
-              <spirit:name>i_clk_200</spirit:name>
+              <spirit:name>i_clk_375</spirit:name>
             </spirit:physicalPort>
           </spirit:portMap>
         </spirit:portMaps>
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>FREQ_HZ</spirit:name>
-            <spirit:value>200000000</spirit:value>
+            <spirit:value>375000000</spirit:value>
             <spirit:vendorExtensions>
               <bd:configElementInfos>
                 <bd:configElementInfo bd:valueSource="user"/>
@@ -144,7 +144,7 @@
       </spirit:views>
       <spirit:ports>
         <spirit:port>
-          <spirit:name>i_clk_200</spirit:name>
+          <spirit:name>i_clk_375</spirit:name>
           <spirit:wire>
             <spirit:direction>in</spirit:direction>
           </spirit:wire>
@@ -1134,7 +1134,7 @@
     <spirit:adHocConnections>
       <spirit:adHocConnection>
         <spirit:name>clkin_0_1</spirit:name>
-        <spirit:externalPortReference spirit:portRef="i_clk_200"/>
+        <spirit:externalPortReference spirit:portRef="i_clk_375"/>
         <spirit:internalPortReference spirit:componentRef="gmii_to_rgmii_0" spirit:portRef="clkin"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>

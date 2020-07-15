@@ -38,13 +38,13 @@
     <Option Name="WTVcsLaunchSim" Val="0"/>
     <Option Name="WTRivieraLaunchSim" Val="0"/>
     <Option Name="WTActivehdlLaunchSim" Val="0"/>
-    <Option Name="WTXSimExportSim" Val="3"/>
-    <Option Name="WTModelSimExportSim" Val="3"/>
-    <Option Name="WTQuestaExportSim" Val="3"/>
-    <Option Name="WTIesExportSim" Val="3"/>
-    <Option Name="WTVcsExportSim" Val="3"/>
-    <Option Name="WTRivieraExportSim" Val="3"/>
-    <Option Name="WTActivehdlExportSim" Val="3"/>
+    <Option Name="WTXSimExportSim" Val="4"/>
+    <Option Name="WTModelSimExportSim" Val="4"/>
+    <Option Name="WTQuestaExportSim" Val="4"/>
+    <Option Name="WTIesExportSim" Val="4"/>
+    <Option Name="WTVcsExportSim" Val="4"/>
+    <Option Name="WTRivieraExportSim" Val="4"/>
+    <Option Name="WTActivehdlExportSim" Val="4"/>
     <Option Name="GenerateIPUpgradeLog" Val="TRUE"/>
     <Option Name="XSimRadix" Val="hex"/>
     <Option Name="XSimTimeUnit" Val="ns"/>
@@ -61,11 +61,11 @@
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
-        <CompFileExtendedInfo CompFileName="mpsoc.bd" FileRelPathName="ip/mpsoc_gmii_to_rgmii_0_0/mpsoc_gmii_to_rgmii_0_0.xci">
-          <Proxy FileSetName="mpsoc_gmii_to_rgmii_0_0"/>
-        </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="mpsoc.bd" FileRelPathName="ip/mpsoc_zynq_ultra_ps_e_0_0/mpsoc_zynq_ultra_ps_e_0_0.xci">
           <Proxy FileSetName="mpsoc_zynq_ultra_ps_e_0_0"/>
+        </CompFileExtendedInfo>
+        <CompFileExtendedInfo CompFileName="mpsoc.bd" FileRelPathName="ip/mpsoc_gmii_to_rgmii_0_0/mpsoc_gmii_to_rgmii_0_0.xci">
+          <Proxy FileSetName="mpsoc_gmii_to_rgmii_0_0"/>
         </CompFileExtendedInfo>
       </File>
       <File Path="$PPRDIR/../source/src/emmc_iobuf.v">
@@ -193,9 +193,7 @@
     </Run>
     <Run Id="mpsoc_gmii_to_rgmii_0_0_synth_1" Type="Ft3:Synth" SrcSet="mpsoc_gmii_to_rgmii_0_0" Part="xczu9eg-ffvb1156-2-i" ConstrsSet="mpsoc_gmii_to_rgmii_0_0" Description="Vivado Synthesis Defaults" WriteIncrSynthDcp="false" Dir="$PRUNDIR/mpsoc_gmii_to_rgmii_0_0_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2017">
-          <Desc>Vivado Synthesis Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2017"/>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -253,9 +251,7 @@
     </Run>
     <Run Id="mpsoc_gmii_to_rgmii_0_0_impl_1" Type="Ft2:EntireDesign" Part="xczu9eg-ffvb1156-2-i" ConstrsSet="mpsoc_gmii_to_rgmii_0_0" Description="Default settings for Implementation." WriteIncrSynthDcp="false" SynthRun="mpsoc_gmii_to_rgmii_0_0_synth_1" IncludeInArchive="false">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2017">
-          <Desc>Default settings for Implementation.</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2017"/>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
