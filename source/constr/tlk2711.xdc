@@ -41,6 +41,7 @@ set_property PACKAGE_PIN D17 [get_ports {tlk2711b_rxd[12]}]
 set_property PACKAGE_PIN C18 [get_ports {tlk2711b_rxd[13]}]
 set_property PACKAGE_PIN E18 [get_ports {tlk2711b_rxd[14]}]
 set_property PACKAGE_PIN B19 [get_ports {tlk2711b_rxd[15]}]
+
 set_property PACKAGE_PIN B18 [get_ports {tlk2711b_rklsb}]
 set_property PACKAGE_PIN E17 [get_ports {tlk2711b_rx_clk}]
 set_property PACKAGE_PIN A17 [get_ports {tlk2711b_testen}]

@@ -1,26 +1,40 @@
 module top (
 
-input       sys_clk_50,
-input       sys_rstn,
+input           sys_clk_50,
+input           sys_rstn,
+
+output [15:0]   tlk2711b_txd,
+output          tlk2711b_loopen,
+output          tlk2711b_gtx_clk,
+output          tlk2711b_tkmsb,
+output          tlk2711b_prbsen,
+output          tlk2711b_enable,
+output          tlk2711b_lckrefn,
+output          tlk2711b_tklsb,
+
+input [15:0]    tlk2711b_rxd,
+output          tlk2711b_rklsb,
+output          tlk2711b_rx_clk,
+output          tlk2711b_testen,
+output          tlk2711b_rkmsb,
+
+output          emmc_clk,
+inout           emmc_cmd_io,
+inout [7:0]     emmc_data_io,
 
 
-output      emmc_clk,
-inout       emmc_cmd_io,
-inout [7:0] emmc_data_io,
+output          mdio_phy_mdc,
+inout           mdio_phy_mdio_io,
+output          phy_resetn,
+input [3:0]     rgmii_rd,
+input           rgmii_rx_ctl,
+input           rgmii_rxc,
+output [3:0]    rgmii_td,
+output          rgmii_tx_ctl,
+output          rgmii_txc,
 
-
-output      mdio_phy_mdc,
-inout       mdio_phy_mdio_io,
-output      phy_resetn,
-input       [3:0]rgmii_rd,
-input       rgmii_rx_ctl,
-input       rgmii_rxc,
-output      [3:0]rgmii_td,
-output      rgmii_tx_ctl,
-output      rgmii_txc,
-
-input       uart_0_rxd,
-output      uart_0_txd
+input           uart_0_rxd,
+output          uart_0_txd
 
 );
 
