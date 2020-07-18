@@ -172,6 +172,15 @@
     <spirit:version>1.00.a</spirit:version>
     <spirit:componentInstances>
       <spirit:componentInstance>
+        <spirit:instanceName>gmii_to_rgmii_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="gmii_to_rgmii" spirit:vendor="xilinx.com" spirit:version="4.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">mpsoc_gmii_to_rgmii_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_EXTERNAL_CLOCK">false</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="SupportLevel">Include_Shared_Logic_in_Core</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
         <spirit:instanceName>zynq_ultra_ps_e_0</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="zynq_ultra_ps_e" spirit:vendor="xilinx.com" spirit:version="3.1"/>
         <spirit:configurableElementValues>
@@ -211,10 +220,8 @@
           <spirit:configurableElementValue spirit:referenceId="PSU__ENET3__FIFO__ENABLE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__ENET3__PTP__ENABLE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__ENET3__PERIPHERAL__IO">MIO 64 .. 75</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__ENET3__GRP_MDIO__ENABLE">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__ENET3__GRP_MDIO__IO">MIO 76 .. 77</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__GPIO_EMIO__PERIPHERAL__ENABLE">1</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__GPIO_EMIO__PERIPHERAL__IO">96</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PSU__ENET3__GRP_MDIO__ENABLE">0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PSU__GPIO_EMIO__PERIPHERAL__ENABLE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__GPIO0_MIO__PERIPHERAL__ENABLE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__GPIO1_MIO__PERIPHERAL__ENABLE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__GPIO2_MIO__PERIPHERAL__ENABLE">0</spirit:configurableElementValue>
@@ -232,26 +239,7 @@
           <spirit:configurableElementValue spirit:referenceId="PSU__USB0__REF_CLK_SEL">Ref Clk2</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__USB0__REF_CLK_FREQ">26</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__AER_CAPABILITY">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__CORRECTABLE_INT_ERR">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__HEADER_LOG_OVERFLOW">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__RECEIVER_ERR">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__SURPRISE_DOWN">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__FLOW_CONTROL_ERR">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__COMPLTION_TIMEOUT">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__COMPLETER_ABORT">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__RECEIVER_OVERFLOW">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__ECRC_ERR">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__ACS_VIOLAION">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__UNCORRECTABL_INT_ERR">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__MC_BLOCKED_TLP">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__ATOMICOP_EGRESS_BLOCKED">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__TLP_PREFIX_BLOCKED">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__FLOW_CONTROL_PROTOCOL_ERR">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__ACS_VIOLATION">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__MULTIHEADER">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__ECRC_CHECK">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__ECRC_GEN">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__PERM_ROOT_ERR_UPDATE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__INTX_GENERATION">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__MSI_CAPABILITY">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__PCIE__MSIX_CAPABILITY">0</spirit:configurableElementValue>
@@ -268,8 +256,8 @@
           <spirit:configurableElementValue spirit:referenceId="PSU__EP__IP">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__ACTUAL__IP">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="SUBPRESET2">Custom</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU_MIO_TREE_PERIPHERALS">Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash##Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash############CAN 1#CAN 1#####I2C 0#I2C 0###########CAN 0#CAN 0##SD 1#SD 1#SD 1#SD 1#SD 1#SD 1#SD 1#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#MDIO 3#MDIO 3</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU_MIO_TREE_SIGNALS">sclk_out#miso_mo1#mo2#mo3#mosi_mi0#n_ss_out##n_ss_out_upper#mo_upper[0]#mo_upper[1]#mo_upper[2]#mo_upper[3]#sclk_out_upper############phy_tx#phy_rx#####scl_out#sda_out###########phy_rx#phy_tx##sdio1_cd_n#sdio1_data_out[0]#sdio1_data_out[1]#sdio1_data_out[2]#sdio1_data_out[3]#sdio1_cmd_out#sdio1_clk_out#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#rgmii_tx_clk#rgmii_txd[0]#rgmii_txd[1]#rgmii_txd[2]#rgmii_txd[3]#rgmii_tx_ctl#rgmii_rx_clk#rgmii_rxd[0]#rgmii_rxd[1]#rgmii_rxd[2]#rgmii_rxd[3]#rgmii_rx_ctl#gem3_mdc#gem3_mdio_out</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PSU_MIO_TREE_PERIPHERALS">Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash##Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash############CAN 1#CAN 1#####I2C 0#I2C 0###########CAN 0#CAN 0##SD 1#SD 1#SD 1#SD 1#SD 1#SD 1#SD 1#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3#Gem 3##</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PSU_MIO_TREE_SIGNALS">sclk_out#miso_mo1#mo2#mo3#mosi_mi0#n_ss_out##n_ss_out_upper#mo_upper[0]#mo_upper[1]#mo_upper[2]#mo_upper[3]#sclk_out_upper############phy_tx#phy_rx#####scl_out#sda_out###########phy_rx#phy_tx##sdio1_cd_n#sdio1_data_out[0]#sdio1_data_out[1]#sdio1_data_out[2]#sdio1_data_out[3]#sdio1_cmd_out#sdio1_clk_out#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#rgmii_tx_clk#rgmii_txd[0]#rgmii_txd[1]#rgmii_txd[2]#rgmii_txd[3]#rgmii_tx_ctl#rgmii_rx_clk#rgmii_rxd[0]#rgmii_rxd[1]#rgmii_rxd[2]#rgmii_rxd[3]#rgmii_rx_ctl##</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__NAND__PERIPHERAL__ENABLE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__NAND__READY_BUSY__ENABLE">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__PJTAG__PERIPHERAL__ENABLE">0</spirit:configurableElementValue>
@@ -730,6 +718,7 @@
           <spirit:configurableElementValue spirit:referenceId="PSU_MIO_75_INPUT_TYPE">schmitt</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU_MIO_76_PULLUPDOWN">pullup</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU_MIO_76_DRIVE_STRENGTH">12</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PSU_MIO_76_INPUT_TYPE">schmitt</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU_MIO_76_SLEW">slow</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU_MIO_77_PULLUPDOWN">pullup</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU_MIO_77_DRIVE_STRENGTH">12</spirit:configurableElementValue>
@@ -1047,7 +1036,7 @@
           <spirit:configurableElementValue spirit:referenceId="PSU__IRQ_P2F_APU_REGS__INT">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__IRQ_P2F__INTF_PPD_CCI__INT">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__IRQ_P2F__INTF_FPD_SMMU__INT">0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="PSU__GPIO_EMIO_WIDTH">96</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PSU__GPIO_EMIO_WIDTH">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__HPM0_FPD__NUM_WRITE_THREADS">4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__HPM0_FPD__NUM_READ_THREADS">4</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__HPM1_FPD__NUM_WRITE_THREADS">4</spirit:configurableElementValue>
@@ -1107,15 +1096,6 @@
           <spirit:configurableElementValue spirit:referenceId="PSU__GEM3_COHERENCY">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU__ENABLE__DDR__REFRESH__SIGNALS">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PSU_SD1_INTERNAL_BUS_WIDTH">4</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>gmii_to_rgmii_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="ip" spirit:name="gmii_to_rgmii" spirit:vendor="xilinx.com" spirit:version="4.0"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">mpsoc_gmii_to_rgmii_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_EXTERNAL_CLOCK">false</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="SupportLevel">Include_Shared_Logic_in_Core</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
     </spirit:componentInstances>

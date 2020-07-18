@@ -48,11 +48,3 @@ set_property PACKAGE_PIN A17 [get_ports {tlk2711b_testen}]
 set_property PACKAGE_PIN L18 [get_ports {tlk2711b_rkmsb}]
 
 
-
-
-
-
-
-
-
-set_property IOSTANDARD LVCMOS18 [get_ports clk50m_in]
