@@ -58,7 +58,7 @@ set run_remote_bd_flow 1
 if { $run_remote_bd_flow == 1 } {
   # Set the reference directory for source file relative paths (by default 
   # the value is script directory path)
-  set origin_dir ./bd
+  set origin_dir ./source/bd
 
   # Use origin directory path location variable, if specified in the tcl shell
   if { [info exists ::origin_dir_loc] } {
@@ -1136,9 +1136,9 @@ proc create_root_design { parentCell } {
    CONFIG.PSU__GPIO0_MIO__PERIPHERAL__ENABLE {0} \
    CONFIG.PSU__GPIO1_MIO__PERIPHERAL__ENABLE {0} \
    CONFIG.PSU__GPIO2_MIO__PERIPHERAL__ENABLE {0} \
-   CONFIG.PSU__GPIO_EMIO_WIDTH {1} \
-   CONFIG.PSU__GPIO_EMIO__PERIPHERAL__ENABLE {0} \
-   CONFIG.PSU__GPIO_EMIO__PERIPHERAL__IO {<Select>} \
+   CONFIG.PSU__GPIO_EMIO_WIDTH {96} \
+   CONFIG.PSU__GPIO_EMIO__PERIPHERAL__ENABLE {1} \
+   CONFIG.PSU__GPIO_EMIO__PERIPHERAL__IO {96} \
    CONFIG.PSU__GPIO_EMIO__WIDTH {[95:0]} \
    CONFIG.PSU__GPU_PP0__POWER__ON {1} \
    CONFIG.PSU__GPU_PP1__POWER__ON {1} \
@@ -1496,15 +1496,15 @@ proc create_root_design { parentCell } {
    CONFIG.PSU__USB0_COHERENCY {0} \
    CONFIG.PSU__USB0__PERIPHERAL__ENABLE {1} \
    CONFIG.PSU__USB0__PERIPHERAL__IO {MIO 52 .. 63} \
-   CONFIG.PSU__USB0__REF_CLK_FREQ {26} \
-   CONFIG.PSU__USB0__REF_CLK_SEL {Ref Clk2} \
+   CONFIG.PSU__USB0__REF_CLK_FREQ {<Select>} \
+   CONFIG.PSU__USB0__REF_CLK_SEL {<Select>} \
    CONFIG.PSU__USB1_COHERENCY {0} \
    CONFIG.PSU__USB1__PERIPHERAL__ENABLE {0} \
    CONFIG.PSU__USB2_0__EMIO__ENABLE {0} \
    CONFIG.PSU__USB2_1__EMIO__ENABLE {0} \
    CONFIG.PSU__USB3_0__EMIO__ENABLE {0} \
-   CONFIG.PSU__USB3_0__PERIPHERAL__ENABLE {1} \
-   CONFIG.PSU__USB3_0__PERIPHERAL__IO {GT Lane2} \
+   CONFIG.PSU__USB3_0__PERIPHERAL__ENABLE {0} \
+   CONFIG.PSU__USB3_0__PERIPHERAL__IO {<Select>} \
    CONFIG.PSU__USB3_1__EMIO__ENABLE {0} \
    CONFIG.PSU__USB3_1__PERIPHERAL__ENABLE {0} \
    CONFIG.PSU__USE_DIFF_RW_CLK_GP0 {0} \
