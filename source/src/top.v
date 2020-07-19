@@ -52,7 +52,9 @@ clk_wiz_0 clk_wiz_inst
 
 ila_0 ila_clk (
 	.clk(sys_clk_50), // input wire clk
-	.probe0(locked) // input wire [0:0] probe0
+	.probe0(locked), // input wire [0:0] probe0
+	.probe1(uart_0_rxd), // input wire [0:0]  probe1 
+    .probe2(uart_0_txd) // input wire [0:0]  probe2
 );
 
 
@@ -60,7 +62,6 @@ wire          emmc_buspow;
 wire          [2:0]emmc_busvolt;
 
 wire          emmc_cmd_i;
-wire          emmc_cmd_io;
 wire          emmc_cmd_o;
 wire          emmc_cmd_t;
   /*
@@ -98,21 +99,10 @@ wire          emmc_cmd_t;
   wire [7:7]    emmc_data_t_7;
   wire          emmc_led;
   */
-wire          mdio_phy_mdc;
+
 wire          mdio_phy_mdio_i;
-wire          mdio_phy_mdio_io;
 wire          mdio_phy_mdio_o;
 wire          mdio_phy_mdio_t;
-
-wire          phy_resetn;
-wire          [3:0]rgmii_rd;
-wire          rgmii_rx_ctl;
-wire          rgmii_rxc;
-wire          [3:0]rgmii_td;
-wire          rgmii_tx_ctl;
-wire          rgmii_txc;
-wire          uart_0_rxd;
-wire          uart_0_txd;
 
 IOBUF emmc_cmd_iobuf
     (.I(emmc_cmd_o),
@@ -196,7 +186,7 @@ mpsoc mpsoc_inst (
     .emmc_data_t(emmc_data_t),
 
     .i_clk_375(clk_375),
-    .i_lock(lock),
+    .i_lock(locked),
     .mdio_phy_mdc(mdio_phy_mdc),
     .mdio_phy_mdio_i(mdio_phy_mdio_i),
     .mdio_phy_mdio_o(mdio_phy_mdio_o),

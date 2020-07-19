@@ -60,7 +60,7 @@ set_property IOSTANDARD LVCMOS18 [get_ports phy_resetn]
 
 
 ### uart
-set_property PACKAGE_PIN E22  [get_ports uart_0_txd]
-set_property PACKAGE_PIN D22  [get_ports uart_0_rxd]
+set_property PACKAGE_PIN D22  [get_ports uart_0_txd]
+set_property PACKAGE_PIN E22  [get_ports uart_0_rxd]
 set_property IOSTANDARD LVCMOS33 [get_ports uart_0_txd]
 set_property IOSTANDARD LVCMOS33 [get_ports uart_0_rxd]
