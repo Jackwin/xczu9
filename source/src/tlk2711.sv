@@ -2,6 +2,9 @@ module tlk2711 (
     input logic         tx_clk,
     input logic         rst,
     output logic [15:0] o_txd,
+
+    input logic         i_start,
+    input logic [1:0]   i_mode,
     
     output logic        o_tkmsb,
     output logic        o_tklsb,
@@ -50,6 +53,11 @@ mode current_mode, next_mode;
 
 logic [1:0]     mode_sel;
 
+always_comb begin
+    start = i_start;
+    mode_sel = mode;
+end
+
 always_ff @(posedge tx_clk) begin
     start_next <= start;
 end
@@ -77,7 +85,7 @@ always_comb begin
             end
         end
         NORM_s: begin
-            if (stop) begin
+            if (stop & (&data_cnt == 1)) begin // make sure all the data have been sent
                 next_mode = IDLE_s;
             end
         end

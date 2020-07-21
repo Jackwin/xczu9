@@ -2,7 +2,7 @@ module top (
 
 input           sys_clk_50,
 input           sys_rstn,
-/*
+
 output [15:0]   tlk2711b_txd,
 output          tlk2711b_loopen,
 output          tlk2711b_gtx_clk,
@@ -17,7 +17,7 @@ output          tlk2711b_rklsb,
 output          tlk2711b_rx_clk,
 output          tlk2711b_testen,
 output          tlk2711b_rkmsb,
-*/
+
 output          emmc_clk,
 inout           emmc_cmd_io,
 inout [7:0]     emmc_data_io,
@@ -38,23 +38,22 @@ output          uart_0_txd
 
 );
 
-wire    clk_375;
+wire    clk_80;
 wire    locked;
+wire    rst_80;
 
-clk_wiz_0 clk_wiz_inst
-   (
+clk_wiz_0 clk_wiz_inst (
     .clk_in1(sys_clk_50),
     .reset(~sys_rstn), 
     .locked(locked),
-    .clk_375(clk_375)    
+    .clk_80(clk_80)    
    
-    ); 
+);
 
-ila_0 ila_clk (
-	.clk(sys_clk_50), // input wire clk
-	.probe0(locked), // input wire [0:0] probe0
-	.probe1(uart_0_rxd), // input wire [0:0]  probe1 
-    .probe2(uart_0_txd) // input wire [0:0]  probe2
+reset_bridge reset_80_inst(
+    .clk(clk_80),    
+    .arst_n(locked),  
+    .o_srst(rst_80)
 );
 
 
@@ -64,41 +63,7 @@ wire          [2:0]emmc_busvolt;
 wire          emmc_cmd_i;
 wire          emmc_cmd_o;
 wire          emmc_cmd_t;
-  /*
-  wire [0:0]    emmc_data_i_0;
-  wire [1:1]    emmc_data_i_1;
-  wire [2:2]    emmc_data_i_2;
-  wire [3:3]    emmc_data_i_3;
-  wire [4:4]    emmc_data_i_4;
-  wire [5:5]    emmc_data_i_5;
-  wire [6:6]    emmc_data_i_6;
-  wire [7:7]    emmc_data_i_7;
-  wire [0:0]    emmc_data_io_0;
-  wire [1:1]    emmc_data_io_1;
-  wire [2:2]    emmc_data_io_2;
-  wire [3:3]    emmc_data_io_3;
-  wire [4:4]    emmc_data_io_4;
-  wire [5:5]    emmc_data_io_5;
-  wire [6:6]    emmc_data_io_6;
-  wire [7:7]    emmc_data_io_7;
-  wire [0:0]    emmc_data_o_0;
-  wire [1:1]    emmc_data_o_1;
-  wire [2:2]    emmc_data_o_2;
-  wire [3:3]    emmc_data_o_3;
-  wire [4:4]    emmc_data_o_4;
-  wire [5:5]    emmc_data_o_5;
-  wire [6:6]    emmc_data_o_6;
-  wire [7:7]    emmc_data_o_7;
-  wire [0:0]    emmc_data_t_0;
-  wire [1:1]    emmc_data_t_1;
-  wire [2:2]    emmc_data_t_2;
-  wire [3:3]    emmc_data_t_3;
-  wire [4:4]    emmc_data_t_4;
-  wire [5:5]    emmc_data_t_5;
-  wire [6:6]    emmc_data_t_6;
-  wire [7:7]    emmc_data_t_7;
-  wire          emmc_led;
-  */
+
 
 wire          mdio_phy_mdio_i;
 wire          mdio_phy_mdio_o;
@@ -109,48 +74,7 @@ IOBUF emmc_cmd_iobuf
     .IO(emmc_cmd_io),
     .O(emmc_cmd_i),
     .T(emmc_cmd_t));
-/*
-IOBUF emmc_data_iobuf_0
-    (.I(emmc_data_o_0),
-    .IO(emmc_data_io[0]),
-    .O(emmc_data_i_0),
-    .T(emmc_data_t_0));
-IOBUF emmc_data_iobuf_1
-    (.I(emmc_data_o_1),
-    .IO(emmc_data_io[1]),
-    .O(emmc_data_i_1),
-    .T(emmc_data_t_1));
-IOBUF emmc_data_iobuf_2
-    (.I(emmc_data_o_2),
-    .IO(emmc_data_io[2]),
-    .O(emmc_data_i_2),
-    .T(emmc_data_t_2));
-IOBUF emmc_data_iobuf_3
-    (.I(emmc_data_o_3),
-    .IO(emmc_data_io[3]),
-    .O(emmc_data_i_3),
-    .T(emmc_data_t_3));
-IOBUF emmc_data_iobuf_4
-    (.I(emmc_data_o_4),
-    .IO(emmc_data_io[4]),
-    .O(emmc_data_i_4),
-    .T(emmc_data_t_4));
-IOBUF emmc_data_iobuf_5
-    (.I(emmc_data_o_5),
-    .IO(emmc_data_io[5]),
-    .O(emmc_data_i_5),
-    .T(emmc_data_t_5));
-IOBUF emmc_data_iobuf_6
-    (.I(emmc_data_o_6),
-    .IO(emmc_data_io[6]),
-    .O(emmc_data_i_6),
-    .T(emmc_data_t_6));
-IOBUF emmc_data_iobuf_7
-    (.I(emmc_data_o_7),
-    .IO(emmc_data_io[7]),
-    .O(emmc_data_i_7),
-    .T(emmc_data_t_7));
-    */
+
 IOBUF mdio_phy_mdio_iobuf
     (.I(mdio_phy_mdio_o),
     .IO(mdio_phy_mdio_io),
@@ -160,6 +84,7 @@ IOBUF mdio_phy_mdio_iobuf
 wire [7:0]  emmc_data_i;
 wire [7:0]  emmc_data_o;
 wire [7:0]  emmc_data_t;
+
 emmc_iobuf emmc_iobuf_inst (
     .emmc_data_i(emmc_data_o),
     .emmc_data_io(emmc_data_io),
@@ -167,6 +92,34 @@ emmc_iobuf emmc_iobuf_inst (
     .emmc_data_t(emmc_data_t)
 );
 
+
+// ------------------------ TLK2711 --------------------------
+wire        tlk2711b_start;
+wire [1:0]  tlk2711b_mode;
+tlk2711 tlk2711b_inst (
+    .tx_clk(clk_80),
+    .rst(rst_80),
+    .o_txd(tlk2711b_txd),
+    .i_start(tlk2711b_start),
+    .i_mode(tlk2711b_mode),
+    .o_tkmsb(tlk2711b_tkmsb),
+    .o_tklsb(tlk2711b_tklsb),
+    .o_loopen(tlk2711b_loopen),
+    .o_prbsen(tlk2711b_prbsen),
+    .o_enable(tlk2711b_enable),
+    .o_lckrefn(tlk2711b_lckrefn),
+    .o_testen(tlk2711b_testen),
+
+    .rx_clk(clk_80),
+    .i_rkmsb(tlk2711b_rkmsb),
+    .i_rklsb(tlk2711b_rklsb),
+    .i_rxd(tlk2711b_rxd)
+
+);
+
+assign tlk2711b_rx_clk = clk_80;
+assign tlk2711b_gtx_clk = clk_80;
+// ------------------------ TLK2711 --------------------------
 mpsoc mpsoc_inst (
     .emmc_buspow(),
     .emmc_busvolt(),
@@ -175,18 +128,10 @@ mpsoc mpsoc_inst (
     .emmc_cmd_i(emmc_cmd_i),
     .emmc_cmd_o(emmc_cmd_o),
     .emmc_cmd_t(emmc_cmd_t),
-    /*
-    .emmc_data_i({emmc_data_i_7,emmc_data_i_6,emmc_data_i_5,emmc_data_i_4,emmc_data_i_3,emmc_data_i_2,emmc_data_i_1,emmc_data_i_0}),
-    .emmc_data_o({emmc_data_o_7,emmc_data_o_6,emmc_data_o_5,emmc_data_o_4,emmc_data_o_3,emmc_data_o_2,emmc_data_o_1,emmc_data_o_0}),
-    .emmc_data_t({emmc_data_t_7,emmc_data_t_6,emmc_data_t_5,emmc_data_t_4,emmc_data_t_3,emmc_data_t_2,emmc_data_t_1,emmc_data_t_0}),
-    .emmc_led(),
-    */
     .emmc_data_i(emmc_data_i),
     .emmc_data_o(emmc_data_o),
     .emmc_data_t(emmc_data_t),
 
-    .i_clk_375(clk_375),
-    .i_lock(locked),
     .mdio_phy_mdc(mdio_phy_mdc),
     .mdio_phy_mdio_i(mdio_phy_mdio_i),
     .mdio_phy_mdio_o(mdio_phy_mdio_o),
