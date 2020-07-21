@@ -1,11 +1,12 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x541213E638F6A5EA",
+      "boundary_crc": "0xFFDAFE3941D803C5",
       "device": "xczu9eg-ffvb1156-2-i",
       "name": "mpsoc",
       "synth_flow_mode": "Hierarchical",
-      "tool_version": "2018.3"
+      "tool_version": "2018.3",
+      "validated": "true"
     },
     "design_tree": {
       "gmii_to_rgmii_0": "",
@@ -19,7 +20,13 @@
       },
       "mdio_phy": {
         "mode": "Master",
-        "vlnv": "xilinx.com:interface:mdio_rtl:1.0"
+        "vlnv": "xilinx.com:interface:mdio_rtl:1.0",
+        "parameters": {
+          "CAN_DEBUG": {
+            "value": "false",
+            "value_src": "default"
+          }
+        }
       },
       "rgmii": {
         "mode": "Master",
@@ -2813,10 +2820,10 @@
         "xci_name": "mpsoc_clk_wiz_0_0",
         "parameters": {
           "CLKOUT1_JITTER": {
-            "value": "107.361"
+            "value": "178.092"
           },
           "CLKOUT1_PHASE_ERROR": {
-            "value": "152.147"
+            "value": "237.637"
           },
           "CLKOUT1_REQUESTED_OUT_FREQ": {
             "value": "375"
@@ -2825,13 +2832,13 @@
             "value": "clk_375"
           },
           "MMCM_CLKFBOUT_MULT_F": {
-            "value": "24.375"
+            "value": "39.375"
           },
           "MMCM_CLKOUT0_DIVIDE_F": {
-            "value": "3.250"
+            "value": "2.625"
           },
           "MMCM_DIVCLK_DIVIDE": {
-            "value": "2"
+            "value": "4"
           },
           "RESET_PORT": {
             "value": "resetn"

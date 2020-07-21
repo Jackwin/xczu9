@@ -95,6 +95,8 @@ emmc_iobuf emmc_iobuf_inst (
 
 // ------------------------ TLK2711 --------------------------
 wire        tlk2711b_start;
+wire        tlk2711b_stop;
+wire        tlk2711b_stop_ack;
 wire [1:0]  tlk2711b_mode;
 tlk2711 tlk2711b_inst (
     .tx_clk(clk_80),
@@ -102,6 +104,8 @@ tlk2711 tlk2711b_inst (
     .o_txd(tlk2711b_txd),
     .i_start(tlk2711b_start),
     .i_mode(tlk2711b_mode),
+    .i_stop(tlk2711b_stop),
+    .o_stop_ack(tlk2711b_stop_ack),
     .o_tkmsb(tlk2711b_tkmsb),
     .o_tklsb(tlk2711b_tklsb),
     .o_loopen(tlk2711b_loopen),
