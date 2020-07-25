@@ -18,6 +18,8 @@ output          tlk2711b_rx_clk,
 output          tlk2711b_testen,
 output          tlk2711b_rkmsb,
 
+output          phy1_resetn,
+
 output          emmc_clk,
 inout           emmc_cmd_io,
 inout [7:0]     emmc_data_io,
@@ -56,14 +58,16 @@ reset_bridge reset_80_inst(
     .srst(rst_80)
 );
 
+// --------------------- ethernet phy1 ---------------------------
+assign phy1_resetn = 1'b1;
 
+//----------------------- emmc ------------------------------------
 wire          emmc_buspow;
 wire          [2:0]emmc_busvolt;
 
 wire          emmc_cmd_i;
 wire          emmc_cmd_o;
 wire          emmc_cmd_t;
-
 
 wire          mdio_phy_mdio_i;
 wire          mdio_phy_mdio_o;
