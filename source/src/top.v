@@ -53,7 +53,7 @@ clk_wiz_0 clk_wiz_inst (
 reset_bridge reset_80_inst(
     .clk(clk_80),    
     .arst_n(locked),  
-    .o_srst(rst_80)
+    .srst(rst_80)
 );
 
 
