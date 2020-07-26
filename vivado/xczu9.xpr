@@ -56,17 +56,20 @@
   <FileSets Version="1" Minor="31">
     <FileSet Name="sources_1" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1">
       <Filter Type="Srcs"/>
-      <File Path="$PPRDIR/../source/bd/mpsoc/mpsoc.bd">
+      <File Path="$PPRDIR/../bd/mpsoc/mpsoc.bd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
+        <CompFileExtendedInfo CompFileName="mpsoc.bd" FileRelPathName="ip/mpsoc_zynq_ultra_ps_e_0_0/mpsoc_zynq_ultra_ps_e_0_0.xci">
+          <Proxy FileSetName="mpsoc_zynq_ultra_ps_e_0_0"/>
+        </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="mpsoc.bd" FileRelPathName="ip/mpsoc_gmii_to_rgmii_0_0/mpsoc_gmii_to_rgmii_0_0.xci">
           <Proxy FileSetName="mpsoc_gmii_to_rgmii_0_0"/>
         </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="mpsoc.bd" FileRelPathName="ip/mpsoc_zynq_ultra_ps_e_0_0/mpsoc_zynq_ultra_ps_e_0_0.xci">
-          <Proxy FileSetName="mpsoc_zynq_ultra_ps_e_0_0"/>
+        <CompFileExtendedInfo CompFileName="mpsoc.bd" FileRelPathName="ip/mpsoc_clk_wiz_0_0/mpsoc_clk_wiz_0_0.xci">
+          <Proxy FileSetName="mpsoc_clk_wiz_0_0"/>
         </CompFileExtendedInfo>
       </File>
       <File Path="$PPRDIR/../source/src/emmc_iobuf.v">
@@ -178,15 +181,21 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="mpsoc_gmii_to_rgmii_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/mpsoc_gmii_to_rgmii_0_0">
+    <FileSet Name="mpsoc_clk_wiz_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/mpsoc_clk_wiz_0_0">
       <Config>
-        <Option Name="TopModule" Val="mpsoc_gmii_to_rgmii_0_0"/>
+        <Option Name="TopModule" Val="mpsoc_clk_wiz_0_0"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
     <FileSet Name="mpsoc_zynq_ultra_ps_e_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/mpsoc_zynq_ultra_ps_e_0_0">
       <Config>
         <Option Name="TopModule" Val="mpsoc_zynq_ultra_ps_e_0_0"/>
+        <Option Name="UseBlackboxStub" Val="1"/>
+      </Config>
+    </FileSet>
+    <FileSet Name="mpsoc_gmii_to_rgmii_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/mpsoc_gmii_to_rgmii_0_0">
+      <Config>
+        <Option Name="TopModule" Val="mpsoc_gmii_to_rgmii_0_0"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
@@ -237,7 +246,7 @@
       <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2018"/>
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
     </Run>
-    <Run Id="mpsoc_gmii_to_rgmii_0_0_synth_1" Type="Ft3:Synth" SrcSet="mpsoc_gmii_to_rgmii_0_0" Part="xczu9eg-ffvb1156-2-i" ConstrsSet="mpsoc_gmii_to_rgmii_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/mpsoc_gmii_to_rgmii_0_0_synth_1" IncludeInArchive="true">
+    <Run Id="mpsoc_clk_wiz_0_0_synth_1" Type="Ft3:Synth" SrcSet="mpsoc_clk_wiz_0_0" Part="xczu9eg-ffvb1156-2-i" ConstrsSet="mpsoc_clk_wiz_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/mpsoc_clk_wiz_0_0_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
         <Step Id="synth_design"/>
@@ -247,6 +256,15 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
     </Run>
     <Run Id="mpsoc_zynq_ultra_ps_e_0_0_synth_1" Type="Ft3:Synth" SrcSet="mpsoc_zynq_ultra_ps_e_0_0" Part="xczu9eg-ffvb1156-2-i" ConstrsSet="mpsoc_zynq_ultra_ps_e_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/mpsoc_zynq_ultra_ps_e_0_0_synth_1" IncludeInArchive="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
+        <Step Id="synth_design"/>
+      </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
+      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2018"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+    </Run>
+    <Run Id="mpsoc_gmii_to_rgmii_0_0_synth_1" Type="Ft3:Synth" SrcSet="mpsoc_gmii_to_rgmii_0_0" Part="xczu9eg-ffvb1156-2-i" ConstrsSet="mpsoc_gmii_to_rgmii_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/mpsoc_gmii_to_rgmii_0_0_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
         <Step Id="synth_design"/>
@@ -266,7 +284,9 @@
         <Step Id="phys_opt_design"/>
         <Step Id="route_design"/>
         <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
+        <Step Id="write_bitstream">
+          <Option Id="BinFile">1</Option>
+        </Step>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2017"/>
@@ -304,7 +324,7 @@
       <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2018"/>
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
     </Run>
-    <Run Id="mpsoc_gmii_to_rgmii_0_0_impl_1" Type="Ft2:EntireDesign" Part="xczu9eg-ffvb1156-2-i" ConstrsSet="mpsoc_gmii_to_rgmii_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="mpsoc_gmii_to_rgmii_0_0_synth_1" IncludeInArchive="false" GenFullBitstream="true">
+    <Run Id="mpsoc_clk_wiz_0_0_impl_1" Type="Ft2:EntireDesign" Part="xczu9eg-ffvb1156-2-i" ConstrsSet="mpsoc_clk_wiz_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="mpsoc_clk_wiz_0_0_synth_1" IncludeInArchive="false" GenFullBitstream="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2018"/>
         <Step Id="init_design"/>
@@ -321,6 +341,22 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
     </Run>
     <Run Id="mpsoc_zynq_ultra_ps_e_0_0_impl_1" Type="Ft2:EntireDesign" Part="xczu9eg-ffvb1156-2-i" ConstrsSet="mpsoc_zynq_ultra_ps_e_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="mpsoc_zynq_ultra_ps_e_0_0_synth_1" IncludeInArchive="false" GenFullBitstream="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2018"/>
+        <Step Id="init_design"/>
+        <Step Id="opt_design"/>
+        <Step Id="power_opt_design"/>
+        <Step Id="place_design"/>
+        <Step Id="post_place_power_opt_design"/>
+        <Step Id="phys_opt_design"/>
+        <Step Id="route_design"/>
+        <Step Id="post_route_phys_opt_design"/>
+        <Step Id="write_bitstream"/>
+      </Strategy>
+      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2018"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+    </Run>
+    <Run Id="mpsoc_gmii_to_rgmii_0_0_impl_1" Type="Ft2:EntireDesign" Part="xczu9eg-ffvb1156-2-i" ConstrsSet="mpsoc_gmii_to_rgmii_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="mpsoc_gmii_to_rgmii_0_0_synth_1" IncludeInArchive="false" GenFullBitstream="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2018"/>
         <Step Id="init_design"/>
