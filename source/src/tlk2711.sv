@@ -2,13 +2,18 @@ module tlk2711 (
     input logic         tx_clk,
     input logic         rst,
     output logic [15:0] o_txd,
+
+    input logic         i_start,
+    input logic [1:0]   i_mode,
+    input logic         i_stop,
+    output logic        o_stop_ack,
     
     output logic        o_tkmsb,
     output logic        o_tklsb,
     output logic        o_loopen,
     output logic        o_prbsen,
     output logic        o_enable,
-    output logic        o_lckrefn,
+    output logic        o_lckrefn, // 1 -> track received data
     output logic        o_testen,
 
     input logic         rx_clk,
@@ -30,10 +35,9 @@ enum logic[2:0] {
     IDLE_s = 3'd0,
     NORM_s = 3'd1,
     LOOP_s = 3'd2,
-    PRBS_s = 3'd3,
-    KCODE_s = 3'd4,
-    END_s = 3'd5
-}mode;
+    KCODE_s = 3'd3,
+    PRBS_s = 3'd4
+}current_mode, next_mode;
 
 enum logic[1:0] {
     COMMA1_s = 2'd0,
@@ -46,9 +50,15 @@ logic       start;
 logic       start_next;
 logic       stop;
 
-mode current_mode, next_mode;
-
 logic [1:0]     mode_sel;
+
+always_comb begin
+    start = i_start;
+    mode_sel = i_mode;
+    stop = i_stop;
+    //o_stop_ack = (stop & (&data_cnt == 1) & current_mode == NORM_s)
+               
+end
 
 always_ff @(posedge tx_clk) begin
     start_next <= start;
@@ -72,12 +82,12 @@ always_comb begin
                     NORM_MODE: next_mode = NORM_s;
                     LOOPBACK_MODE: next_mode = LOOP_s;
                     PRSB_MODE: next_mode = PRBS_s;
-                    KCODE_MODE: next_mode = KCODE_MODE;
+                    KCODE_MODE: next_mode = KCODE_s;
                 endcase
             end
         end
         NORM_s: begin
-            if (stop) begin
+            if (stop & (&data_cnt == 1)) begin // make sure all the data have been sent
                 next_mode = IDLE_s;
             end
         end
@@ -123,16 +133,18 @@ always_ff @(posedge tx_clk) begin
                 loopen <= 0;
                 prbsen <= 0;
                 enable <= 0;
-                lckrefn <= 0;
+                lckrefn <= 1;
                 testen <= 0;
                 tklsb <= 0;
                 tkmsb <= 0;
                 cnt <= 0;
                 data_cnt <= 0;
+                o_stop_ack <= stop;
             end
             NORM_s: begin
                 enable <= 1;
-                
+                lckrefn <= 1;
+                o_stop_ack <= stop & (&data_cnt == 1);
                 case(cnt)
                     COMMA1_s: begin
                         tkmsb <= 1; // K code
@@ -171,17 +183,22 @@ always_ff @(posedge tx_clk) begin
             LOOP_s: begin
                 enable <= 1;
                 loopen <= 1;
+                lckrefn <= 1;
                 tkmsb <= 1; // K code
                 tklsb <= 0;
                 tx_data[15:8] <= K28_5;
                 tx_data[7:0] <= D5_6;
+                o_stop_ack <= stop;
             end
             KCODE_s: begin
                 enable <= 1;
+                loopen <= 0;
                 tkmsb <= 1; // K code
                 tklsb <= 0;
+                lckrefn <= 1;
                 tx_data[15:8] <= K28_5;
                 tx_data[7:0] <= D5_6;
+                o_stop_ack <= stop;
             end
             default: begin
                 enable <= 0;
@@ -190,7 +207,16 @@ always_ff @(posedge tx_clk) begin
     end
 end
 
-
+always_comb begin
+    o_tkmsb = tkmsb;
+    o_tklsb = tklsb;
+    o_loopen = loopen;
+    o_prbsen = prbsen;
+    o_enable = enable;
+    o_lckrefn = lckrefn;
+    o_testen = testen;
+    o_txd = tx_data;
+end
 
 
 

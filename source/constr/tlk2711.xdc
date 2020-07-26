@@ -47,4 +47,21 @@ set_property PACKAGE_PIN E17 [get_ports {tlk2711b_rx_clk}]
 set_property PACKAGE_PIN A17 [get_ports {tlk2711b_testen}]
 set_property PACKAGE_PIN L18 [get_ports {tlk2711b_rkmsb}]
 
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_txd[*]}]
+
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_loopen}]
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_gtx_clk}]
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_tkmsb}]
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_prbsen}]
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_enable}]
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_lckrefn}]
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_tklsb}]
+
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_rxd[*]}]
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_rklsb}]
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_rx_clk}]
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_testen}]
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_rkmsb}]
+
+
 

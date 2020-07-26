@@ -23,9 +23,7 @@ set_property IOSTANDARD LVCMOS18 [get_ports {emmc_data_io[*]}]
 set_property IOSTANDARD LVCMOS18 [get_ports emmc_cmd_io]
 set_property IOSTANDARD LVCMOS18 [get_ports emmc_clk]
 
-### ethernet phy
-
-
+### ethernet phy2
 
 set_property PACKAGE_PIN AE7  [get_ports rgmii_rxc]
 set_property PACKAGE_PIN AF8  [get_ports rgmii_rx_ctl]
@@ -58,6 +56,9 @@ set_property IOSTANDARD LVCMOS18 [get_ports mdio_phy_mdc]
 set_property IOSTANDARD LVCMOS18 [get_ports mdio_phy_mdio_io]
 set_property IOSTANDARD LVCMOS18 [get_ports phy_resetn]
 
+## ethernet phy1
+set_property PACKAGE_PIN K15  [get_ports phy1_resetn]
+set_property IOSTANDARD LVCMOS18 [get_ports phy1_resetn]
 
 ### uart
 set_property PACKAGE_PIN D22  [get_ports uart_0_txd]
