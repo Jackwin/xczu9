@@ -59,7 +59,16 @@ reset_bridge reset_80_inst(
 );
 
 // --------------------- ethernet phy1 ---------------------------
-assign phy1_resetn = 1'b1;
+reg [15:0]     eth_rst_cnt;
+
+always @(posedge sys_clk_50) begin
+    if (~sys_rstn) begin
+        eth_rst_cnt <= 'h0;
+    end else if (&eth_rst_cnt != 1'b1) begin
+        eth_rst_cnt <= eth_rst_cnt + 1'b1;
+    end
+end
+assign phy1_resetn = &eth_rst_cnt;
 
 //----------------------- emmc ------------------------------------
 wire          emmc_buspow;
