@@ -1,5 +1,5 @@
 module tlk2711 (
-    input logic         tx_clk,
+    input logic         clk,
     input logic         rst,
     output logic [15:0] o_txd,
 
@@ -16,7 +16,6 @@ module tlk2711 (
     output logic        o_lckrefn, // 1 -> track received data
     output logic        o_testen,
 
-    input logic         rx_clk,
     input logic         i_rkmsb,
     input logic         i_rklsb,
     input logic [15:0]  i_rxd
@@ -60,11 +59,11 @@ always_comb begin
                
 end
 
-always_ff @(posedge tx_clk) begin
+always_ff @(posedge clk) begin
     start_next <= start;
 end
 
-always_ff @(posedge tx_clk) begin
+always_ff @(posedge clk) begin
     if (rst) begin
         current_mode <= IDLE_s;
     end else begin
@@ -117,7 +116,7 @@ logic [1:0]     cnt;
 logic [4:0]     data_cnt;
 
 
-always_ff @(posedge tx_clk) begin
+always_ff @(posedge clk) begin
     if (rst) begin
         loopen <= 0;
         prbsen <= 0;
@@ -144,6 +143,7 @@ always_ff @(posedge tx_clk) begin
             NORM_s: begin
                 enable <= 1;
                 lckrefn <= 1;
+                loopen <= 1;
                 o_stop_ack <= stop & (&data_cnt == 1);
                 case(cnt)
                     COMMA1_s: begin
@@ -192,7 +192,7 @@ always_ff @(posedge tx_clk) begin
             end
             KCODE_s: begin
                 enable <= 1;
-                loopen <= 0;
+                loopen <= 1;
                 tkmsb <= 1; // K code
                 tklsb <= 0;
                 lckrefn <= 1;
@@ -217,6 +217,29 @@ always_comb begin
     o_testen = testen;
     o_txd = tx_data;
 end
+
+ila_0 tlk2711b (
+	.clk(clk), // input wire clk
+
+	.probe0(i_rklsb), // input wire [0:0]  probe0  
+	.probe1(i_rkmsb), // input wire [0:0]  probe1 
+	.probe2(i_rxd), // input wire [15:0]  probe2
+    .probe3(start_next),
+    .probe4(tkmsb), // input wire [0:0]  probe4 
+	.probe5(tklsb), // input wire [0:0]  probe5 
+	.probe6(loopen), // input wire [0:0]  probe6 
+	.probe7(prbsen), // input wire [0:0]  probe7 
+	.probe8(enable), // input wire [0:0]  probe8 
+	.probe9(lckrefn), // input wire [0:0]  probe9 
+	.probe10(tx_data), // input wire [15:0]  probe10 
+	.probe11(current_mode), // input wire [2:0]  probe11 
+	.probe12(mode_sel), // input wire [1:0]  probe12 
+	.probe13(start), // input wire [0:0]  probe13 
+	.probe14(stop), // input wire [0:0]  probe14 
+	.probe15(data_cnt), // input wire [4:0]  probe15 
+	.probe16(o_stop_ack),
+    .probe17(testen)
+);
 
 
 

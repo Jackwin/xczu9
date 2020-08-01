@@ -113,8 +113,15 @@ wire        tlk2711b_start;
 wire        tlk2711b_stop;
 wire        tlk2711b_stop_ack;
 wire [1:0]  tlk2711b_mode;
-tlk2711 tlk2711b_inst (
-    .tx_clk(clk_80),
+
+vio_tlk2711 vio_tlk2711_i (
+  .clk(clk_80),                // input wire clk
+  .probe_out0(tlk2711b_start),  // output wire [0 : 0] probe_out0
+  .probe_out1(tlk2711b_mode),  // output wire [1 : 0] probe_out1
+  .probe_out2(tlk2711b_stop)  // output wire [0 : 0] probe_out2
+);
+tlk2711 tlk2711_inst (
+    .clk(clk_80),
     .rst(rst_80),
     .o_txd(tlk2711b_txd),
     .i_start(tlk2711b_start),
@@ -129,7 +136,6 @@ tlk2711 tlk2711b_inst (
     .o_lckrefn(tlk2711b_lckrefn),
     .o_testen(tlk2711b_testen),
 
-    .rx_clk(clk_80),
     .i_rkmsb(tlk2711b_rkmsb),
     .i_rklsb(tlk2711b_rklsb),
     .i_rxd(tlk2711b_rxd)
