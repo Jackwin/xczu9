@@ -17,11 +17,12 @@ set_property PACKAGE_PIN K13  [get_ports {emmc_data_io[7]}]
 
 set_property PACKAGE_PIN U9  [get_ports emmc_cmd_io]
 set_property PACKAGE_PIN P10  [get_ports emmc_clk]
-
+set_property PACKAGE_PIN U8  [get_ports emmc_rstn]
 
 set_property IOSTANDARD LVCMOS18 [get_ports {emmc_data_io[*]}]
 set_property IOSTANDARD LVCMOS18 [get_ports emmc_cmd_io]
 set_property IOSTANDARD LVCMOS18 [get_ports emmc_clk]
+set_property IOSTANDARD LVCMOS18 [get_ports emmc_rstn]
 
 ### ethernet phy2
 

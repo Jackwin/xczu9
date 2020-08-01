@@ -23,6 +23,7 @@ output          phy1_resetn,
 output          emmc_clk,
 inout           emmc_cmd_io,
 inout [7:0]     emmc_data_io,
+output          emmc_rstn,
 
 /*
 output          mdio_phy_mdc,
@@ -139,7 +140,7 @@ assign tlk2711b_rx_clk = clk_80;
 assign tlk2711b_gtx_clk = clk_80;
 // ------------------------ TLK2711 --------------------------
 mpsoc mpsoc_inst (
-    .emmc_buspow(),
+    .emmc_buspow(emmc_rstn),
     .emmc_busvolt(),
     .emmc_clk(emmc_clk),
     .emmc_clk_fb(),
