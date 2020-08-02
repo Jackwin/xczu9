@@ -13,10 +13,10 @@ output          tlk2711b_lckrefn,
 output          tlk2711b_tklsb,
 
 input [15:0]    tlk2711b_rxd,
-output          tlk2711b_rklsb,
-output          tlk2711b_rx_clk,
+input           tlk2711b_rklsb,
+input           tlk2711b_rx_clk,
 output          tlk2711b_testen,
-output          tlk2711b_rkmsb,
+input           tlk2711b_rkmsb,
 
 output          phy1_resetn,
 
@@ -136,13 +136,14 @@ tlk2711 tlk2711_inst (
     .o_lckrefn(tlk2711b_lckrefn),
     .o_testen(tlk2711b_testen),
 
+    .rx_clk(tlk2711b_rx_clk),
     .i_rkmsb(tlk2711b_rkmsb),
     .i_rklsb(tlk2711b_rklsb),
     .i_rxd(tlk2711b_rxd)
 
 );
 
-assign tlk2711b_rx_clk = clk_80;
+//assign tlk2711b_rx_clk = clk_80;
 assign tlk2711b_gtx_clk = clk_80;
 // ------------------------ TLK2711 --------------------------
 mpsoc mpsoc_inst (
