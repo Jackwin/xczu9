@@ -18,6 +18,8 @@ input           tlk2711b_rx_clk,
 output          tlk2711b_testen,
 input           tlk2711b_rkmsb,
 
+output          tlk2711a_gtx_clk,
+
 output          phy1_resetn,
 
 output          emmc_clk,
@@ -145,6 +147,7 @@ tlk2711 tlk2711_inst (
 
 //assign tlk2711b_rx_clk = clk_80;
 assign tlk2711b_gtx_clk = clk_80;
+assign tlk2711a_gtx_clk = clk_80;
 // ------------------------ TLK2711 --------------------------
 mpsoc mpsoc_inst (
     .emmc_buspow(emmc_rstn),

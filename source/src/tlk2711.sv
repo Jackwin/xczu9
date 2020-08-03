@@ -113,6 +113,15 @@ logic           tklsb;
 logic           tkmsb;
 logic [15:0]    tx_data;
 
+logic           loopen_vio;
+logic           prbsen_vio;
+logic           enable_vio;
+logic           lckrefn_vio;
+logic           testen_vio;
+logic           tklsb_vio;
+logic           tkmsb_vio;
+logic [15:0]    tx_data_vio;
+
 logic [1:0]     cnt;
 logic [4:0]     data_cnt;
 
@@ -193,6 +202,16 @@ always_ff @(posedge clk) begin
                 tx_data[15:8] <= D5_6;
                 o_stop_ack <= stop;
             end
+            PRBS_s: begin
+                enable <= enable_vio;
+                loopen <= loopen_vio;
+                lckrefn <= lckrefn_vio;
+                testen <= testen_vio;
+                tkmsb <= tkmsb_vio;
+                tklsb <= tklsb_vio;
+                tx_data <= tx_data_vio;
+                o_stop_ack <= stop;
+            end
             KCODE_s: begin
                 enable <= 1;
                 loopen <= 1;
@@ -247,6 +266,19 @@ ila_2711_rx ila_2711_rx_inst (
 	.probe0(i_rklsb), // input wire [0:0]  probe0  
 	.probe1(i_rkmsb), // input wire [0:0]  probe1 
 	.probe2(i_rxd) // input wire [15:0]  probe2
+);
+
+
+vio_tlk2711_debug tlk2711_debug (
+  .clk(clk),                // input wire clk
+  .probe_out0(loopen_vio),  // output wire [0 : 0] probe_out0
+  .probe_out1(prbsen_vio),  // output wire [0 : 0] probe_out1
+  .probe_out2(enable_vio),  // output wire [0 : 0] probe_out2
+  .probe_out3(lckrefn_vio),  // output wire [0 : 0] probe_out3
+  .probe_out4(testen_vio),  // output wire [0 : 0] probe_out4
+  .probe_out5(tklsb_vio),  // output wire [0 : 0] probe_out5
+  .probe_out6(tkmsb_vio),  // output wire [0 : 0] probe_out6
+  .probe_out7(tx_data_vio)  // output wire [15 : 0] probe_out7
 );
 
 endmodule
