@@ -109,6 +109,17 @@ emmc_iobuf emmc_iobuf_inst (
     .emmc_data_t(emmc_data_t)
 );
 
+ila_emmc ila_emmc_i (
+	.clk(emmc_clk), // input wire clk
+	.probe0(emmc_rstn), // input wire [0:0]  probe0  
+	.probe1(emmc_rstn), // input wire [0:0]  probe1 
+	.probe2(emmc_cmd_o), // input wire [0:0]  probe2 
+	.probe3(emmc_cmd_i), // input wire [0:0]  probe3 
+	.probe4(emmc_cmd_t), // input wire [0:0]  probe4 
+	.probe5(emmc_data_o), // input wire [7:0]  probe5 
+	.probe6(emmc_data_i), // input wire [7:0]  probe6 
+	.probe7(emmc_data_t) // input wire [7:0]  probe7
+);
 
 // ------------------------ TLK2711 --------------------------
 wire        tlk2711b_start;
@@ -153,7 +164,7 @@ mpsoc mpsoc_inst (
     .emmc_buspow(emmc_rstn),
     .emmc_busvolt(),
     .emmc_clk(emmc_clk),
-    .emmc_clk_fb(),
+    .emmc_clk_fb(emmc_clk),
     .emmc_cmd_i(emmc_cmd_i),
     .emmc_cmd_o(emmc_cmd_o),
     .emmc_cmd_t(emmc_cmd_t),
