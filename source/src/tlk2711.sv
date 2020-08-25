@@ -4,7 +4,7 @@ module tlk2711 (
     output logic [15:0] o_txd,
 
     input logic         i_start,
-    input logic [1:0]   i_mode,
+    input logic [2:0]   i_mode,
     input logic         i_stop,
     output logic        o_stop_ack,
     
@@ -25,7 +25,7 @@ module tlk2711 (
 localparam NORM_MODE = 2'd0;
 localparam LOOPBACK_MODE = 2'd1;
 localparam KCODE_MODE = 2'd2;
-localparam PRSB_MODE = 2'd3;
+localparam PRBS_MODE = 2'd3;
 
 localparam K28_5 = 8'b1011_1100;
 localparam D5_6 = 8'b11000101; // 110_00101
@@ -50,7 +50,7 @@ logic       start;
 logic       start_next;
 logic       stop;
 
-logic [1:0]     mode_sel;
+logic [2:0]     mode_sel;
 
 always_comb begin
     start = i_start;
@@ -81,7 +81,7 @@ always_comb begin
                 case(mode_sel)
                     NORM_MODE: next_mode = NORM_s;
                     LOOPBACK_MODE: next_mode = LOOP_s;
-                    PRSB_MODE: next_mode = PRBS_s;
+                    PRBS_MODE: next_mode = PRBS_s;
                     KCODE_MODE: next_mode = KCODE_s;
                 endcase
             end
@@ -96,7 +96,7 @@ always_comb begin
                 next_mode = IDLE_s;
             end
         end
-        KCODE_s: begin
+        PRBS_s, KCODE_s: begin
             if (stop) begin
                 next_mode = IDLE_s;
             end
@@ -209,6 +209,7 @@ always_ff @(posedge clk) begin
                 testen <= testen_vio;
                 tkmsb <= tkmsb_vio;
                 tklsb <= tklsb_vio;
+                prbsen <= prbsen_vio;
                 tx_data <= tx_data_vio;
                 o_stop_ack <= stop;
             end

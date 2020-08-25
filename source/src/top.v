@@ -125,7 +125,7 @@ ila_emmc ila_emmc_i (
 wire        tlk2711b_start;
 wire        tlk2711b_stop;
 wire        tlk2711b_stop_ack;
-wire [1:0]  tlk2711b_mode;
+wire [2:0]  tlk2711b_mode;
 
 vio_tlk2711 vio_tlk2711_i (
   .clk(clk_80),                // input wire clk
