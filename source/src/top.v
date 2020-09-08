@@ -27,7 +27,7 @@ inout           emmc_cmd_io,
 inout [7:0]     emmc_data_io,
 output          emmc_rstn,
 
-/*
+
 output          mdio_phy_mdc,
 inout           mdio_phy_mdio_io,
 output          phy_resetn,
@@ -37,7 +37,7 @@ input           rgmii_rxc,
 output [3:0]    rgmii_td,
 output          rgmii_tx_ctl,
 output          rgmii_txc,
-*/
+
 input           uart_0_rxd,
 output          uart_0_txd
 
@@ -80,7 +80,7 @@ wire          [2:0]emmc_busvolt;
 wire          emmc_cmd_i;
 wire          emmc_cmd_o;
 wire          emmc_cmd_t;
-/*
+
 wire          mdio_phy_mdio_i;
 wire          mdio_phy_mdio_o;
 wire          mdio_phy_mdio_t;
@@ -90,7 +90,7 @@ IOBUF mdio_phy_mdio_iobuf
     .IO(mdio_phy_mdio_io),
     .O(mdio_phy_mdio_i),
     .T(mdio_phy_mdio_t));
-*/    
+  
     
 IOBUF emmc_cmd_iobuf
     (.I(emmc_cmd_o),
@@ -171,7 +171,7 @@ mpsoc mpsoc_inst (
     .emmc_data_i(emmc_data_i),
     .emmc_data_o(emmc_data_o),
     .emmc_data_t(emmc_data_t),
-/*
+
     .mdio_phy_mdc(mdio_phy_mdc),
     .mdio_phy_mdio_i(mdio_phy_mdio_i),
     .mdio_phy_mdio_o(mdio_phy_mdio_o),
@@ -183,7 +183,7 @@ mpsoc mpsoc_inst (
     .rgmii_td(rgmii_td),
     .rgmii_tx_ctl(rgmii_tx_ctl),
     .rgmii_txc(rgmii_txc),
-    */
+    
     .uart_0_rxd(uart_0_rxd),
     .uart_0_txd(uart_0_txd)
 );
