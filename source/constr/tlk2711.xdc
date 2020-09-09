@@ -66,4 +66,5 @@ set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_rkmsb}]
 ## tlk2711 A
 
 set_property PACKAGE_PIN H13  [get_ports {tlk2711a_gtx_clk}]
-set_property IOSTANDARD LVCMOS33 [get_ports {tlk2711a_gtx_clk}]
+set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711a_gtx_clk}]
+
