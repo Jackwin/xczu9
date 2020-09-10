@@ -46,12 +46,14 @@ output          uart_0_txd
 wire    clk_80;
 wire    locked;
 wire    rst_80;
+wire    clk_375;
 
 clk_wiz_0 clk_wiz_inst (
     .clk_in1(sys_clk_50),
     .reset(~sys_rstn), 
     .locked(locked),
-    .clk_80(clk_80)    
+    .clk_80(clk_80),
+    .clk_375(clk_375)
    
 );
 
@@ -109,6 +111,7 @@ emmc_iobuf emmc_iobuf_inst (
     .emmc_data_t(emmc_data_t)
 );
 
+/*
 ila_emmc ila_emmc_i (
 	.clk(emmc_clk), // input wire clk
 	.probe0(emmc_rstn), // input wire [0:0]  probe0  
@@ -120,7 +123,7 @@ ila_emmc ila_emmc_i (
 	.probe6(emmc_data_i), // input wire [7:0]  probe6 
 	.probe7(emmc_data_t) // input wire [7:0]  probe7
 );
-
+*/
 // ------------------------ TLK2711 --------------------------
 wire        tlk2711b_start;
 wire        tlk2711b_stop;
@@ -183,6 +186,8 @@ mpsoc mpsoc_inst (
     .rgmii_td(rgmii_td),
     .rgmii_tx_ctl(rgmii_tx_ctl),
     .rgmii_txc(rgmii_txc),
+    .i_clk_375(clk_375),
+    .i_lock(locked),
     
     .uart_0_rxd(uart_0_rxd),
     .uart_0_txd(uart_0_txd)

@@ -1,11 +1,12 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xAAC5A9EA968B7BD7",
+      "boundary_crc": "0x541213E638F6A5EA",
       "device": "xczu9eg-ffvb1156-2-i",
       "name": "mpsoc",
       "synth_flow_mode": "Hierarchical",
-      "tool_version": "2018.3"
+      "tool_version": "2018.3",
+      "validated": "true"
     },
     "design_tree": {
       "zynq_ultra_ps_e_0": "",
@@ -24,9 +25,15 @@
         "mode": "Master",
         "vlnv": "xilinx.com:interface:rgmii_rtl:1.0"
       },
-      "mido_phy": {
+      "mdio_phy": {
         "mode": "Master",
-        "vlnv": "xilinx.com:interface:mdio_rtl:1.0"
+        "vlnv": "xilinx.com:interface:mdio_rtl:1.0",
+        "parameters": {
+          "CAN_DEBUG": {
+            "value": "false",
+            "value_src": "default"
+          }
+        }
       }
     },
     "ports": {
@@ -40,8 +47,20 @@
           "ASSOCIATED_RESET": {
             "value": "i_lock"
           },
+          "CLK_DOMAIN": {
+            "value": "mpsoc_i_clk_375",
+            "value_src": "default"
+          },
           "FREQ_HZ": {
             "value": "375000000"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "PHASE": {
+            "value": "0.000",
+            "value_src": "default"
           }
         }
       },
@@ -49,6 +68,10 @@
         "type": "rst",
         "direction": "I",
         "parameters": {
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
           "POLARITY": {
             "value": "ACTIVE_HIGH"
           }
@@ -2881,28 +2904,16 @@
       }
     },
     "interface_nets": {
-      "zynq_ultra_ps_e_0_UART_0": {
-        "interface_ports": [
-          "uart_0",
-          "zynq_ultra_ps_e_0/UART_0"
-        ]
-      },
-      "zynq_ultra_ps_e_0_SDIO_0": {
-        "interface_ports": [
-          "emmc",
-          "zynq_ultra_ps_e_0/SDIO_0"
-        ]
-      },
       "gmii_to_rgmii_0_RGMII": {
         "interface_ports": [
           "rgmii",
           "gmii_to_rgmii_0/RGMII"
         ]
       },
-      "zynq_ultra_ps_e_0_GMII_ENET2": {
+      "zynq_ultra_ps_e_0_UART_0": {
         "interface_ports": [
-          "zynq_ultra_ps_e_0/GMII_ENET2",
-          "gmii_to_rgmii_0/GMII"
+          "uart_0",
+          "zynq_ultra_ps_e_0/UART_0"
         ]
       },
       "zynq_ultra_ps_e_0_MDIO_ENET2": {
@@ -2911,10 +2922,22 @@
           "gmii_to_rgmii_0/MDIO_GEM"
         ]
       },
+      "zynq_ultra_ps_e_0_GMII_ENET2": {
+        "interface_ports": [
+          "zynq_ultra_ps_e_0/GMII_ENET2",
+          "gmii_to_rgmii_0/GMII"
+        ]
+      },
       "gmii_to_rgmii_0_MDIO_PHY": {
         "interface_ports": [
-          "mido_phy",
+          "mdio_phy",
           "gmii_to_rgmii_0/MDIO_PHY"
+        ]
+      },
+      "zynq_ultra_ps_e_0_SDIO_0": {
+        "interface_ports": [
+          "emmc",
+          "zynq_ultra_ps_e_0/SDIO_0"
         ]
       }
     },
