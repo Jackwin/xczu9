@@ -2904,28 +2904,10 @@
       }
     },
     "interface_nets": {
-      "gmii_to_rgmii_0_RGMII": {
-        "interface_ports": [
-          "rgmii",
-          "gmii_to_rgmii_0/RGMII"
-        ]
-      },
       "zynq_ultra_ps_e_0_UART_0": {
         "interface_ports": [
           "uart_0",
           "zynq_ultra_ps_e_0/UART_0"
-        ]
-      },
-      "zynq_ultra_ps_e_0_MDIO_ENET2": {
-        "interface_ports": [
-          "zynq_ultra_ps_e_0/MDIO_ENET2",
-          "gmii_to_rgmii_0/MDIO_GEM"
-        ]
-      },
-      "zynq_ultra_ps_e_0_GMII_ENET2": {
-        "interface_ports": [
-          "zynq_ultra_ps_e_0/GMII_ENET2",
-          "gmii_to_rgmii_0/GMII"
         ]
       },
       "gmii_to_rgmii_0_MDIO_PHY": {
@@ -2938,6 +2920,24 @@
         "interface_ports": [
           "emmc",
           "zynq_ultra_ps_e_0/SDIO_0"
+        ]
+      },
+      "gmii_to_rgmii_0_RGMII": {
+        "interface_ports": [
+          "rgmii",
+          "gmii_to_rgmii_0/RGMII"
+        ]
+      },
+      "zynq_ultra_ps_e_0_MDIO_ENET2": {
+        "interface_ports": [
+          "gmii_to_rgmii_0/MDIO_GEM",
+          "zynq_ultra_ps_e_0/MDIO_ENET2"
+        ]
+      },
+      "zynq_ultra_ps_e_0_GMII_ENET2": {
+        "interface_ports": [
+          "gmii_to_rgmii_0/GMII",
+          "zynq_ultra_ps_e_0/GMII_ENET2"
         ]
       }
     },

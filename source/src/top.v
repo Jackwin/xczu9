@@ -2,7 +2,7 @@ module top (
 
 input           sys_clk_50,
 input           sys_rstn,
-
+// tlk2711 B
 output [15:0]   tlk2711b_txd,
 output          tlk2711b_loopen,
 output          tlk2711b_gtx_clk,
@@ -17,8 +17,21 @@ input           tlk2711b_rklsb,
 input           tlk2711b_rx_clk,
 output          tlk2711b_testen,
 input           tlk2711b_rkmsb,
-
+// tlk2711 A
+output [15:0]   tlk2711a_txd,
+output          tlk2711a_loopen,
 output          tlk2711a_gtx_clk,
+output          tlk2711a_tkmsb,
+output          tlk2711a_prbsen,
+output          tlk2711a_enable,
+output          tlk2711a_lckrefn,
+output          tlk2711a_tklsb,
+
+input [15:0]    tlk2711a_rxd,
+input           tlk2711a_rklsb,
+input           tlk2711a_rx_clk,
+output          tlk2711a_testen,
+input           tlk2711a_rkmsb,
 
 output          phy1_resetn,
 
@@ -124,19 +137,19 @@ ila_emmc ila_emmc_i (
 	.probe7(emmc_data_t) // input wire [7:0]  probe7
 );
 */
-// ------------------------ TLK2711 --------------------------
+// ------------------------ TLK2711-B --------------------------
 wire        tlk2711b_start;
 wire        tlk2711b_stop;
 wire        tlk2711b_stop_ack;
 wire [2:0]  tlk2711b_mode;
 
-vio_tlk2711 vio_tlk2711_i (
-  .clk(clk_80),                // input wire clk
-  .probe_out0(tlk2711b_start),  // output wire [0 : 0] probe_out0
-  .probe_out1(tlk2711b_mode),  // output wire [1 : 0] probe_out1
-  .probe_out2(tlk2711b_stop)  // output wire [0 : 0] probe_out2
+vio_tlk2711 vio_tlk2711b_i (
+  .clk(clk_80),                
+  .probe_out0(tlk2711b_start),  
+  .probe_out1(tlk2711b_mode),  
+  .probe_out2(tlk2711b_stop) 
 );
-tlk2711 tlk2711_inst (
+tlk2711 tlk2711b_inst (
     .clk(clk_80),
     .rst(rst_80),
     .o_txd(tlk2711b_txd),
@@ -156,12 +169,45 @@ tlk2711 tlk2711_inst (
     .i_rkmsb(tlk2711b_rkmsb),
     .i_rklsb(tlk2711b_rklsb),
     .i_rxd(tlk2711b_rxd)
+);
+assign tlk2711a_gtx_clk = clk_80;
 
+// ------------------------ TLK2711-A --------------------------
+wire        tlk2711a_start;
+wire        tlk2711a_stop;
+wire        tlk2711a_stop_ack;
+wire [2:0]  tlk2711a_mode;
+
+vio_tlk2711 vio_tlk2711a_i (
+  .clk(clk_80),                
+  .probe_out0(tlk2711a_start),  
+  .probe_out1(tlk2711a_mode),  
+  .probe_out2(tlk2711a_stop)
 );
 
-//assign tlk2711b_rx_clk = clk_80;
-assign tlk2711b_gtx_clk = clk_80;
+tlk2711 tlk2711a_inst (
+    .clk(clk_80),
+    .rst(rst_80),
+    .o_txd(tlk2711a_txd),
+    .i_start(tlk2711a_start),
+    .i_mode(tlk2711a_mode),
+    .i_stop(tlk2711a_stop),
+    .o_stop_ack(tlk2711a_stop_ack),
+    .o_tkmsb(tlk2711a_tkmsb),
+    .o_tklsb(tlk2711a_tklsb),
+    .o_loopen(tlk2711a_loopen),
+    .o_prbsen(tlk2711a_prbsen),
+    .o_enable(tlk2711a_enable),
+    .o_lckrefn(tlk2711a_lckrefn),
+    .o_testen(tlk2711a_testen),
+
+    .rx_clk(tlk2711a_rx_clk),
+    .i_rkmsb(tlk2711a_rkmsb),
+    .i_rklsb(tlk2711a_rklsb),
+    .i_rxd(tlk2711a_rxd)
+);
 assign tlk2711a_gtx_clk = clk_80;
+
 // ------------------------ TLK2711 --------------------------
 mpsoc mpsoc_inst (
     .emmc_buspow(emmc_rstn),
