@@ -240,7 +240,7 @@ always_comb begin
     o_testen = testen;
     o_txd = tx_data;
 end
-/*
+
 ila_0 tlk2711b (
 	.clk(clk), // input wire clk
 
@@ -261,7 +261,7 @@ ila_0 tlk2711b (
 	.probe14(stop) // input wire [0:0]  probe14 
 	
 );
-*/
+
 ila_2711_rx ila_2711_rx_inst (
 	.clk(rx_clk), // input wire clk
 	.probe0(i_rklsb), // input wire [0:0]  probe0  
