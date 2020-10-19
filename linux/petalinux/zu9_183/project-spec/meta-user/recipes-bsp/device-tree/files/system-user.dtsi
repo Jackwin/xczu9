@@ -23,6 +23,8 @@
     status = "okay";
     no-1-8-v;
     disable-wp;
+    broken-mmc-highspeed;
+
 };
 
 &sdhci0 {
