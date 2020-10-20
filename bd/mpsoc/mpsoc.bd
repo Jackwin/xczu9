@@ -5,8 +5,7 @@
       "device": "xczu9eg-ffvb1156-2-i",
       "name": "mpsoc",
       "synth_flow_mode": "Hierarchical",
-      "tool_version": "2018.3",
-      "validated": "true"
+      "tool_version": "2018.3"
     },
     "design_tree": {
       "zynq_ultra_ps_e_0": "",
@@ -27,13 +26,7 @@
       },
       "mdio_phy": {
         "mode": "Master",
-        "vlnv": "xilinx.com:interface:mdio_rtl:1.0",
-        "parameters": {
-          "CAN_DEBUG": {
-            "value": "false",
-            "value_src": "default"
-          }
-        }
+        "vlnv": "xilinx.com:interface:mdio_rtl:1.0"
       }
     },
     "ports": {
@@ -47,20 +40,8 @@
           "ASSOCIATED_RESET": {
             "value": "i_lock"
           },
-          "CLK_DOMAIN": {
-            "value": "mpsoc_i_clk_375",
-            "value_src": "default"
-          },
           "FREQ_HZ": {
             "value": "375000000"
-          },
-          "INSERT_VIP": {
-            "value": "0",
-            "value_src": "default"
-          },
-          "PHASE": {
-            "value": "0.000",
-            "value_src": "default"
           }
         }
       },
@@ -68,10 +49,6 @@
         "type": "rst",
         "direction": "I",
         "parameters": {
-          "INSERT_VIP": {
-            "value": "0",
-            "value_src": "default"
-          },
           "POLARITY": {
             "value": "ACTIVE_HIGH"
           }
@@ -1098,13 +1075,13 @@
             "value": "MIO 24 .. 25"
           },
           "PSU__CRF_APB__ACPU_CTRL__ACT_FREQMHZ": {
-            "value": "1333.320068"
+            "value": "1199.988037"
           },
           "PSU__CRF_APB__ACPU_CTRL__FREQMHZ": {
-            "value": "1333.333"
+            "value": "1200"
           },
           "PSU__CRF_APB__ACPU_CTRL__SRCSEL": {
-            "value": "APLL"
+            "value": "DPLL"
           },
           "PSU__CRF_APB__AFI0_REF_CTRL__ACT_FREQMHZ": {
             "value": "667"
@@ -1248,13 +1225,13 @@
             "value": "DPLL"
           },
           "PSU__CRF_APB__DPDMA_REF_CTRL__ACT_FREQMHZ": {
-            "value": "599.994019"
+            "value": "533.328003"
           },
           "PSU__CRF_APB__DPDMA_REF_CTRL__FREQMHZ": {
             "value": "600"
           },
           "PSU__CRF_APB__DPDMA_REF_CTRL__SRCSEL": {
-            "value": "DPLL"
+            "value": "APLL"
           },
           "PSU__CRF_APB__DPLL_CTRL__FRACFREQ": {
             "value": "27.138"
@@ -1299,13 +1276,13 @@
             "value": "DPLL"
           },
           "PSU__CRF_APB__GPU_REF_CTRL__ACT_FREQMHZ": {
-            "value": "599.994019"
+            "value": "499.994995"
           },
           "PSU__CRF_APB__GPU_REF_CTRL__FREQMHZ": {
-            "value": "600"
+            "value": "500"
           },
           "PSU__CRF_APB__GPU_REF_CTRL__SRCSEL": {
-            "value": "DPLL"
+            "value": "IOPLL"
           },
           "PSU__CRF_APB__GTGREF0_REF_CTRL__ACT_FREQMHZ": {
             "value": "-1"
@@ -1338,13 +1315,13 @@
             "value": "IOPLL"
           },
           "PSU__CRF_APB__TOPSW_MAIN_CTRL__ACT_FREQMHZ": {
-            "value": "399.996002"
+            "value": "533.328003"
           },
           "PSU__CRF_APB__TOPSW_MAIN_CTRL__FREQMHZ": {
             "value": "533.333"
           },
           "PSU__CRF_APB__TOPSW_MAIN_CTRL__SRCSEL": {
-            "value": "DPLL"
+            "value": "APLL"
           },
           "PSU__CRF_APB__VPLL_CTRL__FRACFREQ": {
             "value": "27.138"
@@ -1356,10 +1333,10 @@
             "value": "499.994995"
           },
           "PSU__CRL_APB__ADMA_REF_CTRL__FREQMHZ": {
-            "value": "533.333"
+            "value": "500"
           },
           "PSU__CRL_APB__ADMA_REF_CTRL__SRCSEL": {
-            "value": "RPLL"
+            "value": "IOPLL"
           },
           "PSU__CRL_APB__AFI6_REF_CTRL__ACT_FREQMHZ": {
             "value": "500"
@@ -1521,10 +1498,10 @@
             "value": "249.997498"
           },
           "PSU__CRL_APB__IOU_SWITCH_CTRL__FREQMHZ": {
-            "value": "267"
+            "value": "250"
           },
           "PSU__CRL_APB__IOU_SWITCH_CTRL__SRCSEL": {
-            "value": "RPLL"
+            "value": "IOPLL"
           },
           "PSU__CRL_APB__LPD_LSBUS_CTRL__ACT_FREQMHZ": {
             "value": "99.999001"
@@ -1539,10 +1516,10 @@
             "value": "499.994995"
           },
           "PSU__CRL_APB__LPD_SWITCH_CTRL__FREQMHZ": {
-            "value": "533.333"
+            "value": "500"
           },
           "PSU__CRL_APB__LPD_SWITCH_CTRL__SRCSEL": {
-            "value": "RPLL"
+            "value": "IOPLL"
           },
           "PSU__CRL_APB__NAND_REF_CTRL__ACT_FREQMHZ": {
             "value": "100"
@@ -1644,13 +1621,13 @@
             "value": "RPLL"
           },
           "PSU__CRL_APB__TIMESTAMP_REF_CTRL__ACT_FREQMHZ": {
-            "value": "33.333000"
+            "value": "99.999001"
           },
           "PSU__CRL_APB__TIMESTAMP_REF_CTRL__FREQMHZ": {
             "value": "100"
           },
           "PSU__CRL_APB__TIMESTAMP_REF_CTRL__SRCSEL": {
-            "value": "PSS_REF_CLK"
+            "value": "IOPLL"
           },
           "PSU__CRL_APB__UART0_REF_CTRL__ACT_FREQMHZ": {
             "value": "99.999001"
@@ -2946,18 +2923,6 @@
       }
     },
     "interface_nets": {
-      "gmii_to_rgmii_0_MDIO_PHY": {
-        "interface_ports": [
-          "mdio_phy",
-          "gmii_to_rgmii_0/MDIO_PHY"
-        ]
-      },
-      "gmii_to_rgmii_0_RGMII": {
-        "interface_ports": [
-          "rgmii",
-          "gmii_to_rgmii_0/RGMII"
-        ]
-      },
       "zynq_ultra_ps_e_0_MDIO_ENET2": {
         "interface_ports": [
           "gmii_to_rgmii_0/MDIO_GEM",
@@ -2970,16 +2935,28 @@
           "zynq_ultra_ps_e_0/SDIO_0"
         ]
       },
-      "zynq_ultra_ps_e_0_UART_0": {
+      "gmii_to_rgmii_0_RGMII": {
         "interface_ports": [
-          "uart_0",
-          "zynq_ultra_ps_e_0/UART_0"
+          "rgmii",
+          "gmii_to_rgmii_0/RGMII"
+        ]
+      },
+      "gmii_to_rgmii_0_MDIO_PHY": {
+        "interface_ports": [
+          "mdio_phy",
+          "gmii_to_rgmii_0/MDIO_PHY"
         ]
       },
       "zynq_ultra_ps_e_0_GMII_ENET2": {
         "interface_ports": [
           "gmii_to_rgmii_0/GMII",
           "zynq_ultra_ps_e_0/GMII_ENET2"
+        ]
+      },
+      "zynq_ultra_ps_e_0_UART_0": {
+        "interface_ports": [
+          "uart_0",
+          "zynq_ultra_ps_e_0/UART_0"
         ]
       }
     },
