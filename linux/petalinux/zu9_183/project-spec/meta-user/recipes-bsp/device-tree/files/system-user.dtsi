@@ -23,7 +23,8 @@
     status = "okay";
     no-1-8-v;
     disable-wp;
-    broken-mmc-highspeed;
+    max-frequency=<10000000>;
+    //broken-mmc-highspeed;
 
 };
 
@@ -31,3 +32,4 @@
     status = "okay";
     no-1-8-v;
 };
+
