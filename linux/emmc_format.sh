@@ -3,8 +3,13 @@
 EMMC_P1_PATH=/media/emmc_p1
 EMMC_P2_PATH=/media/emmc_p2
 
-if [ ! -d $EMMC_P1_PATH ] then mkdir $EMMC_P1_PATH fi
-if [ ! -d $EMMC_P2_PATH ] then mkdir $EMMC_P2_PATH fi
+if [ ! -d $EMMC_P1_PATH ]; then
+	mkdir $EMMC_P1_PATH 
+fi
+
+if [ ! -d $EMMC_P2_PATH ]; 
+	then mkdir $EMMC_P2_PATH 
+fi
 
 mount /dev/mmcblk0p1 $EMMC_P1_PATH 
 ret=$? 
@@ -14,14 +19,15 @@ if [ $ret -ne 0 ]; then
     sync
     echo "format finished!" 
     echo "Step1:Parting the disks..." 
-    fdisk /dev/mmcblk0 <<EOF
-    n
-    p
-    1
-    +1024M
-    n
-    p
-    2
+    fdisk /dev/mmcblk0 << EOF
+ p
+ 1
+
+ +1024M
+ n
+ p
+ 2
+
     wq
 EOF
 
@@ -36,3 +42,4 @@ EOF
 else 
     mount /dev/mmcblk0p2 $EMMC_P2_PATH 
 fi
+
