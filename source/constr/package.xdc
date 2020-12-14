@@ -112,3 +112,7 @@ set_property PACKAGE_PIN D22  [get_ports uart_0_txd]
 set_property PACKAGE_PIN E22  [get_ports uart_0_rxd]
 set_property IOSTANDARD LVCMOS33 [get_ports uart_0_txd]
 set_property IOSTANDARD LVCMOS33 [get_ports uart_0_rxd]
+
+### usr led on the network board
+set_property PACKAGE_PIN G10  [get_ports usr_led]
+set_property IOSTANDARD LVCMOS33 [get_ports usr_led]

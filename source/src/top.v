@@ -52,7 +52,11 @@ output          rgmii_tx_ctl,
 output          rgmii_txc,
 
 input           uart_0_rxd,
-output          uart_0_txd
+output          uart_0_txd,
+
+// user led in the network board
+
+output          usr_led
 
 );
 
