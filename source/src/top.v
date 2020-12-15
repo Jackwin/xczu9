@@ -80,6 +80,20 @@ reset_bridge reset_80_inst(
     .srst(rst_80)
 );
 
+// --------------------- user led --------------------------------
+
+reg [26:0]  led_cnt;
+
+always @(posedge clk_80) begin
+    if (rst_80) begin
+        led_cnt <= 'h0;
+    end else begin
+        led_cnt <= led_cnt + 1'd1;
+    end
+end
+
+assign usr_led = led_cnt[26];
+
 // --------------------- ethernet phy1 ---------------------------
 reg [15:0]     eth_rst_cnt;
 
