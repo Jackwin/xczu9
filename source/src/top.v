@@ -155,6 +155,12 @@ ila_emmc ila_emmc_i (
 	.probe7(emmc_data_t) // input wire [7:0]  probe7
 );
 */
+
+ila_emmc ila_emmc_i (
+	.clk(clk_80), // input wire clk
+	.probe0(mdio_phy_mdc), // input wire [0:0]  probe0  
+	.probe1(phy_resetn) // input wire [0:0]  probe1 
+);
 // ------------------------ TLK2711-B --------------------------
 wire        tlk2711b_start;
 wire        tlk2711b_stop;
