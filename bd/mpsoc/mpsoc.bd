@@ -10,7 +10,8 @@
     },
     "design_tree": {
       "zynq_ultra_ps_e_0": "",
-      "gmii_to_rgmii_0": ""
+      "gmii_to_rgmii_0": "",
+      "util_vector_logic_0": ""
     },
     "interface_ports": {
       "emmc": {
@@ -2946,6 +2947,18 @@
             "value": "Include_Shared_Logic_in_Core"
           }
         }
+      },
+      "util_vector_logic_0": {
+        "vlnv": "xilinx.com:ip:util_vector_logic:2.0",
+        "xci_name": "mpsoc_util_vector_logic_0_0",
+        "parameters": {
+          "C_OPERATION": {
+            "value": "not"
+          },
+          "C_SIZE": {
+            "value": "1"
+          }
+        }
       }
     },
     "interface_nets": {
@@ -2955,22 +2968,16 @@
           "gmii_to_rgmii_0/RGMII"
         ]
       },
-      "gmii_to_rgmii_0_MDIO_PHY": {
+      "zynq_ultra_ps_e_0_UART_0": {
         "interface_ports": [
-          "mdio_phy",
-          "gmii_to_rgmii_0/MDIO_PHY"
+          "uart_0",
+          "zynq_ultra_ps_e_0/UART_0"
         ]
       },
       "zynq_ultra_ps_e_0_SDIO_0": {
         "interface_ports": [
           "emmc",
           "zynq_ultra_ps_e_0/SDIO_0"
-        ]
-      },
-      "zynq_ultra_ps_e_0_UART_0": {
-        "interface_ports": [
-          "uart_0",
-          "zynq_ultra_ps_e_0/UART_0"
         ]
       },
       "zynq_ultra_ps_e_0_MDIO_ENET0": {
@@ -2983,6 +2990,12 @@
         "interface_ports": [
           "zynq_ultra_ps_e_0/GMII_ENET0",
           "gmii_to_rgmii_0/GMII"
+        ]
+      },
+      "gmii_to_rgmii_0_MDIO_PHY": {
+        "interface_ports": [
+          "mdio_phy",
+          "gmii_to_rgmii_0/MDIO_PHY"
         ]
       }
     },
@@ -2999,9 +3012,15 @@
           "gmii_to_rgmii_0/clkin"
         ]
       },
-      "tx_reset_0_1": {
+      "i_lock_1": {
         "ports": [
           "i_lock",
+          "util_vector_logic_0/Op1"
+        ]
+      },
+      "util_vector_logic_0_Res": {
+        "ports": [
+          "util_vector_logic_0/Res",
           "gmii_to_rgmii_0/tx_reset",
           "gmii_to_rgmii_0/rx_reset"
         ]
