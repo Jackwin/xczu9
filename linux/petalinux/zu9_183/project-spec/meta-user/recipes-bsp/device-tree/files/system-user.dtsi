@@ -38,11 +38,12 @@
         #address-cells = <1>;
         #size-cells = <0>;
         phy1: phy@1 {
+            device_type = "ethernet-phy";
             reg = <1>;
         };
 
         gmiitorgmii: gmiitorgmii@8 {
-            compatible = "xlnx,gmii-to-rgmii-4.0";
+            compatible = "xlnx,gmii-to-rgmii-1.0";
             reg = <8>;
             phy-handle= <&phy1>;
         };
