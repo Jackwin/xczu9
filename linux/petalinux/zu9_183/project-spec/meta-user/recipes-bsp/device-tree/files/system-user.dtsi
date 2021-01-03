@@ -19,15 +19,6 @@
     };
 };
 
-&gem3 {
-    status="okay";
-    phy-handle = <&phyc>; 
-    pinctrl-names = "default"; 
-    local-mac-address = [00 0a 35 00 22 01]; 
-    phyc: phy@1 { 
-        reg = <0x1>;
-    };
-};
 
 &gem1 {
     status="okay";
