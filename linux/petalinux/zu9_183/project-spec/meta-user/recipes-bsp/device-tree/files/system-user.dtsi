@@ -33,7 +33,8 @@
     status="okay";
     phy-handle=<&phy1>;
     gmii2rgmii-phy-handle=<&gmiitorgmii>;
-    xlnx,has-mdio=<0x1>;
+    phy-reset-gpio=<&gpio 78 0>;
+    phy-reset-active-low;
     mdio:mdio {
         #address-cells = <1>;
         #size-cells = <0>;
