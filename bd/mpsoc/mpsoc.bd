@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x541213E638F6A5EA",
+      "boundary_crc": "0xA6B23C5269054997",
       "device": "xczu9eg-ffvb1156-2-i",
       "name": "mpsoc",
       "synth_flow_mode": "Hierarchical",
@@ -11,7 +11,9 @@
     "design_tree": {
       "zynq_ultra_ps_e_0": "",
       "gmii_to_rgmii_0": "",
-      "util_vector_logic_0": ""
+      "util_vector_logic_0": "",
+      "xlslice_78": "",
+      "ila_0": ""
     },
     "interface_ports": {
       "emmc": {
@@ -38,9 +40,6 @@
       }
     },
     "ports": {
-      "phy_resetn": {
-        "direction": "O"
-      },
       "i_clk_375": {
         "type": "clk",
         "direction": "I",
@@ -77,6 +76,11 @@
             "value": "ACTIVE_HIGH"
           }
         }
+      },
+      "phy_resetn": {
+        "direction": "O",
+        "left": "0",
+        "right": "0"
       }
     },
     "components": {
@@ -2959,21 +2963,45 @@
             "value": "1"
           }
         }
+      },
+      "xlslice_78": {
+        "vlnv": "xilinx.com:ip:xlslice:1.0",
+        "xci_name": "mpsoc_xlslice_0_1",
+        "parameters": {
+          "DIN_FROM": {
+            "value": "0"
+          },
+          "DIN_TO": {
+            "value": "0"
+          },
+          "DIN_WIDTH": {
+            "value": "95"
+          }
+        }
+      },
+      "ila_0": {
+        "vlnv": "xilinx.com:ip:ila:6.2",
+        "xci_name": "mpsoc_ila_0_0",
+        "parameters": {
+          "C_ENABLE_ILA_AXI_MON": {
+            "value": "false"
+          },
+          "C_MONITOR_TYPE": {
+            "value": "Native"
+          },
+          "C_NUM_OF_PROBES": {
+            "value": "6"
+          },
+          "C_PROBE2_WIDTH": {
+            "value": "2"
+          },
+          "C_PROBE4_WIDTH": {
+            "value": "2"
+          }
+        }
       }
     },
     "interface_nets": {
-      "zynq_ultra_ps_e_0_SDIO_0": {
-        "interface_ports": [
-          "emmc",
-          "zynq_ultra_ps_e_0/SDIO_0"
-        ]
-      },
-      "gmii_to_rgmii_0_RGMII": {
-        "interface_ports": [
-          "rgmii",
-          "gmii_to_rgmii_0/RGMII"
-        ]
-      },
       "zynq_ultra_ps_e_0_UART_0": {
         "interface_ports": [
           "uart_0",
@@ -2986,30 +3014,37 @@
           "gmii_to_rgmii_0/MDIO_PHY"
         ]
       },
+      "zynq_ultra_ps_e_0_GMII_ENET1": {
+        "interface_ports": [
+          "zynq_ultra_ps_e_0/GMII_ENET1",
+          "gmii_to_rgmii_0/GMII"
+        ]
+      },
+      "gmii_to_rgmii_0_RGMII": {
+        "interface_ports": [
+          "rgmii",
+          "gmii_to_rgmii_0/RGMII"
+        ]
+      },
       "zynq_ultra_ps_e_0_MDIO_ENET1": {
         "interface_ports": [
           "zynq_ultra_ps_e_0/MDIO_ENET1",
           "gmii_to_rgmii_0/MDIO_GEM"
         ]
       },
-      "zynq_ultra_ps_e_0_GMII_ENET1": {
+      "zynq_ultra_ps_e_0_SDIO_0": {
         "interface_ports": [
-          "zynq_ultra_ps_e_0/GMII_ENET1",
-          "gmii_to_rgmii_0/GMII"
+          "emmc",
+          "zynq_ultra_ps_e_0/SDIO_0"
         ]
       }
     },
     "nets": {
-      "gmii_to_rgmii_0_mmcm_locked_out": {
-        "ports": [
-          "gmii_to_rgmii_0/mmcm_locked_out",
-          "phy_resetn"
-        ]
-      },
       "clkin_0_1": {
         "ports": [
           "i_clk_375",
-          "gmii_to_rgmii_0/clkin"
+          "gmii_to_rgmii_0/clkin",
+          "ila_0/clk"
         ]
       },
       "i_lock_1": {
@@ -3022,7 +3057,50 @@
         "ports": [
           "util_vector_logic_0/Res",
           "gmii_to_rgmii_0/tx_reset",
-          "gmii_to_rgmii_0/rx_reset"
+          "gmii_to_rgmii_0/rx_reset",
+          "ila_0/probe0"
+        ]
+      },
+      "zynq_ultra_ps_e_0_emio_gpio_o": {
+        "ports": [
+          "zynq_ultra_ps_e_0/emio_gpio_o",
+          "xlslice_78/Din"
+        ]
+      },
+      "xlslice_78_Dout": {
+        "ports": [
+          "xlslice_78/Dout",
+          "phy_resetn"
+        ]
+      },
+      "gmii_to_rgmii_0_mmcm_locked_out": {
+        "ports": [
+          "gmii_to_rgmii_0/mmcm_locked_out",
+          "ila_0/probe1"
+        ]
+      },
+      "gmii_to_rgmii_0_clock_speed": {
+        "ports": [
+          "gmii_to_rgmii_0/clock_speed",
+          "ila_0/probe2"
+        ]
+      },
+      "gmii_to_rgmii_0_link_status": {
+        "ports": [
+          "gmii_to_rgmii_0/link_status",
+          "ila_0/probe3"
+        ]
+      },
+      "gmii_to_rgmii_0_duplex_status": {
+        "ports": [
+          "gmii_to_rgmii_0/duplex_status",
+          "ila_0/probe5"
+        ]
+      },
+      "gmii_to_rgmii_0_speed_mode": {
+        "ports": [
+          "gmii_to_rgmii_0/speed_mode",
+          "ila_0/probe4"
         ]
       }
     }
