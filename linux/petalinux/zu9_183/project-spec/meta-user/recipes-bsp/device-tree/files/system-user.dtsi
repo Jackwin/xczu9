@@ -33,18 +33,17 @@
     status="okay";
     phy-handle=<&phy1>;
     gmii2rgmii-phy-handle=<&gmiitorgmii>;
-    phy-reset-gpio=<&gpio 78 0>;
-    phy-reset-active-low;
+    phy-mode="rgmii-rxid";
+    xlnx,has-mdio=<0x1>;
     mdio:mdio {
         #address-cells = <1>;
         #size-cells = <0>;
         phy1: phy@1 {
-            device_type = "ethernet-phy";
             reg = <1>;
         };
 
         gmiitorgmii: gmiitorgmii@8 {
-            compatible = "xlnx,gmii-to-rgmii-1.0";
+            compatible = "xlnx,gmii-to-rgmii-4.0";
             reg = <8>;
             phy-handle= <&phy1>;
         };
