@@ -105,6 +105,7 @@ always @(posedge sys_clk_50) begin
     end
 end
 assign phy1_resetn = &eth_rst_cnt;
+assign phy_resetn = &eth_rst_cnt;
 
 //----------------------- emmc ------------------------------------
 wire          emmc_buspow;
@@ -249,7 +250,7 @@ mpsoc mpsoc_inst (
     .mdio_phy_mdio_i(mdio_phy_mdio_i),
     .mdio_phy_mdio_o(mdio_phy_mdio_o),
     .mdio_phy_mdio_t(mdio_phy_mdio_t),
-    .phy_resetn(phy_resetn),
+    .phy_resetn(),
     .rgmii_rd(rgmii_rd),
     .rgmii_rx_ctl(rgmii_rx_ctl),
     .rgmii_rxc(rgmii_rxc),
