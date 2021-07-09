@@ -1,6 +1,6 @@
 
 
-module tlk2711_tx_data (
+module tlk2711_tx_data_test (
 
     input logic         clk,
     input logic         rst,

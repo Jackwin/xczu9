@@ -1,6 +1,6 @@
 
 
-module tlk2711_tx_cmd (
+module tlk2711_tx_cmd_test (
     input logic         i_clk,
     input logic         i_rst;
     input logic         i_soft_rst,

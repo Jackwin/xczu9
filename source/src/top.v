@@ -1,3 +1,4 @@
+//`define TLK2711_TEST 1
 module top (
 
 input           sys_clk_50,
@@ -156,13 +157,16 @@ ila_emmc ila_emmc_i (
 	.probe7(emmc_data_t) // input wire [7:0]  probe7
 );
 */
-
+/*
 ila_emmc ila_emmc_i (
 	.clk(clk_80), // input wire clk
 	.probe0(mdio_phy_mdc), // input wire [0:0]  probe0  
 	.probe1(phy_resetn) // input wire [0:0]  probe1 
 );
+*/
+
 // ------------------------ TLK2711-B --------------------------
+`ifdef TLK2711_TEST 
 wire        tlk2711b_start;
 wire        tlk2711b_stop;
 wire        tlk2711b_stop_ack;
@@ -232,6 +236,112 @@ tlk2711 tlk2711a_inst (
     .i_rxd(tlk2711a_rxd)
 );
 assign tlk2711a_gtx_clk = clk_80;
+`else
+
+// -----------------------
+    wire [3:0]   m_axi_arid;
+    wire [31:0]  m_axi_araddr;
+    wire [7:0]   m_axi_arlen;
+    wire [2:0]   m_axi_arsize;
+    wire [1:0]   m_axi_arburst;
+    wire [2:0]   m_axi_arprot;
+    wire [3:0]   m_axi_arcache;
+    wire [3:0]   m_axi_aruser;
+    wire         m_axi_arvalid;
+    reg          m_axi_arready;
+    reg [15:0]   m_axi_rdata;
+    reg [1:0]    m_axi_rresp;
+    wire         m_axi_rlast;
+    wire         m_axi_rvalid;
+    wire         m_axi_rready;
+    wire [3:0]   m_axi_awid;
+    wire [31:0]  m_axi_awaddr;
+    wire [7:0]   m_axi_awlen;
+    wire [2:0]   m_axi_awsize;
+    wire [1:0]   m_axi_awburst;
+    wire [2:0]   m_axi_awprot;
+    wire [3:0]   m_axi_awcache;
+    wire [3:0]   m_axi_awuser;
+    wire         m_axi_awvalid;
+    reg          m_axi_awready;
+    wire [15:0]  m_axi_wdata;
+    wire [7:0]   m_axi_wstrb;
+    wire         m_axi_wlast;
+    wire         m_axi_wvalid;
+    reg          m_axi_wready;
+    reg [1:0]    m_axi_bresp;
+    reg          m_axi_bvalid;
+    wire         m_axi_bready;
+
+
+    tlk2711_top #(    
+        .ADDR_WIDTH(64),
+	    .RDATA_WIDTH(16), 
+	    .WDATA_WIDTH(16), 
+	    .WBYTE_WIDTH(2),   
+        .DLEN_WIDTH(16)
+    ) tlk2711_top (
+        .clk(clk),
+        .rst(rst),
+        .i_reg_wen(i_reg_wen),
+        .i_reg_waddr(i_reg_waddr),
+        .i_reg_wdata(i_reg_wdata),    
+        .i_reg_ren(i_reg_ren),
+        .i_reg_raddr(i_reg_raddr),
+        .o_reg_rdata(o_reg_rdata), 
+        //interrupt
+        .o_tx_irq(o_tx_irq),
+        .o_rx_irq(o_rx_irq),
+        .o_loss_irq(o_loss_irq),
+        //tlk2711 interface
+        .i_2711_rkmsb(i_2711_rkmsb),
+        .i_2711_rklsb(i_2711_rklsb),
+        .i_2711_rxd(i_2711_rxd),
+        .o_2711_tkmsb(o_2711_tkmsb),
+        .o_2711_tklsb(o_2711_tklsb),
+        .o_2711_enable(o_2711_enable),
+        .o_2711_loopen(o_2711_loopen),
+        .o_2711_lckrefn(o_2711_lckrefn),
+        .o_2711_txd(o_2711_txd),
+
+        .m_axi_arready(m_axi_arready),
+        .m_axi_arvalid(m_axi_arvalid),
+        .m_axi_arid   (m_axi_arid   ),
+        .m_axi_araddr (m_axi_araddr ),
+        .m_axi_arlen  (m_axi_arlen  ),
+        .m_axi_arsize (m_axi_arsize ),
+        .m_axi_arburst(m_axi_arburst),
+        .m_axi_arprot (m_axi_arprot ),
+        .m_axi_arcache(m_axi_arcache),
+        .m_axi_aruser (m_axi_aruser ),  
+        .m_axi_rdata  (m_axi_rdata  ),
+        .m_axi_rresp  (m_axi_rresp  ),
+        .m_axi_rlast  (m_axi_rlast  ),
+        .m_axi_rvalid (m_axi_rvalid ),
+        .m_axi_rready (m_axi_rready ),
+        .m_axi_awready(m_axi_awready),
+        .m_axi_awvalid(m_axi_awvalid),
+        .m_axi_awid   (m_axi_awid   ),
+        .m_axi_awaddr (m_axi_awaddr ),
+        .m_axi_awlen  (m_axi_awlen  ),
+        .m_axi_awsize (m_axi_awsize ),
+        .m_axi_awburst(m_axi_awburst),
+        .m_axi_awprot (m_axi_awprot ),
+        .m_axi_awcache(m_axi_awcache),
+        .m_axi_awuser (m_axi_awuser ),   
+        .m_axi_wdata  (m_axi_wdata  ),
+        .m_axi_wstrb  (m_axi_wstrb  ),
+        .m_axi_wlast  (m_axi_wlast  ),
+        .m_axi_wvalid (m_axi_wvalid ),
+        .m_axi_wready (m_axi_wready ),
+        .m_axi_bresp  (m_axi_bresp  ),
+        .m_axi_bvalid (m_axi_bvalid ),
+        .m_axi_bready (m_axi_bready )
+    );
+
+`endif
+
+// ------------------------ DMA ------------------------------
 
 // ------------------------ TLK2711 --------------------------
 mpsoc mpsoc_inst (
