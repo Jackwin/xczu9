@@ -99,7 +99,7 @@ wire          emmc_cmd_t;
 wire          mdio_phy_mdio_i;
 wire          mdio_phy_mdio_o;
 wire          mdio_phy_mdio_t;
-
+/*
 IOBUF mdio_phy_mdio_iobuf
     (.I(mdio_phy_mdio_o),
     .IO(mdio_phy_mdio_io),
@@ -123,7 +123,7 @@ emmc_iobuf emmc_iobuf_inst (
     .emmc_data_o(emmc_data_i),
     .emmc_data_t(emmc_data_t)
 );
-
+*/
 /*
 ila_emmc ila_emmc_i (
 	.clk(emmc_clk), // input wire clk
@@ -210,8 +210,9 @@ assign tlk2711a_gtx_clk = clk_80;
 
 // ------------------------ TLK2711 --------------------------
 mpsoc mpsoc_inst (
+/*
     .emmc_buspow(emmc_rstn),
-    .emmc_busvolt(),
+   // .emmc_busvolt(),
     .emmc_clk(emmc_clk),
     .emmc_clk_fb(emmc_clk),
     .emmc_cmd_i(emmc_cmd_i),
@@ -220,7 +221,7 @@ mpsoc mpsoc_inst (
     .emmc_data_i(emmc_data_i),
     .emmc_data_o(emmc_data_o),
     .emmc_data_t(emmc_data_t),
-
+*/
    // .mdio_phy_mdc(mdio_phy_mdc),
   //  .mdio_phy_mdio_i(mdio_phy_mdio_i),
  //   .mdio_phy_mdio_o(mdio_phy_mdio_o),
@@ -232,8 +233,8 @@ mpsoc mpsoc_inst (
   //  .rgmii_td(rgmii_td),
  //   .rgmii_tx_ctl(rgmii_tx_ctl),
  //   .rgmii_txc(rgmii_txc),
-    .i_clk_375(clk_375),
-    .i_lock(locked),
+ //   .i_clk_375(clk_375),
+ //   .i_lock(locked),
     
     .uart_0_rxd(uart_0_rxd),
     .uart_0_txd(uart_0_txd)
