@@ -109,6 +109,7 @@ assign phy1_resetn = &eth_rst_cnt;
 assign phy_resetn = &eth_rst_cnt;
 
 //----------------------- emmc ------------------------------------
+/*
 wire          emmc_buspow;
 wire          [2:0]emmc_busvolt;
 
@@ -143,6 +144,7 @@ emmc_iobuf emmc_iobuf_inst (
     .emmc_data_o(emmc_data_i),
     .emmc_data_t(emmc_data_t)
 );
+*/
 
 /*
 ila_emmc ila_emmc_i (
@@ -239,49 +241,58 @@ assign tlk2711a_gtx_clk = clk_80;
 `else
 
 // -----------------------
-    wire [3:0]   m_axi_arid;
-    wire [31:0]  m_axi_araddr;
-    wire [7:0]   m_axi_arlen;
-    wire [2:0]   m_axi_arsize;
-    wire [1:0]   m_axi_arburst;
-    wire [2:0]   m_axi_arprot;
-    wire [3:0]   m_axi_arcache;
-    wire [3:0]   m_axi_aruser;
-    wire         m_axi_arvalid;
-    reg          m_axi_arready;
-    reg [15:0]   m_axi_rdata;
-    reg [1:0]    m_axi_rresp;
-    wire         m_axi_rlast;
-    wire         m_axi_rvalid;
-    wire         m_axi_rready;
-    wire [3:0]   m_axi_awid;
-    wire [31:0]  m_axi_awaddr;
-    wire [7:0]   m_axi_awlen;
-    wire [2:0]   m_axi_awsize;
-    wire [1:0]   m_axi_awburst;
-    wire [2:0]   m_axi_awprot;
-    wire [3:0]   m_axi_awcache;
-    wire [3:0]   m_axi_awuser;
-    wire         m_axi_awvalid;
-    reg          m_axi_awready;
-    wire [15:0]  m_axi_wdata;
-    wire [7:0]   m_axi_wstrb;
-    wire         m_axi_wlast;
-    wire         m_axi_wvalid;
-    reg          m_axi_wready;
-    reg [1:0]    m_axi_bresp;
-    reg          m_axi_bvalid;
-    wire         m_axi_bready;
+    parameter DDR_ADDR_WIDTH = 40;
+    parameter HP0_DATA_WIDTH = 64;
+    wire [3:0]                  m_axi_arid;
+    wire [DDR_ADDR_WIDTH-1:0]    m_axi_araddr;
+    wire [7:0]                  m_axi_arlen;
+    wire [2:0]                  m_axi_arsize;
+    wire [1:0]                  m_axi_arburst;
+    wire [2:0]                  m_axi_arprot;
+    wire [3:0]                  m_axi_arcache;
+    wire [3:0]                  m_axi_aruser;
+    wire                        m_axi_arvalid;
+    reg                         m_axi_arready;
+    reg [HP0_DATA_WIDTH-1:0]    m_axi_rdata;
+    reg [1:0]                   m_axi_rresp;
+    wire                        m_axi_rlast;
+    wire                        m_axi_rvalid;
+    wire                        m_axi_rready;
+    wire [3:0]                  m_axi_awid;
+    wire [DDR_ADDR_WIDTH-1:0]   m_axi_awaddr;
+    wire [7:0]                  m_axi_awlen;
+    wire [2:0]                  m_axi_awsize;
+    wire [1:0]                  m_axi_awburst;
+    wire [2:0]                  m_axi_awprot;
+    wire [3:0]                  m_axi_awcache;
+    wire [3:0]                  m_axi_awuser;
+    wire                        m_axi_awvalid;
+    reg                         m_axi_awready;
+    wire [HP0_DATA_WIDTH-1:0]   m_axi_wdata;
+    wire [7:0]                  m_axi_wstrb;
+    wire                        m_axi_wlast;
+    wire                        m_axi_wvalid;
+    reg                         m_axi_wready;
+    reg [1:0]                   m_axi_bresp;
+    reg                         m_axi_bvalid;
+    wire                        m_axi_bready;
+
+    wire                        i_reg_wen;
+    wire                        i_reg_ren;
+	wire [15:0]                 i_reg_waddr;
+    wire [15:0]                 i_reg_raddr;
+	wire [63:0]                 i_reg_wdata;
+	wire [63:0]                 o_reg_rdata;
 
 
     tlk2711_top #(    
-        .ADDR_WIDTH(64),
-	    .RDATA_WIDTH(16), 
-	    .WDATA_WIDTH(16), 
-	    .WBYTE_WIDTH(2),   
+        .ADDR_WIDTH(DDR_ADDR_WIDTH),
+	    .RDATA_WIDTH(16), //HP0_DATA_WIDTH
+	    .WDATA_WIDTH(16), // HP0_DATA_WIDTH
+	    .WBYTE_WIDTH(2),  // HP0_DATA_WIDTH/8
         .DLEN_WIDTH(16)
     ) tlk2711_top (
-        .clk(clk),
+        .clk(clk_80),
         .rst(rst),
         .i_reg_wen(i_reg_wen),
         .i_reg_waddr(i_reg_waddr),
@@ -314,11 +325,13 @@ assign tlk2711a_gtx_clk = clk_80;
         .m_axi_arprot (m_axi_arprot ),
         .m_axi_arcache(m_axi_arcache),
         .m_axi_aruser (m_axi_aruser ),  
+
         .m_axi_rdata  (m_axi_rdata  ),
         .m_axi_rresp  (m_axi_rresp  ),
         .m_axi_rlast  (m_axi_rlast  ),
         .m_axi_rvalid (m_axi_rvalid ),
         .m_axi_rready (m_axi_rready ),
+
         .m_axi_awready(m_axi_awready),
         .m_axi_awvalid(m_axi_awvalid),
         .m_axi_awid   (m_axi_awid   ),
@@ -329,6 +342,7 @@ assign tlk2711a_gtx_clk = clk_80;
         .m_axi_awprot (m_axi_awprot ),
         .m_axi_awcache(m_axi_awcache),
         .m_axi_awuser (m_axi_awuser ),   
+
         .m_axi_wdata  (m_axi_wdata  ),
         .m_axi_wstrb  (m_axi_wstrb  ),
         .m_axi_wlast  (m_axi_wlast  ),
@@ -345,6 +359,7 @@ assign tlk2711a_gtx_clk = clk_80;
 
 // ------------------------ TLK2711 --------------------------
 mpsoc mpsoc_inst (
+    /*
     .emmc_buspow(emmc_rstn),
     .emmc_busvolt(),
     .emmc_clk(emmc_clk),
@@ -369,6 +384,53 @@ mpsoc mpsoc_inst (
     .rgmii_txc(rgmii_txc),
     .i_clk_375(clk_375),
     .i_lock(locked),
+    */
+
+    .hp0_clk(hp0_clk),
+
+    .s_axi_hp0_araddr(m_axi_araddr),
+    .s_axi_hp0_arburst(m_axi_arburst),
+    .s_axi_hp0_arcache(m_axi_arcache),
+    .s_axi_hp0_arid(m_axi_arid),
+    .s_axi_hp0_arlen(m_axi_arlen),
+    //.s_axi_hp0_arlock(s_axi_hp0_arlock),
+    .s_axi_hp0_arprot(m_axi_arprot),
+    //.s_axi_hp0_arqos(s_axi_hp0_arqos),
+    .s_axi_hp0_arready(m_axi_arready),
+    .s_axi_hp0_arsize(m_axi_arsize),
+    .s_axi_hp0_aruser(m_axi_aruser),
+    .s_axi_hp0_arvalid(m_axi_arvalid),
+
+    .s_axi_hp0_awaddr(m_axi_awaddr),
+    .s_axi_hp0_awburst(m_axi_awburst),
+    .s_axi_hp0_awcache(m_axi_awcache),
+    .s_axi_hp0_awid(m_axi_awid),
+    .s_axi_hp0_awlen(m_axi_awlen),
+    //.s_axi_hp0_awlock(s_axi_hp0_awlock),
+    .s_axi_hp0_awprot(m_axi_awprot),
+    //.s_axi_hp0_awqos(s_axi_hp0_awqos),
+    .s_axi_hp0_awready(m_axi_awready),
+    .s_axi_hp0_awsize(m_axi_awsize),
+    .s_axi_hp0_awuser(m_axi_awuser),
+    .s_axi_hp0_awvalid(m_axi_awvalid),
+
+    //.s_axi_hp0_bid(s_axi_hp0_bid),
+    .s_axi_hp0_bready(m_axi_bready),
+    .s_axi_hp0_bresp(m_axi_bresp),
+    .s_axi_hp0_bvalid(m_axi_bvalid),
+
+    .s_axi_hp0_rdata(m_axi_rdata),
+    //.s_axi_hp0_rid(s_axi_hp0_rid),
+    .s_axi_hp0_rlast(m_axi_rlast),
+    .s_axi_hp0_rready(m_axi_rready),
+    .s_axi_hp0_rresp(m_axi_rresp),
+    .s_axi_hp0_rvalid(m_axi_rvalid),
+
+    .s_axi_hp0_wdata(m_axi_wdata),
+    .s_axi_hp0_wlast(m_axi_wlast),
+    .s_axi_hp0_wready(m_axi_wready),
+    .s_axi_hp0_wstrb(m_axi_wstrb),
+    .s_axi_hp0_wvalid(m_axi_wvalid),
     
     .uart_0_rxd(uart_0_rxd),
     .uart_0_txd(uart_0_txd)
