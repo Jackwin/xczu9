@@ -244,7 +244,7 @@ assign tlk2711a_gtx_clk = clk_80;
     parameter DDR_ADDR_WIDTH = 40;
     parameter HP0_DATA_WIDTH = 64;
     wire [3:0]                  m_axi_arid;
-    wire [DDR_ADDR_WIDTH-1:0]    m_axi_araddr;
+    wire [DDR_ADDR_WIDTH-1:0]   m_axi_araddr;
     wire [7:0]                  m_axi_arlen;
     wire [2:0]                  m_axi_arsize;
     wire [1:0]                  m_axi_arburst;
@@ -252,9 +252,9 @@ assign tlk2711a_gtx_clk = clk_80;
     wire [3:0]                  m_axi_arcache;
     wire [3:0]                  m_axi_aruser;
     wire                        m_axi_arvalid;
-    reg                         m_axi_arready;
-    reg [HP0_DATA_WIDTH-1:0]    m_axi_rdata;
-    reg [1:0]                   m_axi_rresp;
+    wire                        m_axi_arready;
+    wire [HP0_DATA_WIDTH-1:0]   m_axi_rdata;
+    wire [1:0]                  m_axi_rresp;
     wire                        m_axi_rlast;
     wire                        m_axi_rvalid;
     wire                        m_axi_rready;
@@ -267,14 +267,14 @@ assign tlk2711a_gtx_clk = clk_80;
     wire [3:0]                  m_axi_awcache;
     wire [3:0]                  m_axi_awuser;
     wire                        m_axi_awvalid;
-    reg                         m_axi_awready;
+    wire                        m_axi_awready;
     wire [HP0_DATA_WIDTH-1:0]   m_axi_wdata;
     wire [7:0]                  m_axi_wstrb;
     wire                        m_axi_wlast;
     wire                        m_axi_wvalid;
-    reg                         m_axi_wready;
-    reg [1:0]                   m_axi_bresp;
-    reg                         m_axi_bvalid;
+    wire                        m_axi_wready;
+    wire [1:0]                  m_axi_bresp;
+    wire                        m_axi_bvalid;
     wire                        m_axi_bready;
 
     wire                        i_reg_wen;
@@ -284,6 +284,9 @@ assign tlk2711a_gtx_clk = clk_80;
 	wire [63:0]                 i_reg_wdata;
 	wire [63:0]                 o_reg_rdata;
 
+    wire                        tlk2711_tx_irq;
+    wire                        tlk2711_rx_irq;
+    wire                        tlk2711_loss_irq;
 
     tlk2711_top #(    
         .ADDR_WIDTH(DDR_ADDR_WIDTH),
@@ -293,7 +296,7 @@ assign tlk2711a_gtx_clk = clk_80;
         .DLEN_WIDTH(16)
     ) tlk2711_top (
         .clk(clk_80),
-        .rst(rst),
+        .rst(rst_80),
         .i_reg_wen(i_reg_wen),
         .i_reg_waddr(i_reg_waddr),
         .i_reg_wdata(i_reg_wdata),    
@@ -301,19 +304,21 @@ assign tlk2711a_gtx_clk = clk_80;
         .i_reg_raddr(i_reg_raddr),
         .o_reg_rdata(o_reg_rdata), 
         //interrupt
-        .o_tx_irq(o_tx_irq),
-        .o_rx_irq(o_rx_irq),
-        .o_loss_irq(o_loss_irq),
+        .o_tx_irq(tlk2711_tx_irq),
+        .o_rx_irq(tlk2711_rx_irq),
+        .o_loss_irq(tlk2711_loss_irq),
         //tlk2711 interface
-        .i_2711_rkmsb(i_2711_rkmsb),
-        .i_2711_rklsb(i_2711_rklsb),
-        .i_2711_rxd(i_2711_rxd),
-        .o_2711_tkmsb(o_2711_tkmsb),
-        .o_2711_tklsb(o_2711_tklsb),
-        .o_2711_enable(o_2711_enable),
-        .o_2711_loopen(o_2711_loopen),
-        .o_2711_lckrefn(o_2711_lckrefn),
-        .o_2711_txd(o_2711_txd),
+        // TODO rx should use rx_clk
+        .i_2711_rkmsb(tlk2711a_rkmsb),
+        .i_2711_rklsb(tlk2711a_rklsb),
+        .i_2711_rxd(tlk2711a_rxd),
+
+        .o_2711_tkmsb(tlk2711a_tkmsb),
+        .o_2711_tklsb(tlk2711a_tklsb),
+        .o_2711_enable(tlk2711a_enable),
+        .o_2711_loopen(tlk2711a_loopen),
+        .o_2711_lckrefn(tlk2711a_lckrefn),
+        .o_2711_txd(tlk2711a_txd),
 
         .m_axi_arready(m_axi_arready),
         .m_axi_arvalid(m_axi_arvalid),
@@ -386,7 +391,7 @@ mpsoc mpsoc_inst (
     .i_lock(locked),
     */
 
-    .hp0_clk(hp0_clk),
+    .hp0_clk(clk_80),
 
     .s_axi_hp0_araddr(m_axi_araddr),
     .s_axi_hp0_arburst(m_axi_arburst),
@@ -431,6 +436,10 @@ mpsoc mpsoc_inst (
     .s_axi_hp0_wready(m_axi_wready),
     .s_axi_hp0_wstrb(m_axi_wstrb),
     .s_axi_hp0_wvalid(m_axi_wvalid),
+
+    .tlk2711_los(tlk2711_loss_irq),
+    .tlk2711_rx_irq(tlk2711_rx_irq),
+    .tlk2711_tx_irq(tlk2711_tx_irq),
     
     .uart_0_rxd(uart_0_rxd),
     .uart_0_txd(uart_0_txd)
