@@ -18,11 +18,11 @@
 
 module  tlk2711_dma
 #(
-	parameter RDATA_WIDTH = 64,
-	parameter WDATA_WIDTH = 64, 
+	  parameter RDATA_WIDTH = 64,
+	  parameter WDATA_WIDTH = 64, 
     parameter WBYTE_WIDTH = 8,   
     parameter ADDR_WIDTH = 32,
-	parameter DLEN_WIDTH = 16    
+	  parameter DLEN_WIDTH = 16    
 )
 (
     input           clk,

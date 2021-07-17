@@ -36,6 +36,7 @@
 #    "E:/workspace/code_repo/xczu9/source/src/tlk2711_test/tlk2711.sv"
 #    "E:/workspace/code_repo/xczu9/source/src/top.v"
 #    "E:/workspace/code_repo/xczu9/source/ip/fifo_fwft_16_2048/fifo_fwft_16_2048.xci"
+#    "E:/workspace/code_repo/xczu9/source/ip/fifo_fwft_64_512/fifo_fwft_64_512.xci"
 #    "E:/workspace/code_repo/xczu9/source/ip/tlk2711_datamover/tlk2711_datamover.xci"
 #    "E:/workspace/code_repo/xczu9/source/src/tlk2711/reg_mgt.v"
 #    "E:/workspace/code_repo/xczu9/source/src/tlk2711/tlk2711_dma.v"
@@ -176,6 +177,7 @@ set files [list \
  [file normalize "${origin_dir}/../source/src/tlk2711_test/tlk2711.sv"] \
  [file normalize "${origin_dir}/../source/src/top.v"] \
  [file normalize "${origin_dir}/../source/ip/fifo_fwft_16_2048/fifo_fwft_16_2048.xci"] \
+ [file normalize "${origin_dir}/../source/ip/fifo_fwft_64_512/fifo_fwft_64_512.xci"] \
  [file normalize "${origin_dir}/../source/ip/tlk2711_datamover/tlk2711_datamover.xci"] \
  [file normalize "${origin_dir}/../source/src/tlk2711/reg_mgt.v"] \
  [file normalize "${origin_dir}/../source/src/tlk2711/tlk2711_dma.v"] \
@@ -239,6 +241,15 @@ set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
 
 set file "$origin_dir/../source/ip/fifo_fwft_16_2048/fifo_fwft_16_2048.xci"
+set file [file normalize $file]
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "generate_files_for_reference" -value "0" -objects $file_obj
+set_property -name "registered_with_manager" -value "1" -objects $file_obj
+if { ![get_property "is_locked" $file_obj] } {
+  set_property -name "synth_checkpoint_mode" -value "Singular" -objects $file_obj
+}
+
+set file "$origin_dir/../source/ip/fifo_fwft_64_512/fifo_fwft_64_512.xci"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "generate_files_for_reference" -value "0" -objects $file_obj

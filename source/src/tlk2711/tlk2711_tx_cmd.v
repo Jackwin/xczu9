@@ -33,7 +33,7 @@ module  tlk2711_tx_cmd
 
     input                      i_dma_rd_last, 
     input                      i_tx_start,
-    input [31:0]               i_tx_base_addr,
+    input [ADDR_WIDTH-1:0]     i_tx_base_addr,
     input [15:0]               i_tx_packet_body, //body length in byte, 870B here for fixed value
     input [15:0]               i_tx_packet_tail, //tail length in byte
     input [15:0]               i_tx_body_num
@@ -58,19 +58,25 @@ module  tlk2711_tx_cmd
     end
 
     reg rd_cmd_req;
+    reg [15:0] packet_body_align8, packet_tail_align8;
     
     always@(posedge clk)
     begin
         if (rst)
         begin
-            rd_cmd_req   <= 'b0;
-            o_rd_cmd_req <= 'b0;
+            rd_cmd_req         <= 'b0;
+            o_rd_cmd_req       <= 'b0;
+            packet_body_align8 <= 'd0;
             rd_bbt  <= 'd0;
             rd_addr <= 'd0;
         end
         else
         begin
             rd_cmd_req <= i_dma_rd_last & tx_frame_cnt != i_tx_body_num;
+            packet_body_align8[15:3] <= i_tx_packet_body[15:3] + |i_tx_packet_body[2:0];
+            packet_body_align8[2:0]  <= 'd0;
+            packet_tail_align8[15:3] <= i_tx_packet_tail[15:3] + |i_tx_packet_tail[2:0];
+            packet_tail_align8[2:0]  <= 'd0;
 
             if (rd_cmd_req | i_tx_start)
                 o_rd_cmd_req <= 'b1;    
@@ -82,16 +88,9 @@ module  tlk2711_tx_cmd
             else if (rd_cmd_req)    
                 rd_addr <= rd_addr + i_tx_packet_body;
             
-            rd_bbt <= tx_frame_cnt == i_tx_body_num ? i_tx_packet_tail : i_tx_packet_body;
+            rd_bbt <= tx_frame_cnt == i_tx_body_num ? packet_tail_align8 : packet_body_align8;
         end
     end
    
  
 endmodule 
-         
-         
-         
-         
-         
-         
-         

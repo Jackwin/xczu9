@@ -19,10 +19,10 @@
 
 module tlk2711_top 
 #(       
-    parameter ADDR_WIDTH = 32,
-    parameter RDATA_WIDTH = 16,
-    parameter WDATA_WIDTH = 16,
-    parameter WBYTE_WIDTH = 2,   
+    parameter ADDR_WIDTH = 48,
+    parameter RDATA_WIDTH = 64,
+    parameter WDATA_WIDTH = 64,
+    parameter WBYTE_WIDTH = 8,   
     parameter DLEN_WIDTH = 16  
 )
 (  

@@ -20,7 +20,7 @@ module  tlk2711_rx_link
 #(
     parameter ADDR_WIDTH = 32,
     parameter DLEN_WIDTH = 16,
-	parameter DATA_WIDTH = 64,
+	  parameter DATA_WIDTH = 64,
     parameter WBYTE_WIDTH = 8
 )
 (
@@ -34,7 +34,7 @@ module  tlk2711_rx_link
     output [ADDR_WIDTH+DLEN_WIDTH-1:0] o_wr_cmd_data, //high for saddr, low for byte len
 
     input                      i_rx_start,
-    input  [31:0]              i_rx_base_addr,
+    input  [ADDR_WIDTH-1:0]    i_rx_base_addr,
 
     input                      i_dma_wr_ready,
     input                      i_wr_finish,
@@ -63,6 +63,7 @@ module  tlk2711_rx_link
     localparam K29_7 = 8'hFD;
 
     reg [15:0] rx_frame_cnt = 'd0;
+    reg [DLEN_WIDTH-1:0] valid_byte = 'd0;
     reg [DLEN_WIDTH-1:0] wr_bbt = 'd0;
     reg [ADDR_WIDTH-1:0] wr_addr = 'd0;
     reg [15:0]   tlk2711_rxd;
@@ -70,7 +71,7 @@ module  tlk2711_rx_link
     assign o_wr_cmd_data = {wr_addr, wr_bbt};
 
     reg frame_start, frame_end, frame_valid;
-    reg [9:0] frame_data_cnt, valid_data_num;
+    reg [9:0] frame_data_cnt, valid_data_num, trans_data_num;
 
     always@(posedge clk)
     begin
@@ -107,6 +108,7 @@ module  tlk2711_rx_link
         if (rst) 
         begin
             wr_bbt       <= 'd0;
+            valid_byte   <= 'd0;
             wr_addr      <= 'd0;
             o_wr_cmd_req <= 'b0;
         end    
@@ -115,7 +117,9 @@ module  tlk2711_rx_link
             if (frame_valid && frame_data_cnt == 'd4)  
             begin
                 o_wr_cmd_req <= 'b1;
-                wr_bbt       <= tlk2711_rxd; 
+                wr_bbt[DLEN_WIDTH-1:3] <= tlk2711_rxd[15:3] + |tlk2711_rxd[2:0]; 
+                wr_bbt[2:0]  <= 'd0;
+                valid_byte   <= tlk2711_rxd;
             end    
             else if (i_wr_cmd_ack)
                 o_wr_cmd_req <= 'b0;
@@ -127,11 +131,11 @@ module  tlk2711_rx_link
         end 
     end
 
-    reg  fifo_wren;
+    reg  fifo_wren, valid_data_ind;
     wire fifo_empty;
 
     assign o_dma_wr_valid = ~fifo_empty & i_dma_wr_ready;
-    assign o_dma_wr_keep = wr_bbt[0] ? {{WBYTE_WIDTH/2{1'b0}}, {WBYTE_WIDTH/2{1'b1}}} : {WBYTE_WIDTH{1'b1}};
+    assign o_dma_wr_keep = {WBYTE_WIDTH{1'b1}};
 
     always@(posedge clk)
     begin
@@ -139,14 +143,22 @@ module  tlk2711_rx_link
         begin
             fifo_wren      <= 'b0;
             valid_data_num <= 'd0;
+            trans_data_num <= 'd0;
+            valid_data_ind <= 'b0;
         end    
         else
         begin
-            valid_data_num <= wr_bbt[15:1] + wr_bbt[0] + 4;
+            trans_data_num <= wr_bbt[15:1] + 4;
+            valid_data_num <= valid_byte[15:1] + 4;
 
             if (frame_valid && frame_data_cnt == 'd4)
+            begin
                 fifo_wren <= 'b1;
-            else if (frame_valid && frame_data_cnt == valid_data_num)    
+                valid_data_ind <= 'b1;
+            end  
+            else if (frame_valid && frame_data_cnt == valid_data_num)   
+                valid_data_ind <= 'b0;
+            else if (frame_valid && frame_data_cnt == trans_data_num)    
                 fifo_wren <= 'b0;
   
         end
@@ -162,22 +174,6 @@ module  tlk2711_rx_link
         .full(),
         .empty(fifo_empty)
     );
-
-//    fifo_async_fwft #(
-//        .WR_DEPTH(2048), 
-//        .RD_WIDTH(16),
-//        .WR_WIDTH(16)
-//    ) fifo_async_fwft (
-//        .wr_clk(clk),
-//        .rd_clk(clk),
-//        .rst(rst | i_soft_rst),
-//        .wr_en(fifo_wren),
-//        .din(tlk2711_rxd), 
-//        .rd_en(o_dma_wr_valid),
-//        .dout(o_dma_wr_data),
-//        .empty(fifo_empty),
-//        .full()
-//    );
 
     reg tail_frame_ind;
 
@@ -207,11 +203,11 @@ module  tlk2711_rx_link
 
             if (i_rx_start & o_rx_interrupt)
                 o_rx_total_packet <= 'd0;
-            else if (fifo_wren)      
+            else if (valid_data_ind)      
                 o_rx_total_packet <= o_rx_total_packet + 2;    
 
             if (tail_frame_ind & o_wr_cmd_req && i_wr_cmd_ack)    
-                o_rx_packet_tail  <= wr_bbt;
+                o_rx_packet_tail  <= valid_byte;
         end    
     end 
 
