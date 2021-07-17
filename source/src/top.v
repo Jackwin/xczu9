@@ -1,4 +1,4 @@
-//`define TLK2711_TEST 1
+`define TLK2711_TEST 1
 module top (
 
 input           sys_clk_50,
@@ -35,7 +35,7 @@ output          tlk2711a_testen,
 input           tlk2711a_rkmsb,
 
 output          phy1_resetn,
-
+/*
 output          emmc_clk,
 inout           emmc_cmd_io,
 inout [7:0]     emmc_data_io,
@@ -51,9 +51,9 @@ input           rgmii_rxc,
 output [3:0]    rgmii_td,
 output          rgmii_tx_ctl,
 output          rgmii_txc,
-
-input           uart_0_rxd,
-output          uart_0_txd,
+*/
+//input           uart_0_rxd,
+//output          uart_0_txd,
 
 // user led in the network board
 
@@ -61,10 +61,58 @@ output          usr_led
 
 );
 
+parameter DDR_ADDR_WIDTH = 40;
+parameter HP0_DATA_WIDTH = 64;
+
 wire    clk_80;
 wire    locked;
 wire    rst_80;
 wire    clk_375;
+
+wire [3:0]                  m_axi_arid;
+wire [DDR_ADDR_WIDTH-1:0]   m_axi_araddr;
+wire [7:0]                  m_axi_arlen;
+wire [2:0]                  m_axi_arsize;
+wire [1:0]                  m_axi_arburst;
+wire [2:0]                  m_axi_arprot;
+wire [3:0]                  m_axi_arcache;
+wire [3:0]                  m_axi_aruser;
+wire                        m_axi_arvalid;
+wire                        m_axi_arready;
+wire [HP0_DATA_WIDTH-1:0]   m_axi_rdata;
+wire [1:0]                  m_axi_rresp;
+wire                        m_axi_rlast;
+wire                        m_axi_rvalid;
+wire                        m_axi_rready;
+wire [3:0]                  m_axi_awid;
+wire [DDR_ADDR_WIDTH-1:0]   m_axi_awaddr;
+wire [7:0]                  m_axi_awlen;
+wire [2:0]                  m_axi_awsize;
+wire [1:0]                  m_axi_awburst;
+wire [2:0]                  m_axi_awprot;
+wire [3:0]                  m_axi_awcache;
+wire [3:0]                  m_axi_awuser;
+wire                        m_axi_awvalid;
+wire                        m_axi_awready;
+wire [HP0_DATA_WIDTH-1:0]   m_axi_wdata;
+wire [7:0]                  m_axi_wstrb;
+wire                        m_axi_wlast;
+wire                        m_axi_wvalid;
+wire                        m_axi_wready;
+wire [1:0]                  m_axi_bresp;
+wire                        m_axi_bvalid;
+wire                        m_axi_bready;
+
+wire                        i_reg_wen;
+wire                        i_reg_ren;
+wire [15:0]                 i_reg_waddr;
+wire [15:0]                 i_reg_raddr;
+wire [63:0]                 i_reg_wdata;
+wire [63:0]                 o_reg_rdata;
+
+wire                        tlk2711_tx_irq;
+wire                        tlk2711_rx_irq;
+wire                        tlk2711_loss_irq;
 
 clk_wiz_0 clk_wiz_inst (
     .clk_in1(sys_clk_50),
@@ -241,53 +289,6 @@ assign tlk2711a_gtx_clk = clk_80;
 `else
 
 // -----------------------
-    parameter DDR_ADDR_WIDTH = 40;
-    parameter HP0_DATA_WIDTH = 64;
-    wire [3:0]                  m_axi_arid;
-    wire [DDR_ADDR_WIDTH-1:0]   m_axi_araddr;
-    wire [7:0]                  m_axi_arlen;
-    wire [2:0]                  m_axi_arsize;
-    wire [1:0]                  m_axi_arburst;
-    wire [2:0]                  m_axi_arprot;
-    wire [3:0]                  m_axi_arcache;
-    wire [3:0]                  m_axi_aruser;
-    wire                        m_axi_arvalid;
-    wire                        m_axi_arready;
-    wire [HP0_DATA_WIDTH-1:0]   m_axi_rdata;
-    wire [1:0]                  m_axi_rresp;
-    wire                        m_axi_rlast;
-    wire                        m_axi_rvalid;
-    wire                        m_axi_rready;
-    wire [3:0]                  m_axi_awid;
-    wire [DDR_ADDR_WIDTH-1:0]   m_axi_awaddr;
-    wire [7:0]                  m_axi_awlen;
-    wire [2:0]                  m_axi_awsize;
-    wire [1:0]                  m_axi_awburst;
-    wire [2:0]                  m_axi_awprot;
-    wire [3:0]                  m_axi_awcache;
-    wire [3:0]                  m_axi_awuser;
-    wire                        m_axi_awvalid;
-    wire                        m_axi_awready;
-    wire [HP0_DATA_WIDTH-1:0]   m_axi_wdata;
-    wire [7:0]                  m_axi_wstrb;
-    wire                        m_axi_wlast;
-    wire                        m_axi_wvalid;
-    wire                        m_axi_wready;
-    wire [1:0]                  m_axi_bresp;
-    wire                        m_axi_bvalid;
-    wire                        m_axi_bready;
-
-    wire                        i_reg_wen;
-    wire                        i_reg_ren;
-	wire [15:0]                 i_reg_waddr;
-    wire [15:0]                 i_reg_raddr;
-	wire [63:0]                 i_reg_wdata;
-	wire [63:0]                 o_reg_rdata;
-
-    wire                        tlk2711_tx_irq;
-    wire                        tlk2711_rx_irq;
-    wire                        tlk2711_loss_irq;
-
     tlk2711_top #(    
         .ADDR_WIDTH(DDR_ADDR_WIDTH),
 	    .RDATA_WIDTH(16), //HP0_DATA_WIDTH
@@ -439,10 +440,10 @@ mpsoc mpsoc_inst (
 
     .tlk2711_los(tlk2711_loss_irq),
     .tlk2711_rx_irq(tlk2711_rx_irq),
-    .tlk2711_tx_irq(tlk2711_tx_irq),
+    .tlk2711_tx_irq(tlk2711_tx_irq)
     
-    .uart_0_rxd(uart_0_rxd),
-    .uart_0_txd(uart_0_txd)
+   // .uart_0_rxd(uart_0_rxd),
+   // .uart_0_txd(uart_0_txd)
 );
 
 endmodule
