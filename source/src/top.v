@@ -52,8 +52,8 @@ output [3:0]    rgmii_td,
 output          rgmii_tx_ctl,
 output          rgmii_txc,
 */
-//input           uart_0_rxd,
-//output          uart_0_txd,
+input           uart_0_rxd,
+output          uart_0_txd,
 
 // user led in the network board
 
@@ -249,7 +249,7 @@ tlk2711 tlk2711b_inst (
     .i_rklsb(tlk2711b_rklsb),
     .i_rxd(tlk2711b_rxd)
 );
-assign tlk2711a_gtx_clk = clk_80;
+assign tlk2711b_gtx_clk = clk_80;
 
 // ------------------------ TLK2711-A --------------------------
 wire        tlk2711a_start;
@@ -440,10 +440,10 @@ mpsoc mpsoc_inst (
 
     .tlk2711_los(tlk2711_loss_irq),
     .tlk2711_rx_irq(tlk2711_rx_irq),
-    .tlk2711_tx_irq(tlk2711_tx_irq)
+    .tlk2711_tx_irq(tlk2711_tx_irq),
     
-   // .uart_0_rxd(uart_0_rxd),
-   // .uart_0_txd(uart_0_txd)
+    .uart_0_rxd(uart_0_rxd),
+    .uart_0_txd(uart_0_txd)
 );
 
 endmodule
