@@ -48,8 +48,9 @@ module  tlk2711_tx_data
 );
    
     localparam NORM_MODE = 4'd0;
-    localparam LOOPBACK_MODE = 4'd1;
+    localparam LOOPBACK_MODE = 4'd1; // Internal chip loopback test
     localparam KCODE_MODE = 4'd2;
+    localparam TEST_MODE = 4'd3; // chip to chip test
  
     //sync code
     localparam K28_5 = 8'hBC;
@@ -71,6 +72,12 @@ module  tlk2711_tx_data
     localparam TX_IND = 8'h81;
     //file end sign
     localparam FILE_END = 8'h01;
+
+    // FSM for testing 
+    localparam COMMA1_s = 2'd0;
+    localparam COMMA2_s = 2'd1;
+    localparam SOF_s = 2'd2;
+    localparam DATA_s = 2'd3;
 
     reg       [3:0]           tx_state;
     localparam                tx_idle = 4'd0;
@@ -164,6 +171,12 @@ module  tlk2711_tx_data
                 o_2711_lckrefn <= 'b1;
                 o_2711_enable  <= 'b1;
             end 
+            else if (tx_mode == TEST_MODE)
+            begin
+                o_2711_loopen  <= 'b0;
+                o_2711_lckrefn <= 'b1;
+                o_2711_enable  <= 'b1;
+            end
             else 
             begin
                 o_2711_loopen  <= 'b0;
@@ -202,7 +215,9 @@ module  tlk2711_tx_data
             backward_cnt <= backward_cnt + 1;      
     end
     
-    reg tail_frame;
+    reg         tail_frame;
+    reg [2:0]   state_cnt;
+    reg [4:0]   test_data_cnt;
     
     always@(posedge clk)
     begin
@@ -214,14 +229,46 @@ module  tlk2711_tx_data
             o_2711_txd   <= 'd0;
             tail_frame   <= 'b0;
             o_tx_interrupt <= 'b0;
+            state_cnt <= 'h0;
+            test_data_cnt <= 'h0;
         end 
         else 
         begin
-            if (tx_mode == LOOPBACK_MODE)
+            if (tx_mode == LOOPBACK_MODE || tx_mode == TEST_MODE)
             begin
-                o_2711_tkmsb <= 'b1;
-                o_2711_tklsb <= 'b1;
-                o_2711_txd   <= o_2711_txd + 1;
+                //o_2711_tkmsb <= 'b1;
+                //o_2711_tklsb <= 'b1;
+                case(state_cnt)
+                COMMA1_s: begin // send K-code to sync the link
+                    o_2711_tkmsb <= 'b0;
+                    o_2711_tklsb <= 'b1;
+                    o_2711_txd <= {K28_5, D5_6};
+                    state_cnt <= state_cnt + 1'd1;
+                    test_data_cnt <= 'h0;
+                end
+
+                COMMA2_s: begin
+                    o_2711_tkmsb <= 'b0;
+                    o_2711_tklsb <= 'b1;
+                    o_2711_txd <= {K28_5, D5_6};
+                    state_cnt <= state_cnt + 1'd1;
+                end
+                SOF_s: begin
+                    o_2711_tkmsb <= 'b0;
+                    o_2711_tklsb <= 'b1;
+                    o_2711_txd <= {K28_5, D11_5};
+                    state_cnt <= state_cnt + 1'd1;
+                end
+                DATA_s: begin
+                    o_2711_tkmsb <= 'b0;
+                    o_2711_tklsb <= 'b1;
+                    o_2711_txd <= {2{3'h0, test_data_cnt}};
+                    o_2711_tkmsb <= 'b0;
+                    o_2711_tklsb <= 'b0;
+                    if (&test_data_cnt) test_data_cnt <= 'h0;
+                end
+                default: test_data_cnt <= 'h0;
+                endcase
             end
             else if (tx_mode == KCODE_MODE)
             begin
