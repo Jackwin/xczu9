@@ -101,9 +101,9 @@ module  tlk2711_tx_data
     end
     
     assign fifo_wren = i_dma_rd_valid & o_dma_rd_ready & fifo_enable;
-    assign fifo_rden = tx_state == tx_vld_data;
+    assign fifo_rden = (tx_state == tx_vld_data | tx_state == tx_frame_tail); //cmd request 872B and only transfer 870B, the last data will be ignored
     
-    fifo_fwft_16_2048 fifo_fwft_tx (
+    fifo_fwft_64_512 fifo_fwft_tx (
         .clk(clk),
         .srst(rst | i_soft_reset),
         .din(i_dma_rd_data),
@@ -113,22 +113,6 @@ module  tlk2711_tx_data
         .full(fifo_full),
         .empty()
     );
-
-//    fifo_async_fwft #(
-//        .WR_DEPTH(2048),
-//        .RD_WIDTH(16),
-//        .WR_WIDTH(16)
-//    ) fifo_async_fwft (
-//        .wr_clk(clk),
-//        .rd_clk(clk),
-//        .rst(rst | i_soft_reset),
-//        .wr_en(fifo_wren),
-//        .din(i_dma_rd_data), 
-//        .rd_en(fifo_rden),
-//        .dout(fifo_rdata),
-//        .empty(),
-//        .full(fifo_full)
-//    );
 
     reg [15:0] frame_cnt = 'd0;
     reg [15:0] valid_dlen = 'd0; 

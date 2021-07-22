@@ -6,8 +6,8 @@
 module tlk2711_tb(
 
     );
-	  reg  [31:0]          tx_base_addr = 'h0000;
-	  reg  [31:0]          rx_base_addr = 'h0100;
+	  reg  [47:0]          tx_base_addr = 'h000000;
+	  reg  [47:0]          rx_base_addr = 'h000100;
 	  
 	  integer              tx_total_packet = 'd1800;
 	  integer              tx_packet_body = 'd870;
@@ -44,7 +44,7 @@ module tlk2711_tb(
     wire [3:0]   m_axi_aruser ;
     wire         m_axi_arvalid;
     reg          m_axi_arready = 1'b1;
-    reg [15:0]   m_axi_rdata = 16'd1;
+    reg [63:0]   m_axi_rdata = 16'd1;
     reg [1:0]    m_axi_rresp = 2'b00;
     wire         m_axi_rlast;
     wire         m_axi_rvalid;
@@ -59,7 +59,7 @@ module tlk2711_tb(
     wire [3:0]   m_axi_awuser ;
     wire         m_axi_awvalid;
     reg          m_axi_awready = 1'b1;
-    wire [15:0]  m_axi_wdata;
+    wire [63:0]  m_axi_wdata;
     wire [7:0]   m_axi_wstrb;
     wire         m_axi_wlast;
     wire         m_axi_wvalid;
@@ -210,10 +210,10 @@ module tlk2711_tb(
     assign i_2711_rxd   = o_2711_txd;
     
     tlk2711_top #(    
-       .ADDR_WIDTH(32),
-	     .RDATA_WIDTH(16), 
-	     .WDATA_WIDTH(16), 
-	     .WBYTE_WIDTH(2),   
+       .ADDR_WIDTH(48),
+	     .RDATA_WIDTH(64), 
+	     .WDATA_WIDTH(64), 
+	     .WBYTE_WIDTH(8),   
        .DLEN_WIDTH(16)
     ) tlk2711_top (
         .clk(clk),
