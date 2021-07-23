@@ -54,7 +54,8 @@ module  tlk2711_tx_data
  
     //sync code
     localparam K28_5 = 8'hBC;
-    localparam D5_6  = 8'hC5; 
+    localparam D5_6  = 8'hC5;
+    localparam D11_5 = 8'b1010_1011; //101_01011 
     //frame start
     localparam K27_7 = 8'hFB; 
     localparam K28_2 = 8'h5C;

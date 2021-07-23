@@ -1,8 +1,8 @@
 vlib work 
 vmap work work 
 
-vlog -incr +acc ../src_code/*.v
-vlog -incr +acc ../ip/*/*_sim_netlist.v
+vlog -incr +acc ../..//src/tlk2711/*.v
+vlog -incr +acc ../../ip/*/*_sim_netlist.v
 
 vlog ./glbl.v 
 vlog ./tlk2711_tb.v 
