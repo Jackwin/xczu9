@@ -74,12 +74,19 @@ module  tlk2711_tx_cmd
         begin
             rd_cmd_req <= i_dma_rd_last & tx_frame_cnt != i_tx_body_num;
             packet_body_align8[15:3] <= i_tx_packet_body[15:3] + |i_tx_packet_body[2:0];
+            
             packet_body_align8[2:0]  <= 'd0;
             packet_tail_align8[15:3] <= i_tx_packet_tail[15:3] + |i_tx_packet_tail[2:0];
+            
             packet_tail_align8[2:0]  <= 'd0;
 
             if (rd_cmd_req | i_tx_start)
-                o_rd_cmd_req <= 'b1;    
+                o_rd_cmd_req <= 'b1;
+                // TODO check the log in the sim
+                $display(“%t: tx body length is %d”, $time, i_tx_packet_body);
+                $display(“%t: tx tail len is %d”, $time, i_tx_packet_tail);
+                $display(“%t: tx body number is %d”, $time, i_tx_body_num);
+
             else if (i_rd_cmd_ack)  
                 o_rd_cmd_req <= 'b0;
 
