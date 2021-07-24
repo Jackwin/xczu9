@@ -1,4 +1,4 @@
-`define TLK2711_TEST 1
+//`define TLK2711_TEST 1
 module top (
 
 input           sys_clk_50,
@@ -103,12 +103,12 @@ wire [1:0]                  m_axi_bresp;
 wire                        m_axi_bvalid;
 wire                        m_axi_bready;
 
-wire                        i_reg_wen;
-wire                        i_reg_ren;
-wire [15:0]                 i_reg_waddr;
-wire [15:0]                 i_reg_raddr;
-wire [63:0]                 i_reg_wdata;
-wire [63:0]                 o_reg_rdata;
+wire                        fpga_reg_wen;
+wire                        fpga_reg_ren;
+wire [15:0]                 fpga_reg_waddr;
+wire [15:0]                 fpga_reg_raddr;
+wire [63:0]                 fpga_reg_wdata;
+wire [63:0]                 fpga_reg_rdata;
 
 wire                        tlk2711_tx_irq;
 wire                        tlk2711_rx_irq;
@@ -146,8 +146,8 @@ assign usr_led = led_cnt[26];
 // --------------------- ethernet phy1 ---------------------------
 reg [15:0]     eth_rst_cnt;
 
-always @(posedge sys_clk_50) begin
-    if (~sys_rstn) begin
+always @(posedge clk_80) begin
+    if (rst_80) begin
         eth_rst_cnt <= 'h0;
     end else if (&eth_rst_cnt != 1'b1) begin
         eth_rst_cnt <= eth_rst_cnt + 1'b1;
@@ -298,12 +298,12 @@ assign tlk2711a_gtx_clk = clk_80;
     ) tlk2711_top (
         .clk(clk_80),
         .rst(rst_80),
-        .i_reg_wen(i_reg_wen),
-        .i_reg_waddr(i_reg_waddr),
-        .i_reg_wdata(i_reg_wdata),    
-        .i_reg_ren(i_reg_ren),
-        .i_reg_raddr(i_reg_raddr),
-        .o_reg_rdata(o_reg_rdata), 
+        .i_reg_wen(fpga_reg_wen),
+        .i_reg_waddr(fpga_reg_waddr),
+        .i_reg_wdata(fpga_reg_wdata),    
+        .i_reg_ren(fpga_reg_ren),
+        .i_reg_raddr(fpga_reg_raddr),
+        .o_reg_rdata(fpga_reg_rdata), 
         //interrupt
         .o_tx_irq(tlk2711_tx_irq),
         .o_rx_irq(tlk2711_rx_irq),
@@ -391,6 +391,16 @@ mpsoc mpsoc_inst (
     .i_clk_375(clk_375),
     .i_lock(locked),
     */
+    // FPGA MGT
+    .dcm_locked(locked),
+    .fpga_mgt_aresetn(rst_80),
+    .fpga_mgt_clk(clk_80),
+    .i_reg_rdata(fpga_reg_rdata),
+    .o_reg_raddr(fpga_reg_raddr),
+    .o_reg_ren(fpga_reg_ren),
+    .o_reg_waddr(fpga_reg_waddr),
+    .o_reg_wdata(fpga_reg_wdata),
+    .o_reg_wen(fpga_reg_wen),
 
     .hp0_clk(clk_80),
 

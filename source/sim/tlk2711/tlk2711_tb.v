@@ -6,16 +6,16 @@
 module tlk2711_tb(
 
     );
-	  reg  [47:0]          tx_base_addr = 'h000000;
-	  reg  [47:0]          rx_base_addr = 'h000100;
+	reg  [47:0]          tx_base_addr = 'h000000;
+	reg  [47:0]          rx_base_addr = 'h000100;
 	  
-	  integer              tx_total_packet = 'd1800;
-	  integer              tx_packet_body = 'd870;
-	  integer              tx_packet_tail = 'd60;
-	  integer              tx_body_num = 'd2;
-	  integer              tx_mode = 'd0; //0--norm mode, 1--loopback mode, 2--kcode mode
+	integer              tx_total_packet = 'd1800; // total packet bytes
+	integer              tx_packet_body = 'd870; 
+	integer              tx_packet_tail = 'd60;
+	integer              tx_body_num = 'd2;
+	integer              tx_mode = 'd0; //0--norm mode, 1--loopback mode, 2--kcode mode
 	  
-	  reg [15:0]  TX_IRQ_REG       = 16'h0100;
+	reg [15:0]  TX_IRQ_REG       = 16'h0100;
     reg [15:0]  RX_IRQ_REG       = 16'h0200;
     reg [15:0]  LOSS_IRQ_REG      = 16'h0300;
 

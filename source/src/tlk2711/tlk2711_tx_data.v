@@ -305,7 +305,7 @@ module  tlk2711_tx_data
                         o_2711_txd   <= {D5_6, K28_5};
                         if (i_soft_reset)
                             tx_state <= tx_idle; 
-                        else if (sync_cnt == 'd99999)
+                        else if (sync_cnt == 'd99999) // The sync period is 1ms, and the clock is 100MHz
                             tx_state <= tx_start_frame; 
                     end        
                     tx_start_frame:

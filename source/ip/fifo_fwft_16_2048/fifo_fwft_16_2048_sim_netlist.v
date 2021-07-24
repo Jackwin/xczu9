@@ -1,10 +1,10 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-// Date        : Fri Jul 23 08:27:18 2021
-// Host        : DESKTOP-U077DNU running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode funcsim
-//               E:/workspace/code_repo/xczu9/source/ip/fifo_fwft_16_2048/fifo_fwft_16_2048_sim_netlist.v
+// Date        : Sat Jul 24 12:29:30 2021
+// Host        : DESKTOP-4U66LTL running 64-bit major release  (build 9200)
+// Command     : write_verilog -force -mode funcsim -rename_top fifo_fwft_16_2048 -prefix
+//               fifo_fwft_16_2048_ fifo_fwft_16_2048_sim_netlist.v
 // Design      : fifo_fwft_16_2048
 // Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
 //               or synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -604,7 +604,6 @@ module fifo_fwft_16_2048
         .wr_rst_busy(wr_rst_busy));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_generic_cstr" *) 
 module fifo_fwft_16_2048_blk_mem_gen_generic_cstr
    (dout,
     clk,
@@ -647,7 +646,6 @@ module fifo_fwft_16_2048_blk_mem_gen_generic_cstr
         .tmp_ram_regout_en(tmp_ram_regout_en));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_prim_width" *) 
 module fifo_fwft_16_2048_blk_mem_gen_prim_width
    (dout,
     clk,
@@ -690,7 +688,6 @@ module fifo_fwft_16_2048_blk_mem_gen_prim_width
         .tmp_ram_regout_en(tmp_ram_regout_en));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_prim_wrapper" *) 
 module fifo_fwft_16_2048_blk_mem_gen_prim_wrapper
    (dout,
     clk,
@@ -977,7 +974,6 @@ module fifo_fwft_16_2048_blk_mem_gen_prim_wrapper
         .WEBWE({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,\DEVICE_8SERIES.NO_BMM_INFO.SDP.WIDE_PRIM36_NO_ECC_SP.ram_0 ,\DEVICE_8SERIES.NO_BMM_INFO.SDP.WIDE_PRIM36_NO_ECC_SP.ram_0 }));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_top" *) 
 module fifo_fwft_16_2048_blk_mem_gen_top
    (dout,
     clk,
@@ -1020,7 +1016,6 @@ module fifo_fwft_16_2048_blk_mem_gen_top
         .tmp_ram_regout_en(tmp_ram_regout_en));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_v8_4_2" *) 
 module fifo_fwft_16_2048_blk_mem_gen_v8_4_2
    (dout,
     clk,
@@ -1063,7 +1058,6 @@ module fifo_fwft_16_2048_blk_mem_gen_v8_4_2
         .tmp_ram_regout_en(tmp_ram_regout_en));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_v8_4_2_synth" *) 
 module fifo_fwft_16_2048_blk_mem_gen_v8_4_2_synth
    (dout,
     clk,
@@ -1106,7 +1100,6 @@ module fifo_fwft_16_2048_blk_mem_gen_v8_4_2_synth
         .tmp_ram_regout_en(tmp_ram_regout_en));
 endmodule
 
-(* ORIG_REF_NAME = "bram_fifo_rstlogic" *) 
 module fifo_fwft_16_2048_bram_fifo_rstlogic
    (wr_rst_reg_reg_0,
     srst_full_ff_i,
@@ -1215,7 +1208,6 @@ module fifo_fwft_16_2048_bram_fifo_rstlogic
         .R(1'b0));
 endmodule
 
-(* ORIG_REF_NAME = "compare" *) 
 module fifo_fwft_16_2048_compare
    (comp0,
     \gmux.gm[1].gms.ms_0 ,
@@ -1402,7 +1394,6 @@ module fifo_fwft_16_2048_compare__parameterized0_0
         .O(ram_full_comb));
 endmodule
 
-(* ORIG_REF_NAME = "fifo_generator_ramfifo" *) 
 module fifo_fwft_16_2048_fifo_generator_ramfifo
    (dout,
     empty,
@@ -1499,7 +1490,6 @@ module fifo_fwft_16_2048_fifo_generator_ramfifo
         .wr_rst_reg_reg(wr_rst_reg_reg));
 endmodule
 
-(* ORIG_REF_NAME = "fifo_generator_top" *) 
 module fifo_fwft_16_2048_fifo_generator_top
    (dout,
     empty,
@@ -1609,7 +1599,7 @@ endmodule
 (* C_WR_DEPTH_WRCH = "16" *) (* C_WR_FREQ = "1" *) (* C_WR_PNTR_WIDTH = "11" *) 
 (* C_WR_PNTR_WIDTH_AXIS = "10" *) (* C_WR_PNTR_WIDTH_RACH = "4" *) (* C_WR_PNTR_WIDTH_RDCH = "10" *) 
 (* C_WR_PNTR_WIDTH_WACH = "4" *) (* C_WR_PNTR_WIDTH_WDCH = "10" *) (* C_WR_PNTR_WIDTH_WRCH = "4" *) 
-(* C_WR_RESPONSE_LATENCY = "1" *) (* ORIG_REF_NAME = "fifo_generator_v13_2_3" *) 
+(* C_WR_RESPONSE_LATENCY = "1" *) 
 module fifo_fwft_16_2048_fifo_generator_v13_2_3
    (backup,
     backup_marker,
@@ -2630,7 +2620,6 @@ module fifo_fwft_16_2048_fifo_generator_v13_2_3
         .wr_rst_reg_reg(wr_rst_busy));
 endmodule
 
-(* ORIG_REF_NAME = "fifo_generator_v13_2_3_synth" *) 
 module fifo_fwft_16_2048_fifo_generator_v13_2_3_synth
    (dout,
     empty,
@@ -2673,7 +2662,6 @@ module fifo_fwft_16_2048_fifo_generator_v13_2_3_synth
         .wr_rst_reg_reg(wr_rst_reg_reg));
 endmodule
 
-(* ORIG_REF_NAME = "memory" *) 
 module fifo_fwft_16_2048_memory
    (dout,
     clk,
@@ -2716,7 +2704,6 @@ module fifo_fwft_16_2048_memory
         .tmp_ram_regout_en(tmp_ram_regout_en));
 endmodule
 
-(* ORIG_REF_NAME = "rd_bin_cntr" *) 
 module fifo_fwft_16_2048_rd_bin_cntr
    (Q,
     v1_reg,
@@ -3121,7 +3108,6 @@ module fifo_fwft_16_2048_rd_bin_cntr
         .O(v1_reg_0[3]));
 endmodule
 
-(* ORIG_REF_NAME = "rd_fwft" *) 
 module fifo_fwft_16_2048_rd_fwft
    (empty,
     tmp_ram_regout_en,
@@ -3323,7 +3309,6 @@ module fifo_fwft_16_2048_rd_fwft
         .R(srst_full_ff_i));
 endmodule
 
-(* ORIG_REF_NAME = "rd_logic" *) 
 module fifo_fwft_16_2048_rd_logic
    (empty,
     tmp_ram_regout_en,
@@ -3428,7 +3413,6 @@ module fifo_fwft_16_2048_rd_logic
         .v1_reg_1(\c2/v1_reg ));
 endmodule
 
-(* ORIG_REF_NAME = "rd_status_flags_ss" *) 
 module fifo_fwft_16_2048_rd_status_flags_ss
    (out,
     \gmux.gm[1].gms.ms ,
@@ -3511,7 +3495,6 @@ module fifo_fwft_16_2048_rd_status_flags_ss
         .S(srst_full_ff_i));
 endmodule
 
-(* ORIG_REF_NAME = "reset_blk_ramfifo" *) 
 module fifo_fwft_16_2048_reset_blk_ramfifo
    (wr_rst_reg_reg,
     srst_full_ff_i,
@@ -3534,7 +3517,6 @@ module fifo_fwft_16_2048_reset_blk_ramfifo
         .wr_rst_reg_reg_0(wr_rst_reg_reg));
 endmodule
 
-(* ORIG_REF_NAME = "wr_bin_cntr" *) 
 module fifo_fwft_16_2048_wr_bin_cntr
    (going_empty1__0,
     Q,
@@ -3908,7 +3890,6 @@ module fifo_fwft_16_2048_wr_bin_cntr
         .O(going_empty1__0));
 endmodule
 
-(* ORIG_REF_NAME = "wr_logic" *) 
 module fifo_fwft_16_2048_wr_logic
    (full,
     going_empty1__0,
@@ -3989,7 +3970,6 @@ module fifo_fwft_16_2048_wr_logic
         .wr_en(wr_en));
 endmodule
 
-(* ORIG_REF_NAME = "wr_status_flags_ss" *) 
 module fifo_fwft_16_2048_wr_status_flags_ss
    (out,
     full,
