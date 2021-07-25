@@ -157,9 +157,9 @@ module  tlk2711_tx_data
         begin
             if (i_soft_reset)
                 tx_mode <= 'd0; 
-            else if (i_tx_start)
+            else if (i_tx_start)                          
                 tx_mode <= i_tx_mode; 
-
+            // TODO Add stop control signal to switch to IDLE
             if (tx_mode == LOOPBACK_MODE)
             begin
                 o_2711_loopen  <= 'b1;
@@ -408,6 +408,28 @@ module  tlk2711_tx_data
             end    
         end
     end
-    
- 
+// debug
+
+tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
+    .clk(),
+
+
+    .probe0(i_tx_mode),
+    .probe1(i_soft_reset),
+    .probe2(i_tx_start),
+    .probe3(tx_state),
+    .probe4(state_cnt),
+    .probe5(test_data_cnt),
+    .probe6(o_2711_txd),
+    .probe7(),
+    .probe8(),
+    .probe9(),
+    .probe10(),
+    .probe11(),
+    .probe12(),
+    .probe13(),
+    .probe14(),
+    .probe15()
+);
+
 endmodule
