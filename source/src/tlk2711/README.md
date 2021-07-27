@@ -19,3 +19,12 @@
 cd sim/tlk2711
 do sim.do
 ```
+## Debug tlk2711
+
+1. i_reg_waddr <= 16'h0108; i_reg_wdata <= 0x8_0000_0000;
+2. i_reg_waddr <= 16'h0208; i_reg_wdata <= 0xh8_0010_0000;
+3. i_reg_waddr <= 16'h0110; i_reg_wdata <= d1800;
+4. i_reg_waddr <= 16'h0118; i_reg_wdata[63:32] <= d870; i_reg_wdata[31:0]  <= d60;
+5. i_reg_waddr <= 16'h0120; i_reg_wdata[63:32] <= d2; i_reg_wdata[31:0]  <= 0;
+6. i_reg_wen <= 'd1; i_reg_waddr <= 16'h0100; //tx_start
+7. i_reg_wen <= 'd1; i_reg_waddr <= 16'h0200; //rx_start

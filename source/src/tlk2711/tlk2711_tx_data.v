@@ -408,12 +408,11 @@ module  tlk2711_tx_data
             end    
         end
     end
-// debug
+
+// TODO  debug the port
 
 tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
-    .clk(),
-
-
+    .clk(clk),
     .probe0(i_tx_mode),
     .probe1(i_soft_reset),
     .probe2(i_tx_start),
@@ -421,15 +420,19 @@ tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
     .probe4(state_cnt),
     .probe5(test_data_cnt),
     .probe6(o_2711_txd),
-    .probe7(),
-    .probe8(),
-    .probe9(),
-    .probe10(),
-    .probe11(),
-    .probe12(),
-    .probe13(),
-    .probe14(),
-    .probe15()
+    .probe7(o_2711_tkmsb),
+    .probe8(o_2711_tklsb),
+    .probe9(o_tx_interrupt),
+    .probe10(sync_cnt),
+    .probe11(head_cnt),
+    .probe12(vld_data_cnt),
+    .probe13(backward_cnt),
+    .probe14(o_2711_enable),
+    .probe15(o_2711_loopen),
+    .probe16(i_tx_packet_body),
+    .probe17(i_tx_packet_tail),
+    .probe18(i_tx_body_num)
 );
+
 
 endmodule

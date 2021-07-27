@@ -107,8 +107,8 @@ wire                        fpga_reg_wen;
 wire                        fpga_reg_ren;
 wire [15:0]                 fpga_reg_waddr;
 wire [15:0]                 fpga_reg_raddr;
-wire [63:0]                 fpga_reg_wdata;
-wire [63:0]                 fpga_reg_rdata;
+wire [HP0_DATA_WIDTH-1:0]   fpga_reg_wdata;
+wire [HP0_DATA_WIDTH-1:0]   fpga_reg_rdata;
 
 wire                        tlk2711_tx_irq;
 wire                        tlk2711_rx_irq;
@@ -289,21 +289,46 @@ assign tlk2711a_gtx_clk = clk_80;
 `else
 
 // -----------------------
+    wire                        fpga_reg_wen_vio;
+    wire [15:0]                 fpga_reg_waddr_vio;
+    wire [HP0_DATA_WIDTH-1:0]   fpga_reg_wdata_vio;
+    wire                        fpga_reg_ren_vio;           
+    wire [15:0]                 fpga_reg_raddr_vio;
+    wire [HP0_DATA_WIDTH-1:0]   fpga_reg_rdata_vio;
+
+    vio_tlk2711_reg vio_tlk2711b_reg_i (
+        .clk(clk_80),                
+        .probe_out0(fpga_reg_wen_vio),
+        .probe_out1(fpga_reg_waddr_vio),
+        .probe_out2(fpga_reg_wdata_vio),
+        .probe_out3(fpga_reg_ren_vio),
+        .probe_out4(fpga_reg_raddr_vio),
+
+        .probe_in0(fpga_reg_rdata_vio)
+);
     tlk2711_top #(    
         .ADDR_WIDTH(DDR_ADDR_WIDTH),
-	    .RDATA_WIDTH(16), //HP0_DATA_WIDTH
-	    .WDATA_WIDTH(16), // HP0_DATA_WIDTH
-	    .WBYTE_WIDTH(2),  // HP0_DATA_WIDTH/8
+	    .RDATA_WIDTH(HP0_DATA_WIDTH), //HP0_DATA_WIDTH
+	    .WDATA_WIDTH(HP0_DATA_WIDTH), // HP0_DATA_WIDTH
+	    .WBYTE_WIDTH(HP0_DATA_WIDTH/8),  // HP0_DATA_WIDTH/8
         .DLEN_WIDTH(16)
     ) tlk2711_top (
         .clk(clk_80),
         .rst(rst_80),
-        .i_reg_wen(fpga_reg_wen),
-        .i_reg_waddr(fpga_reg_waddr),
-        .i_reg_wdata(fpga_reg_wdata),    
-        .i_reg_ren(fpga_reg_ren),
-        .i_reg_raddr(fpga_reg_raddr),
-        .o_reg_rdata(fpga_reg_rdata), 
+
+        .i_reg_wen(fpga_reg_wen_vio),
+        .i_reg_waddr(fpga_reg_waddr_vio),
+        .i_reg_wdata(fpga_reg_wdata_vio),    
+        .i_reg_ren(fpga_reg_ren_vio),
+        .i_reg_raddr(fpga_reg_raddr_vio),
+        .o_reg_rdata(fpga_reg_rdata_vio),
+        
+        // .i_reg_wen(fpga_reg_wen),
+        // .i_reg_waddr(fpga_reg_waddr),
+        // .i_reg_wdata(fpga_reg_wdata),    
+        // .i_reg_ren(fpga_reg_ren),
+        // .i_reg_raddr(fpga_reg_raddr),
+        // .o_reg_rdata(fpga_reg_rdata), 
         //interrupt
         .o_tx_irq(tlk2711_tx_irq),
         .o_rx_irq(tlk2711_rx_irq),
