@@ -24,35 +24,35 @@ module  tlk2711_rx_link
     parameter WBYTE_WIDTH = 8
 )
 (
-    input                      clk,
-    input                      rst,
-    input                      i_soft_rst,
-    
-    //dma cmd interface
-    input                      i_wr_cmd_ack,
-    output reg                 o_wr_cmd_req,
-    output [ADDR_WIDTH+DLEN_WIDTH-1:0] o_wr_cmd_data, //high for saddr, low for byte len
+    input                               clk,
+    input                               rst,
+    input                               i_soft_rst,
 
-    input                      i_rx_start,
-    input  [ADDR_WIDTH-1:0]    i_rx_base_addr,
+    //dma cmd interface         
+    input                               i_wr_cmd_ack,
+    output reg                          o_wr_cmd_req,
+    output [ADDR_WIDTH+DLEN_WIDTH-1:0]  o_wr_cmd_data, //high for saddr, low for byte len
 
-    input                      i_dma_wr_ready,
-    input                      i_wr_finish,
-    output                     o_dma_wr_valid,
-    output [WBYTE_WIDTH-1:0]   o_dma_wr_keep,
-    output [DATA_WIDTH-1:0]    o_dma_wr_data,
+    input                               i_rx_start,
+    input  [ADDR_WIDTH-1:0]             i_rx_base_addr,
 
-    output                     o_rx_interrupt,
-    output reg [31:0]          o_rx_total_packet, //total packet len in byte
-    output reg [15:0]          o_rx_packet_tail, //tail length in byte
-    output [15:0]              o_rx_body_num,
+    input                               i_dma_wr_ready,
+    input                               i_wr_finish,
+    output                              o_dma_wr_valid,
+    output [WBYTE_WIDTH-1:0]            o_dma_wr_keep,
+    output [DATA_WIDTH-1:0]             o_dma_wr_data,
 
-    input                      i_2711_rkmsb,
-    input                      i_2711_rklsb,
-    input  [15:0]              i_2711_rxd,
-    output reg                 o_loss_interrupt,
-    output reg                 o_sync_loss,
-    output reg                 o_link_loss
+    output                              o_rx_interrupt,
+    output reg [31:0]                   o_rx_total_packet, //total packet len in byte
+    output reg [15:0]                   o_rx_packet_tail, //tail length in byte
+    output [15:0]                       o_rx_body_num,
+
+    input                               i_2711_rkmsb,
+    input                               i_2711_rklsb,
+    input  [15:0]                       i_2711_rxd,
+    output reg                          o_loss_interrupt,
+    output reg                          o_sync_loss,
+    output reg                          o_link_loss
 );
     
     //frame start
@@ -71,6 +71,7 @@ module  tlk2711_rx_link
     assign o_wr_cmd_data = {wr_addr, wr_bbt};
 
     reg frame_start, frame_end, frame_valid;
+    // TODO modify the bit length to adapt to the 5120 pixels
     reg [9:0] frame_data_cnt, valid_data_num, trans_data_num;
 
     always@(posedge clk)
@@ -237,7 +238,29 @@ module  tlk2711_rx_link
                 o_loss_interrupt <= 'b1;
         end
     end    
- 
+
+// TODO debug rx
+ ila_tlk2711_rx ila_tlk2711_rx_i(
+    .clk(clk),
+    .probe0(i_2711_rkmsb),
+    .probe1(i_2711_rklsb),
+    .probe2(i_2711_rxd),
+    .probe3(o_loss_interrupt),
+    .probe4(i_rx_start),
+    .probe5(i_rx_base_addr),
+    .probe6(frame_start),
+    .probe7(frame_data_cnt),
+    .probe8(rx_frame_cnt),
+    .probe9(i_wr_cmd_ack),
+    .probe10(o_rx_interrupt),
+    .probe11(o_rx_total_packet),
+    .probe12(o_rx_packet_tail),
+    .probe13(o_rx_body_num),
+    .probe14(fifo_wren),
+    .probe15(wr_bbt)
+    
+);
+
 endmodule 
          
          
