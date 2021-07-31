@@ -28,3 +28,16 @@ do sim.do
 5. i_reg_waddr <= 16'h0120; i_reg_wdata[63:32] <= d2; i_reg_wdata[31:0]  <= 0;
 6. i_reg_wen <= 'd1; i_reg_waddr <= 16'h0100; //tx_start
 7. i_reg_wen <= 'd1; i_reg_waddr <= 16'h0200; //rx_start
+
+### Loopback Test
+    localparam NORM_MODE = 4'd0;
+    localparam LOOPBACK_MODE = 4'd1; // Internal chip loopback test
+    localparam KCODE_MODE = 4'd2;
+    localparam TEST_MODE = 4'd3; // chip to chip test
+- i_reg_waddr <= 16'h0120; i_reg_wdata[63:0] <= 1
+- reg_waddr == 16'h0100; i_reg_wen will trigger the test start
+- reg_waddr == 16'h0000 i_reg_wen will trigger the test start
+### KCODE test
+- i_reg_waddr <= 16'h0120; i_reg_wdata[63:0] <= 2
+- reg_waddr == 16'h0100; i_reg_wen will trigger the test start
+- reg_waddr == 16'h0000 i_reg_wen will stop the test start

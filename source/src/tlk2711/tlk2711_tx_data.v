@@ -239,6 +239,7 @@ module  tlk2711_tx_data
             begin
                 //o_2711_tkmsb <= 'b1;
                 //o_2711_tklsb <= 'b1;
+                if (i_soft_reset) state_cnt <= 'h0;
                 case(state_cnt)
                 COMMA1_s: begin // send K-code to sync the link
                     o_2711_tkmsb <= 'b0;
@@ -267,6 +268,7 @@ module  tlk2711_tx_data
                     o_2711_tkmsb <= 'b0;
                     o_2711_tklsb <= 'b0;
                     if (&test_data_cnt) test_data_cnt <= 'h0;
+                    else test_data_cnt <= test_data_cnt + 'd1;
                 end
                 default: test_data_cnt <= 'h0;
                 endcase

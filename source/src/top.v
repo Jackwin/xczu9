@@ -335,16 +335,16 @@ assign tlk2711a_gtx_clk = clk_80;
         .o_loss_irq(tlk2711_loss_irq),
         //tlk2711 interface
         // TODO rx should use rx_clk
-        .i_2711_rkmsb(tlk2711a_rkmsb),
-        .i_2711_rklsb(tlk2711a_rklsb),
-        .i_2711_rxd(tlk2711a_rxd),
+        .i_2711_rkmsb(tlk2711b_rkmsb),
+        .i_2711_rklsb(tlk2711b_rklsb),
+        .i_2711_rxd(tlk2711b_rxd),
 
-        .o_2711_tkmsb(tlk2711a_tkmsb),
-        .o_2711_tklsb(tlk2711a_tklsb),
-        .o_2711_enable(tlk2711a_enable),
-        .o_2711_loopen(tlk2711a_loopen),
-        .o_2711_lckrefn(tlk2711a_lckrefn),
-        .o_2711_txd(tlk2711a_txd),
+        .o_2711_tkmsb(tlk2711b_tkmsb),
+        .o_2711_tklsb(tlk2711b_tklsb),
+        .o_2711_enable(tlk2711b_enable),
+        .o_2711_loopen(tlk2711b_loopen),
+        .o_2711_lckrefn(tlk2711b_lckrefn),
+        .o_2711_txd(tlk2711b_txd),
 
         .m_axi_arready(m_axi_arready),
         .m_axi_arvalid(m_axi_arvalid),
