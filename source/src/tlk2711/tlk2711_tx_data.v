@@ -132,6 +132,9 @@ module  tlk2711_tx_data
     begin
         if (i_soft_reset)
             frame_cnt <= 'd0;
+        // REVIEW 
+        else if (tx_state == tx_end_frame && frame_cnt == i_tx_body_num)
+            frame_cnt <= 'h0;
         else if (tx_state == tx_end_frame)   
             frame_cnt <= frame_cnt + 1;
 
@@ -243,7 +246,10 @@ module  tlk2711_tx_data
             begin
                 //o_2711_tkmsb <= 'b1;
                 //o_2711_tklsb <= 'b1;
-                if (i_soft_reset) state_cnt <= 'h0;
+                if (i_soft_reset) begin
+                    state_cnt <= 'h0;
+                    test_data_cnt <= 'h0;
+                end
                 case(state_cnt)
                 COMMA1_s: begin // send K-code to sync the link
                     o_2711_tkmsb <= 'b0;
@@ -401,13 +407,13 @@ module  tlk2711_tx_data
                         o_2711_txd   <= {D5_6, K28_5};
                         if (i_soft_reset)
                             tx_state <= tx_idle;
-                        else if (backward_cnt == 'd256)
+                        else if (backward_cnt == 'd255)
                             tx_state <= tail_frame ? tx_idle : tx_start_frame;
                     end        
                 endcase
-                
-                if (tx_state == tx_end_frame && frame_cnt == i_tx_body_num)
+                if (tx_state == tx_end_frame && frame_cnt == i_tx_body_num) begin
                     tail_frame <= 'b1;
+                end
                 else if (o_tx_interrupt)
                     tail_frame <= 'b0;
                 o_tx_interrupt <= (tx_state == tx_backward) & (backward_cnt == 'd256) & tail_frame;

@@ -123,6 +123,7 @@ module reg_mgt
             16'h0120:
             begin
                         o_tx_mode         <= reg_wdata[3:0];  
+                        // REVIEW the tx_body is limited to 65536x870B = 54MB
                         o_tx_body_num     <= reg_wdata[32+15:32];
             end
             //rx
@@ -187,6 +188,28 @@ module reg_mgt
     assign o_rx_irq = i_rx_interrupt;
     assign o_loss_irq = i_loss_interrupt;
     assign o_reg_rdata = rd_reg; 
+// Review
+ila_mgt ila_mgt_i (
+    .clk(clk),
+    .probe0(i_reg_wen),
+    .probe1(i_reg_wdata),
+    .probe2(i_reg_waddr), 
+    .probe3(i_reg_ren),
+    .probe4(o_reg_rdata),
+    .probe5(o_tx_total_packet),
+    .probe6(o_tx_packet_body),
+    .probe7(o_tx_packet_tail),
+    .probe8(o_tx_body_num),
+    .probe9(o_tx_mode),
+    .probe10(o_rx_base_addr),
+    .probe11(i_rx_total_packet),
+    .probe12(i_rx_packet_body),
+    .probe13(i_rx_packet_tail),
+    .probe14(i_rx_body_num),
+    .probe15(i_tx_interrupt),
+    .probe16(o_tx_base_addr)
+
+);
     
 endmodule
 
