@@ -53,6 +53,8 @@ module tlk2711_top
     output              o_2711_enable,
     output              o_2711_loopen,
     output              o_2711_lckrefn,
+    output              o_2711_testen,
+    output              o_2711_prbsen,
     output  [15:0]      o_2711_txd,
 
     //PS interface  
@@ -273,6 +275,8 @@ module tlk2711_top
         .o_2711_enable(o_2711_enable),
         .o_2711_loopen(o_2711_loopen),
         .o_2711_lckrefn(o_2711_lckrefn),
+        .o_2711_testen(o_2711_testen),
+        .o_2711_prbsen(o_2711_prbsen),
         .o_2711_txd(o_2711_txd)
     );
 

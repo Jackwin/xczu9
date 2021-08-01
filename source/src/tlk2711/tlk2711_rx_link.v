@@ -28,6 +28,8 @@ module  tlk2711_rx_link
     input                               rst,
     input                               i_soft_rst,
 
+    input                               i_2711_rx_clk,
+
     //dma cmd interface         
     input                               i_wr_cmd_ack,
     output reg                          o_wr_cmd_req,

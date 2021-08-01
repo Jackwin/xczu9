@@ -216,6 +216,9 @@ ila_emmc ila_emmc_i (
 */
 
 // ------------------------ TLK2711-B --------------------------
+assign tlk2711b_gtx_clk = clk_80;
+assign tlk2711a_gtx_clk = clk_80;
+
 `ifdef TLK2711_TEST 
 wire        tlk2711b_start;
 wire        tlk2711b_stop;
@@ -249,7 +252,7 @@ tlk2711 tlk2711b_inst (
     .i_rklsb(tlk2711b_rklsb),
     .i_rxd(tlk2711b_rxd)
 );
-assign tlk2711b_gtx_clk = clk_80;
+
 
 // ------------------------ TLK2711-A --------------------------
 wire        tlk2711a_start;
@@ -285,7 +288,7 @@ tlk2711 tlk2711a_inst (
     .i_rklsb(tlk2711a_rklsb),
     .i_rxd(tlk2711a_rxd)
 );
-assign tlk2711a_gtx_clk = clk_80;
+
 `else
 
 // -----------------------
@@ -295,6 +298,13 @@ assign tlk2711a_gtx_clk = clk_80;
     wire                        fpga_reg_ren_vio;           
     wire [15:0]                 fpga_reg_raddr_vio;
     wire [HP0_DATA_WIDTH-1:0]   fpga_reg_rdata_vio;
+
+    ila_2711_rx ila_2711_rx_inst (
+	.clk(tlk2711b_rx_clk), // input wire clk
+	.probe0(tlk2711b_rklsb), // input wire [0:0]  probe0  
+	.probe1(tlk2711b_rkmsb), // input wire [0:0]  probe1 
+	.probe2(tlk2711b_rxd) // input wire [15:0]  probe2
+    );
 
     vio_tlk2711_reg vio_tlk2711b_reg_i (
         .clk(clk_80),                
@@ -344,6 +354,8 @@ assign tlk2711a_gtx_clk = clk_80;
         .o_2711_enable(tlk2711b_enable),
         .o_2711_loopen(tlk2711b_loopen),
         .o_2711_lckrefn(tlk2711b_lckrefn),
+        .o_2711_testen(tlk2711b_testen),
+        .o_2711_prbsen(tlk2711b_prbsen),
         .o_2711_txd(tlk2711b_txd),
 
         .m_axi_arready(m_axi_arready),

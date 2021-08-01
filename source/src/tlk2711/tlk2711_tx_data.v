@@ -43,6 +43,8 @@ module  tlk2711_tx_data
     output reg              o_2711_enable,
     output reg              o_2711_loopen,
     output reg              o_2711_lckrefn,
+    output reg              o_2711_testen,
+    output reg              o_2711_prbsen,
     output reg [15:0]       o_2711_txd
    
 );
@@ -153,6 +155,8 @@ module  tlk2711_tx_data
             o_2711_enable  <= 'b0;
             o_2711_loopen  <= 'b0;
             o_2711_lckrefn <= 'b0;
+            o_2711_testen <= 'b0;
+            o_2711_prbsen <= 'b0;
         end else
         begin
             if (i_soft_reset)
@@ -244,7 +248,7 @@ module  tlk2711_tx_data
                 COMMA1_s: begin // send K-code to sync the link
                     o_2711_tkmsb <= 'b0;
                     o_2711_tklsb <= 'b1;
-                    o_2711_txd <= {K28_5, D5_6};
+                    o_2711_txd <= {D5_6, K28_5};
                     state_cnt <= state_cnt + 1'd1;
                     test_data_cnt <= 'h0;
                 end
@@ -252,13 +256,13 @@ module  tlk2711_tx_data
                 COMMA2_s: begin
                     o_2711_tkmsb <= 'b0;
                     o_2711_tklsb <= 'b1;
-                    o_2711_txd <= {K28_5, D5_6};
+                    o_2711_txd <= {D5_6, K28_5};
                     state_cnt <= state_cnt + 1'd1;
                 end
                 SOF_s: begin
-                    o_2711_tkmsb <= 'b0;
+                    o_2711_tkmsb <= 'b1;
                     o_2711_tklsb <= 'b1;
-                    o_2711_txd <= {K28_5, D11_5};
+                    o_2711_txd <= {K28_2, K27_7};
                     state_cnt <= state_cnt + 1'd1;
                 end
                 DATA_s: begin
@@ -277,7 +281,7 @@ module  tlk2711_tx_data
             begin
                 o_2711_tkmsb <= 'b1;
                 o_2711_tklsb <= 'b1;
-                o_2711_txd   <= {D5_6, K28_5};
+                o_2711_txd   <= {K28_2, K27_7};
             end 
             else
             begin
