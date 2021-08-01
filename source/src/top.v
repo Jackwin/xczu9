@@ -178,6 +178,8 @@ wire [7:0]      user_s2mm_sts_tdata;
 wire            user_s2mm_sts_tkeep;
 wire            user_s2mm_sts_tlast;
 
+wire            gpio;
+
 clk_wiz_0 clk_wiz_inst (
     .clk_in1(sys_clk_50),
     .reset(~sys_rstn), 
@@ -589,7 +591,7 @@ mpsoc mpsoc_inst (
     .hp2_wready(hp2_wready),
     .hp2_wstrb(hp2_wstrb),
     .hp2_wvalid(hp2_wvalid),
-
+    .gpio_tri_o(gpio),
     
     .uart_0_rxd(uart_0_rxd),
     .uart_0_txd(uart_0_txd)
@@ -696,6 +698,14 @@ reg             dm_start_vio_p;
 wire [8:0]      dm_length_vio;
 wire [31:0]     dm_start_addr_vio;
 
+reg             dm_start_led1;
+reg             gpio_r0;
+
+always @(posedge clk_80) begin
+    gpio_r0 <= gpio;
+    dm_start_gpio <= ~gpio_r0 & gpio;
+end
+
 vio_datamover vio_datamover_inst (
   .clk(clk_80),                // input wire clk
   .probe_out0(dm_start_vio),  // output wire [0 : 0] probe_out0
@@ -703,7 +713,7 @@ vio_datamover vio_datamover_inst (
   .probe_out2(dm_start_addr_vio)  // output wire [31 : 0] probe_out2
 );
 
-assign dm_start = dm_start_vio | led1_r0;
+assign dm_start = dm_start_vio | dm_start_gpio;
 
 always @(posedge clk_80) begin
     dm_start_vio_r0 <= dm_start_vio;
@@ -715,7 +725,7 @@ always @(posedge clk_80) begin
         dm_length <= 'h0;
         dm_start_addr <= 'h0;
     end else begin
-        if (dm_start_led1) begin
+        if (dm_start_gpio) begin
             dm_length <= 9'h080;
             dm_start_addr <= 32'h3000_0000;
         end else if (dm_start_vio_p) begin
