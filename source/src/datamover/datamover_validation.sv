@@ -1,56 +1,57 @@
 `timescale 1ns/1ps
 
-module datamover_validation (
-    input                   clk,
-    input                   rst,
+module datamover_validation # (
+    parameter DDR_ADDR_WIDTH = 48
+    )(
+    input                               clk,
+    input                               rst,
 
-    input                   i_start,
-    input [8:0]             i_length,
-    input [31:0]            i_start_addr,
-
-
-    input                   i_s2mm_wr_cmd_tready,
-    output logic [71:0]     o_s2mm_wr_cmd_tdata,
-    output logic            o_s2mm_wr_cmd_tvalid,
-
-    output logic [63:0]     o_s2mm_wr_tdata,
-    output logic [7:0]      o_s2mm_wr_tkeep,
-    output logic            o_s2mm_wr_tvalid,
-    output logic            o_s2mm_wr_tlast,
-    input  logic            i_s2mm_wr_tready,
-
-    input  logic [7:0]      s2mm_sts_tdata,
-    input  logic            s2mm_sts_tvalid,
-    input  logic            s2mm_sts_tkeep,
-    input  logic            s2mm_sts_tlast,
+    input                               i_start,
+    input [8:0]                         i_length,
+    input [DDR_ADDR_WIDTH-1:0]          i_start_addr,
 
 
-    input                   i_mm2s_rd_cmd_tready,
-    output logic [71:0]     o_mm2s_rd_cmd_tdata,
-    output logic            o_mm2s_rd_cmd_tvalid,
+    input                               i_s2mm_wr_cmd_tready,
+    output logic [39+DDR_ADDR_WIDTH:0]  o_s2mm_wr_cmd_tdata,
+    output logic                        o_s2mm_wr_cmd_tvalid,
 
-    input [63:0]            i_mm2s_rd_tdata,
-    input [7:0]             i_mms2_rd_tkeep,
-    input                   i_mm2s_rd_tvalid,
-    input                   i_mm2s_rd_tlast,
-    output                  o_mm2s_rd_tready
+    output logic [63:0]                 o_s2mm_wr_tdata,
+    output logic [7:0]                  o_s2mm_wr_tkeep,
+    output logic                        o_s2mm_wr_tvalid,
+    output logic                        o_s2mm_wr_tlast,
+    input  logic                        i_s2mm_wr_tready,
+
+    input  logic [7:0]                  s2mm_sts_tdata,
+    input  logic                        s2mm_sts_tvalid,
+    input  logic                        s2mm_sts_tkeep,
+    input  logic                        s2mm_sts_tlast,
+
+    input                               i_mm2s_rd_cmd_tready,
+    output logic [39+DDR_ADDR_WIDTH:0]  o_mm2s_rd_cmd_tdata,
+    output logic                        o_mm2s_rd_cmd_tvalid,
+
+    input [63:0]                        i_mm2s_rd_tdata,
+    input [7:0]                         i_mms2_rd_tkeep,
+    input                               i_mm2s_rd_tvalid,
+    input                               i_mm2s_rd_tlast,
+    output                              o_mm2s_rd_tready
 );
 
 localparam   WR_EOF_VAL = 4'b1010;
 
-logic           vio_wr_start;
-logic           start_r;
-logic           start_p;
-logic           wr_start;
+logic                       vio_wr_start;
+logic                       start_r;
+logic                       start_p;
+logic                       wr_start;
 
-logic [31:0]    s2mm_wr_saddr;
-logic [8:0]     s2mm_wr_length;
-logic [3:0]     s2mm_wr_eof;
+logic [DDR_ADDR_WIDTH-1:0]  s2mm_wr_saddr;
+logic [8:0]                 s2mm_wr_length;
+logic [3:0]                 s2mm_wr_eof;
 
-logic [63:0]    gen_data;
-logic           gen_valid;
-logic           gen_last;
-logic [7:0]     gen_keep;
+logic [63:0]                gen_data;
+logic                       gen_valid;
+logic                       gen_last;
+logic [7:0]                 gen_keep;
 
 assign o_mm2s_rd_tready = 1;
 

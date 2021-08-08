@@ -61,7 +61,7 @@ output          usr_led
 
 );
 
-parameter DDR_ADDR_WIDTH = 40;
+parameter DDR_ADDR_WIDTH = 48;
 parameter HP0_DATA_WIDTH = 64;
 
 wire    clk_80;
@@ -127,7 +127,7 @@ wire [1:0]      hp2_rresp;
 wire            hp2_rvalid;
 wire            hp2_rready;
  
-wire [31:0]     hp2_araddr;
+wire [DDR_ADDR_WIDTH-1:0]     hp2_araddr;
 wire [1:0]      hp2_arburst;
 wire [3:0]      hp2_arcache;
 wire [3:0]      hp2_arid;
@@ -138,7 +138,7 @@ wire [3:0]      hp2_arqos;
 wire [2:0]      hp2_arsize;
 wire            hp2_arvalid;
 
-wire [31:0]     hp2_awaddr;
+wire [DDR_ADDR_WIDTH-1:0]     hp2_awaddr;
 wire [1:0]      hp2_awburst;
 wire [3:0]      hp2_awcache;
 wire [3:0]      hp2_awid;
@@ -158,7 +158,7 @@ wire            hp2_wvalid;
 
 wire            user_mm2s_rd_cmd_tvalid;
 wire            user_mm2s_rd_cmd_tready;
-wire [71:0]     user_mm2s_rd_cmd_tdata;
+wire [39+DDR_ADDR_WIDTH:0]     user_mm2s_rd_cmd_tdata;
 wire [63:0]     user_mm2s_rd_tdata;
 wire [7:0]      user_mm2s_rd_tkeep;
 wire            user_mm2s_rd_tlast;
@@ -166,7 +166,7 @@ wire            user_mm2s_rd_tready;
 
 wire            user_s2mm_wr_cmd_tready;
 wire            user_s2mm_wr_cmd_tvalid;
-wire [71:0]     user_s2mm_wr_cmd_tdata;
+wire [39+DDR_ADDR_WIDTH:0]     user_s2mm_wr_cmd_tdata;
 wire            user_s2mm_wr_tvalid;
 wire [63:0]     user_s2mm_wr_tdata;
 wire            user_s2mm_wr_tready;
@@ -297,7 +297,9 @@ vio_tlk2711 vio_tlk2711b_i (
   .probe_out1(tlk2711b_mode),  
   .probe_out2(tlk2711b_stop) 
 );
-tlk2711 tlk2711b_inst (
+tlk2711 #(
+    .DDR_ADDR_WIDTH(DD)
+)tlk2711b_inst (
     .clk(clk_80),
     .rst(rst_80),
     .o_txd(tlk2711b_txd),
@@ -691,15 +693,15 @@ tlk2711_datamover datamover_hp2 (
 
 wire            dm_start;
 reg [8:0]       dm_length;
-reg [31:0]      dm_start_addr;
 wire            dm_start_vio;
 reg             dm_start_vio_r0;
 reg             dm_start_vio_p;
 wire [8:0]      dm_length_vio;
-wire [31:0]     dm_start_addr_vio;
-
 reg             dm_start_gpio;
 reg             gpio_r0;
+
+reg [DDR_ADDR_WIDTH-1:0]      dm_start_addr;
+wire [DDR_ADDR_WIDTH-1:0]     dm_start_addr_vio;
 
 always @(posedge clk_80) begin
     gpio_r0 <= gpio;
@@ -736,7 +738,9 @@ always @(posedge clk_80) begin
     
 end
 
-datamover_validation  datamover_validation_inst(
+datamover_validation  # (
+    .DDR_ADDR_WIDTH(DDR_ADDR_WIDTH)
+    )datamover_validation_inst(
     .clk(clk_80),
     .rst(rst_80),
 
