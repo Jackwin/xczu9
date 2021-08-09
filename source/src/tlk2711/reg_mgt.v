@@ -54,7 +54,7 @@ module reg_mgt
 
     input                         i_rx_interrupt, //when asserted, the packet information is valid at the same time
     input  [31:0]                 i_rx_total_packet,
-    input  [15:0]                 i_rx_packet_body, //870B here the same as tx configuration and no need to reported 
+    input  [15:0]                 i_rx_packet_body, //Fixed 5120B here and no need to be reported 
     input  [15:0]                 i_rx_packet_tail,
     input  [15:0]                 i_rx_body_num,
 

@@ -176,7 +176,7 @@ module  tlk2711_tx_data
 
     reg [16:0] sync_cnt; //for 1ms in 100MHz clk, count 100000 cycles
     reg        head_cnt; //frame head counter, count 2 cycles
-    reg [8:0]  vld_data_cnt; //valid data counter, count 435 cycles
+    reg [15:0]  vld_data_cnt; //valid data counter, count 435 cycles
     reg [8:0]  backward_cnt; //backward counter between frames, count 257 cycles
 
     always@(posedge clk)
@@ -317,7 +317,7 @@ module  tlk2711_tx_data
                         o_2711_txd   <= fifo_rdata;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
-                        else if (vld_data_cnt == 'd434)
+                        else if (vld_data_cnt == i_tx_packet_body[16:1] - 1)
                             tx_state <= tx_frame_tail;
                     end        
                     tx_frame_tail:

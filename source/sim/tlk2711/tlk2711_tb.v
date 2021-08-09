@@ -9,8 +9,9 @@ module tlk2711_tb(
 	  reg  [47:0]          tx_base_addr = 'h000000;
 	  reg  [47:0]          rx_base_addr = 'h000100;
 	  
+	  integer              test_mode = 1; // 1 for test TX mode, 0 for test RX mode
 	  integer              tx_total_packet = 'd1800;
-	  integer              tx_packet_body = 'd870;
+	  integer              tx_packet_body = test_mode ? 'd870 : 'd5120;
 	  integer              tx_packet_tail = 'd60;
 	  integer              tx_body_num = 'd2;
 	  integer              tx_mode = 'd0; //0--norm mode, 1--loopback mode, 2--kcode mode

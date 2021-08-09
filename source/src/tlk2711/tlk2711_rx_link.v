@@ -71,7 +71,7 @@ module  tlk2711_rx_link
     assign o_wr_cmd_data = {wr_addr, wr_bbt};
 
     reg frame_start, frame_end, frame_valid;
-    reg [9:0] frame_data_cnt, valid_data_num, trans_data_num;
+    reg [15:0] frame_data_cnt, valid_data_num, trans_data_num;
 
     always@(posedge clk)
     begin
@@ -93,7 +93,7 @@ module  tlk2711_rx_link
                 frame_valid    <= 'b1;
                 frame_data_cnt <= 'd0; 
             end    
-            else if (frame_valid && frame_data_cnt == 'd440)
+            else if (frame_valid && frame_data_cnt == 'd2565) // 'd440 for received 870B, 'd2565 for received 5120B
             begin
                 frame_valid    <= 'b0;
                 frame_data_cnt <= 'd0;    
