@@ -422,7 +422,7 @@ module  tlk2711_tx_data
     end
 
 // TODO  debug the port
-
+/*
 tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
     .clk(clk),
     .probe0(i_tx_mode),
@@ -445,6 +445,6 @@ tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
     .probe17(i_tx_packet_tail),
     .probe18(i_tx_body_num)
 );
-
+*/
 
 endmodule

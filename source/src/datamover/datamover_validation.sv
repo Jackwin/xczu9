@@ -1,13 +1,13 @@
 `timescale 1ns/1ps
 
 module datamover_validation # (
-    parameter DDR_ADDR_WIDTH = 48
+    parameter DDR_ADDR_WIDTH = 40
     )(
     input                               clk,
     input                               rst,
 
     input                               i_start,
-    input [8:0]                         i_length,
+    input [15:0]                         i_length,
     input [DDR_ADDR_WIDTH-1:0]          i_start_addr,
 
 
@@ -45,7 +45,7 @@ logic                       start_p;
 logic                       wr_start;
 
 logic [DDR_ADDR_WIDTH-1:0]  s2mm_wr_saddr;
-logic [8:0]                 s2mm_wr_length;
+logic [15:0]                 s2mm_wr_length;
 logic [3:0]                 s2mm_wr_eof;
 
 logic [63:0]                gen_data;
@@ -135,11 +135,11 @@ always_comb begin
         WR_CMD_s: begin
             wr_start = 1;
             o_s2mm_wr_cmd_tvalid = 1;
-            o_s2mm_wr_cmd_tdata = {4'd0, WR_EOF_VAL, s2mm_wr_saddr, 1'b0, 1'b1, 7'd1, 14'd0, s2mm_wr_length};
+            o_s2mm_wr_cmd_tdata = {4'd0, WR_EOF_VAL, s2mm_wr_saddr, 1'b0, 1'b1, 7'd1, 7'd0, s2mm_wr_length};
         end
         RD_CMD_s: begin
             o_mm2s_rd_cmd_tvalid = 1;
-            o_mm2s_rd_cmd_tdata = {8'd0, s2mm_wr_saddr, 1'b0, 1'b1, 7'd1, 14'd0, s2mm_wr_length};
+            o_mm2s_rd_cmd_tdata = {8'd0, s2mm_wr_saddr, 1'b0, 1'b1, 7'd1, 7'd0, s2mm_wr_length};
         end
         default: begin
             o_s2mm_wr_cmd_tvalid = 0;
@@ -157,7 +157,7 @@ end
 
 axi_data_gen # (
     .DATA_WIDTH(64),
-    .LENGTH_WIDTH(9)
+    .LENGTH_WIDTH(16)
 )axi_data_gen_inst (
     .clk(clk),
     .rst(rst),

@@ -61,7 +61,7 @@ output          usr_led
 
 );
 
-parameter DDR_ADDR_WIDTH = 48;
+parameter DDR_ADDR_WIDTH = 40;
 parameter HP0_DATA_WIDTH = 64;
 
 wire    clk_80;
@@ -132,9 +132,10 @@ wire [1:0]      hp2_arburst;
 wire [3:0]      hp2_arcache;
 wire [3:0]      hp2_arid;
 wire [7:0]      hp2_arlen;
-wire [1:0]      hp2_arlock;
+wire            hp2_aruser;
+//wire [1:0]      hp2_arlock;
 wire [2:0]      hp2_arprot;
-wire [3:0]      hp2_arqos;
+//wire [3:0]      hp2_arqos;
 wire [2:0]      hp2_arsize;
 wire            hp2_arvalid;
 
@@ -148,7 +149,7 @@ wire [2:0]      hp2_awprot;
 wire [3:0]      hp2_awqos;
 wire [2:0]      hp2_awsize;
 wire            hp2_awvalid;
-wire [3:0]      hp2_awuser;
+wire            hp2_awuser;
 
 wire [63:0]     hp2_wdata;
 wire [5:0]      hp2_wid;
@@ -177,6 +178,10 @@ wire            user_s2mm_sts_tvalid;
 wire [7:0]      user_s2mm_sts_tdata;
 wire            user_s2mm_sts_tkeep;
 wire            user_s2mm_sts_tlast;
+
+ wire [7:0]     m_axis_mm2s_sts_tdata;  
+wire            m_axis_mm2s_sts_tkeep;
+wire            m_axis_mm2s_sts_tlast;
 
 wire            gpio;
 
@@ -366,7 +371,7 @@ tlk2711 tlk2711a_inst (
     wire                        fpga_reg_ren_vio;           
     wire [15:0]                 fpga_reg_raddr_vio;
     wire [HP0_DATA_WIDTH-1:0]   fpga_reg_rdata_vio;
-
+/*
     ila_2711_rx ila_2711_rx_inst (
 	.clk(tlk2711b_rx_clk), // input wire clk
 	.probe0(tlk2711b_rklsb), // input wire [0:0]  probe0  
@@ -384,6 +389,7 @@ tlk2711 tlk2711a_inst (
 
         .probe_in0(fpga_reg_rdata_vio)
 );
+*/
     tlk2711_top #(    
         .ADDR_WIDTH(DDR_ADDR_WIDTH),
 	    .RDATA_WIDTH(HP0_DATA_WIDTH), //HP0_DATA_WIDTH
@@ -558,25 +564,32 @@ mpsoc mpsoc_inst (
     .tlk2711_tx_irq(tlk2711_tx_irq),
 
     // ---  Test DMA -----------------
+
+    .hp2_clk(clk_80),
+
     .hp2_araddr(hp2_araddr),
     .hp2_arburst(hp2_arburst),
     .hp2_arcache(hp2_arcache),
     .hp2_arlen(hp2_arlen),
-    .hp2_arlock(hp2_arlock),
+    .hp2_aruser(hp2_aruser),
+   // .hp2_arlock(hp2_arlock),
     .hp2_arprot(hp2_arprot),
-    .hp2_arqos(hp2_arqos),
+   // .hp2_arqos(hp2_arqos),
     .hp2_arready(hp2_arready),
     .hp2_arsize(hp2_arsize),
     .hp2_arvalid(hp2_arvalid),
+
     //AXI4 write addr
     .hp2_awaddr(hp2_awaddr),
     .hp2_awburst(hp2_awburst),
     .hp2_awcache(hp2_awcache),
+    .hp2_awuser(hp2_awuser),
     .hp2_awlen(hp2_awlen),
     .hp2_awprot(hp2_awprot),
     .hp2_awready(hp2_awready),
     .hp2_awsize(hp2_awsize),
     .hp2_awvalid(hp2_awvalid),
+    .hp2_awid(hp2_awid),
 
     .hp2_bready(hp2_bready),
     .hp2_bresp(hp2_bresp),
@@ -593,6 +606,7 @@ mpsoc mpsoc_inst (
     .hp2_wready(hp2_wready),
     .hp2_wstrb(hp2_wstrb),
     .hp2_wvalid(hp2_wvalid),
+
     .gpio_tri_o(gpio),
     
     .uart_0_rxd(uart_0_rxd),
@@ -616,7 +630,7 @@ tlk2711_datamover datamover_hp2 (
     .m_axis_mm2s_sts_tkeep(m_axis_mm2s_sts_tkeep),            // output wire [0 : 0] m_axis_mm2s_sts_tkeep
     .m_axis_mm2s_sts_tlast(m_axis_mm2s_sts_tlast),            // output wire m_axis_mm2s_sts_tlast
 
-    //AXI4 read addr interface
+    //AXI4 read addr interface arm -> FPGA
 
     .m_axi_mm2s_arid(hp2_arid),                        // output wire [3 : 0] m_axi_mm2s_arid
     .m_axi_mm2s_araddr(hp2_araddr),                    // output wire [31 : 0] m_axi_mm2s_araddr
@@ -625,7 +639,7 @@ tlk2711_datamover datamover_hp2 (
     .m_axi_mm2s_arburst(hp2_arburst),                  // output wire [1 : 0] m_axi_mm2s_arburst
     .m_axi_mm2s_arprot(hp2_arprot),                    // output wire [2 : 0] m_axi_mm2s_arprot
     .m_axi_mm2s_arcache(hp2_arcache),                  // output wire [3 : 0] m_axi_mm2s_arcache
-    .m_axi_mm2s_aruser(),                    // output wire [3 : 0] m_axi_mm2s_aruser
+    .m_axi_mm2s_aruser(hp2_aruser),                    // output wire [3 : 0] m_axi_mm2s_aruser
     .m_axi_mm2s_arvalid(hp2_arvalid),                  // output wire m_axi_mm2s_arvalid
     .m_axi_mm2s_arready(hp2_arready),                  // input wire m_axi_mm2s_arready
 
@@ -634,8 +648,9 @@ tlk2711_datamover datamover_hp2 (
     .m_axi_mm2s_rlast(hp2_rlast),                      // input wire m_axi_mm2s_rlast
     .m_axi_mm2s_rvalid(hp2_rvalid),                    // input wire m_axi_mm2s_rvalid
     .m_axi_mm2s_rready(hp2_rready),                    // output wire m_axi_mm2s_rready
-    // User interface
     
+    // User interface ARM -> FPGA
+
     .s_axis_mm2s_cmd_tvalid(user_mm2s_rd_cmd_tvalid),          // input wire s_axis_mm2s_cmd_tvalid
     .s_axis_mm2s_cmd_tready(user_mm2s_rd_cmd_tready),          // output wire s_axis_mm2s_cmd_tready
     .s_axis_mm2s_cmd_tdata(user_mm2s_rd_cmd_tdata),            // input wire [71 : 0] s_axis_mm2s_cmd_tdata
@@ -645,7 +660,9 @@ tlk2711_datamover datamover_hp2 (
     .m_axis_mm2s_tlast(user_mm2s_rd_tlast),                    // output wire m_axis_mm2s_tlast
     .m_axis_mm2s_tvalid(user_mm2s_rd_tvalid),                  // output wire m_axis_mm2s_tvalid
     .m_axis_mm2s_tready(user_mm2s_rd_tready),                  // input wire m_axis_mm2s_tready
-    // AXI4 interface
+
+    // AXI4 interface FPGA -> ARM
+
     .m_axi_s2mm_aclk(clk_80),                        // input wire m_axi_s2mm_aclk
     .m_axi_s2mm_aresetn(~rst_80),                  // input wire m_axi_s2mm_aresetn
     .s2mm_err(),                                      // output wire s2mm_err
@@ -659,7 +676,7 @@ tlk2711_datamover datamover_hp2 (
     .m_axis_s2mm_sts_tlast(user_s2mm_sts_tlast),            // output wire m_axis_s2mm_sts_tlast
     // AXI4 addr interface
    
-    //.m_axi_s2mm_awid(hp0_awid),                        // output wire [3 : 0] m_axi_s2mm_awid
+    .m_axi_s2mm_awid(hp2_awid),                        // output wire [3 : 0] m_axi_s2mm_awid
     .m_axi_s2mm_awaddr(hp2_awaddr),                    // output wire [31 : 0] m_axi_s2mm_awaddr
     .m_axi_s2mm_awlen(hp2_awlen),                      // output wire [7 : 0] m_axi_s2mm_awlen
     .m_axi_s2mm_awsize(hp2_awsize),                    // output wire [2 : 0] m_axi_s2mm_awsize
@@ -692,11 +709,11 @@ tlk2711_datamover datamover_hp2 (
 );
 
 wire            dm_start;
-reg [8:0]       dm_length;
+reg [15:0]      dm_length;
 wire            dm_start_vio;
 reg             dm_start_vio_r0;
 reg             dm_start_vio_p;
-wire [8:0]      dm_length_vio;
+wire [15:0]     dm_length_vio;
 reg             dm_start_gpio;
 reg             gpio_r0;
 
@@ -715,7 +732,7 @@ vio_datamover vio_datamover_inst (
   .probe_out2(dm_start_addr_vio)  // output wire [31 : 0] probe_out2
 );
 
-assign dm_start = dm_start_vio | dm_start_gpio;
+assign dm_start = dm_start_vio;
 
 always @(posedge clk_80) begin
     dm_start_vio_r0 <= dm_start_vio;
@@ -801,6 +818,27 @@ ila_datamover ila_datamover_inst (
 	.probe20(m_axis_mm2s_sts_tlast), // input wire [0:0]  probe20 
 	.probe21(m_axis_mm2s_sts_tvalid), // input wire [0:0]  probe21 
 	.probe22(m_axis_mm2s_sts_tdata) // input wire [7:0]  probe22
+);
+
+ila_hp2 ila_hp2_i(
+    .clk(clk_80),
+
+    .probe0(hp2_wdata),
+    .probe1(hp2_wstrb),
+    .probe2(hp2_wlast),
+    .probe3(hp2_wvalid),
+    .probe4(hp2_wready),
+    .probe5(hp2_bresp),
+    .probe6(hp2_bvalid),
+    .probe7(hp2_bready),
+    .probe8(hp2_awaddr),
+    .probe9(hp2_awlen),
+    .probe10(hp2_awsize),
+    .probe11(hp2_awburst),
+    .probe12(hp2_awprot),
+    .probe13(hp2_awuser),
+    .probe14(hp2_awvalid),
+    .probe15(hp2_awready)
 );
 
 endmodule

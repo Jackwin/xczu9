@@ -242,6 +242,7 @@ module  tlk2711_rx_link
     end    
 
 // TODO debug rx
+/*
  ila_tlk2711_rx ila_tlk2711_rx_i(
     .clk(clk),
     .probe0(i_2711_rkmsb),
@@ -262,7 +263,7 @@ module  tlk2711_rx_link
     .probe15(wr_bbt)
     
 );
-
+*/
 endmodule 
          
          
