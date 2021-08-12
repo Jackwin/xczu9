@@ -720,6 +720,12 @@ reg             gpio_r0;
 reg [DDR_ADDR_WIDTH-1:0]      dm_start_addr;
 wire [DDR_ADDR_WIDTH-1:0]     dm_start_addr_vio;
 
+reg [DDR_ADDR_WIDTH-1:0]      dm_start_rd_addr;
+wire [DDR_ADDR_WIDTH-1:0]     dm_start_rd_addr_vio;
+
+reg [15:0]      dm_rd_length;
+wire [15:0]     dm_rd_length_vio;
+
 always @(posedge clk_80) begin
     gpio_r0 <= gpio;
     dm_start_gpio <= ~gpio_r0 & gpio;
@@ -729,7 +735,9 @@ vio_datamover vio_datamover_inst (
   .clk(clk_80),                // input wire clk
   .probe_out0(dm_start_vio),  // output wire [0 : 0] probe_out0
   .probe_out1(dm_length_vio),  // output wire [8 : 0] probe_out1
-  .probe_out2(dm_start_addr_vio)  // output wire [31 : 0] probe_out2
+  .probe_out2(dm_start_addr_vio),  // output wire [31 : 0] probe_out2
+  .probe_out3(),
+  .probe_out4()
 );
 
 assign dm_start = dm_start_vio;
@@ -747,9 +755,13 @@ always @(posedge clk_80) begin
         if (dm_start_gpio) begin
             dm_length <= 9'h080;
             dm_start_addr <= 32'h3000_0000;
+            dm_rd_length <= 9'h080;
+            dm_start_rd_addr <= 32'h4000_0000;
         end else if (dm_start_vio_p) begin
             dm_length <= dm_length_vio;
             dm_start_addr<= dm_start_addr_vio;
+            dm_rd_length <= dm_rd_length_vio;
+            dm_start_rd_addr<= dm_start_rd_addr_vio;
         end
     end
     
@@ -764,6 +776,8 @@ datamover_validation  # (
     .i_start(dm_start),
     .i_length(dm_length),
     .i_start_addr(dm_start_addr),
+     .i_rd_length(dm_rd_length),
+    .i_start_rd_addr(dm_start_rd_addr),
 
     .i_s2mm_wr_cmd_tready(user_s2mm_wr_cmd_tready),
     .o_s2mm_wr_cmd_tdata(user_s2mm_wr_cmd_tdata),
