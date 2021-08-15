@@ -7,9 +7,9 @@ module datamover_validation # (
     input                               rst,
 
     input                               i_start,
-    input [15:0]                         i_length,
+    input [15:0]                        i_length,
     input [DDR_ADDR_WIDTH-1:0]          i_start_addr,
-    input [15:0]                         i_rd_length,
+    input [15:0]                        i_rd_length,
     input [DDR_ADDR_WIDTH-1:0]          i_start_rd_addr,
 
 
@@ -68,7 +68,7 @@ always_comb begin
     s2mm_wr_saddr = i_start_addr;
     s2mm_wr_length = i_length;
     s2mm_rd_saddr = i_start_rd_addr;
-    s2mm_rd_length = i_start_rd_addr;
+    s2mm_rd_length = i_rd_length;
 end
 
 enum logic [2:0] {
@@ -141,7 +141,7 @@ always_comb begin
         WR_CMD_s: begin
             wr_start = 1;
             o_s2mm_wr_cmd_tvalid = 1;
-            o_s2mm_wr_cmd_tdata = {4'd0, WR_EOF_VAL, s2mm_wr_saddr, 1'b0, 1'b0, 7'd1, 7'd0, s2mm_wr_length};
+            o_s2mm_wr_cmd_tdata = {4'd0, WR_EOF_VAL, s2mm_wr_saddr, 1'b0, 1'b1, 7'd1, 7'd0, s2mm_wr_length};
         end
         RD_CMD_s: begin
             o_mm2s_rd_cmd_tvalid = 1;

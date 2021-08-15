@@ -120,8 +120,8 @@ wire            hp2_awready;
 wire [5:0]      hp2_bid;
 wire [1:0]      hp2_bresp;
 wire            hp2_bvalid;
-wire [63:0]     hp2_rdata;
-wire [3:0]      hp2_rid;
+wire [127:0]    hp2_rdata;
+wire [5:0]      hp2_rid;
 wire            hp2_rlast;
 wire [1:0]      hp2_rresp;
 wire            hp2_rvalid;
@@ -133,9 +133,9 @@ wire [3:0]      hp2_arcache;
 wire [3:0]      hp2_arid;
 wire [7:0]      hp2_arlen;
 wire            hp2_aruser;
-//wire [1:0]      hp2_arlock;
+wire            hp2_arlock;
 wire [2:0]      hp2_arprot;
-//wire [3:0]      hp2_arqos;
+wire [3:0]      hp2_arqos;
 wire [2:0]      hp2_arsize;
 wire            hp2_arvalid;
 
@@ -144,17 +144,17 @@ wire [1:0]      hp2_awburst;
 wire [3:0]      hp2_awcache;
 wire [3:0]      hp2_awid;
 wire [7:0]      hp2_awlen;
-wire [1:0]      hp2_awlock;
+wire            hp2_awlock;
 wire [2:0]      hp2_awprot;
 wire [3:0]      hp2_awqos;
 wire [2:0]      hp2_awsize;
 wire            hp2_awvalid;
 wire            hp2_awuser;
 
-wire [63:0]     hp2_wdata;
+wire [127:0]    hp2_wdata;
 wire [5:0]      hp2_wid;
 wire            hp2_wlast;
-wire [7:0]      hp2_wstrb;
+wire [15:0]     hp2_wstrb;
 wire            hp2_wvalid;
 
 wire            user_mm2s_rd_cmd_tvalid;
@@ -182,6 +182,9 @@ wire            user_s2mm_sts_tlast;
  wire [7:0]     m_axis_mm2s_sts_tdata;  
 wire            m_axis_mm2s_sts_tkeep;
 wire            m_axis_mm2s_sts_tlast;
+
+wire            s2mm_error;
+wire            mm2s_error;
 
 wire            gpio;
 
@@ -620,7 +623,7 @@ tlk2711_datamover datamover_hp2 (
     .m_axi_mm2s_aclk(clk_80),                        // input wire m_axi_mm2s_aclk
     .m_axi_mm2s_aresetn(~rst_80),                  // input wire m_axi_mm2s_aresetn
     // AXI4 interface
-    .mm2s_err(),                                      // output wire mm2s_err
+    .mm2s_err(mm2s_error),                                      // output wire mm2s_err
     .m_axis_mm2s_cmdsts_aclk(clk_80),        // input wire m_axis_mm2s_cmdsts_aclk
     .m_axis_mm2s_cmdsts_aresetn(~rst_80),  // input wire m_axis_mm2s_cmdsts_aresetn
     
@@ -665,7 +668,7 @@ tlk2711_datamover datamover_hp2 (
 
     .m_axi_s2mm_aclk(clk_80),                        // input wire m_axi_s2mm_aclk
     .m_axi_s2mm_aresetn(~rst_80),                  // input wire m_axi_s2mm_aresetn
-    .s2mm_err(),                                      // output wire s2mm_err
+    .s2mm_err(s2mm_error),                                      // output wire s2mm_err
     .m_axis_s2mm_cmdsts_awclk(clk_80),      // input wire m_axis_s2mm_cmdsts_awclk
     .m_axis_s2mm_cmdsts_aresetn(~rst_80),  // input wire m_axis_s2mm_cmdsts_aresetn
    
@@ -736,8 +739,8 @@ vio_datamover vio_datamover_inst (
   .probe_out0(dm_start_vio),  // output wire [0 : 0] probe_out0
   .probe_out1(dm_length_vio),  // output wire [8 : 0] probe_out1
   .probe_out2(dm_start_addr_vio),  // output wire [31 : 0] probe_out2
-  .probe_out3(),
-  .probe_out4()
+  .probe_out3(dm_rd_length_vio),
+  .probe_out4(dm_start_rd_addr_vio)
 );
 
 assign dm_start = dm_start_vio;
@@ -827,13 +830,14 @@ ila_datamover ila_datamover_inst (
 	.probe15(user_mm2s_rd_cmd_tvalid), // input wire [0:0]  probe15 
 	.probe16(user_mm2s_rd_cmd_tdata), // input wire [71:0]  probe16 
 	.probe17(user_mm2s_rd_cmd_tready), // input wire [0:0]  probe17
-	.probe18(rst_80),
+	.probe18(mm2s_error),
     .probe19(m_axis_mm2s_sts_tkeep), // input wire [0:0]  probe19 
 	.probe20(m_axis_mm2s_sts_tlast), // input wire [0:0]  probe20 
 	.probe21(m_axis_mm2s_sts_tvalid), // input wire [0:0]  probe21 
-	.probe22(m_axis_mm2s_sts_tdata) // input wire [7:0]  probe22
+	.probe22(m_axis_mm2s_sts_tdata), // input wire [7:0]  probe22
+	.probe23(s2mm_error)
 );
-
+/*
 ila_hp2 ila_hp2_i(
     .clk(clk_80),
 
@@ -854,5 +858,5 @@ ila_hp2 ila_hp2_i(
     .probe14(hp2_awvalid),
     .probe15(hp2_awready)
 );
-
+*/
 endmodule
