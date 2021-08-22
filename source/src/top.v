@@ -62,7 +62,8 @@ output          usr_led
 );
 
 parameter DDR_ADDR_WIDTH = 40;
-parameter HP0_DATA_WIDTH = 64;
+parameter HP0_DATA_WIDTH = 128;
+parameter STREAM_DATA_WIDTH = 64;
 
 wire    clk_80;
 wire    locked;
@@ -107,21 +108,20 @@ wire                        fpga_reg_wen;
 wire                        fpga_reg_ren;
 wire [15:0]                 fpga_reg_waddr;
 wire [15:0]                 fpga_reg_raddr;
-wire [HP0_DATA_WIDTH-1:0]   fpga_reg_wdata;
-wire [HP0_DATA_WIDTH-1:0]   fpga_reg_rdata;
+wire [63:0]   fpga_reg_wdata;
+wire [631:0]   fpga_reg_rdata;
 
 wire                        tlk2711_tx_irq;
 wire                        tlk2711_rx_irq;
 wire                        tlk2711_loss_irq;
 
 // ------------------ Test DMA -----------------
-wire            hp2_arready;
-wire            hp2_awready;
-wire [5:0]      hp2_bid;
+//wire [5:0]      hp2_bid;
 wire [1:0]      hp2_bresp;
 wire            hp2_bvalid;
+
 wire [127:0]    hp2_rdata;
-wire [5:0]      hp2_rid;
+//wire [5:0]      hp2_rid;
 wire            hp2_rlast;
 wire [1:0]      hp2_rresp;
 wire            hp2_rvalid;
@@ -135,9 +135,10 @@ wire [7:0]      hp2_arlen;
 wire            hp2_aruser;
 wire            hp2_arlock;
 wire [2:0]      hp2_arprot;
-wire [3:0]      hp2_arqos;
+//wire [3:0]      hp2_arqos;
 wire [2:0]      hp2_arsize;
 wire            hp2_arvalid;
+wire            hp2_arready;
 
 wire [DDR_ADDR_WIDTH-1:0]     hp2_awaddr;
 wire [1:0]      hp2_awburst;
@@ -146,10 +147,11 @@ wire [3:0]      hp2_awid;
 wire [7:0]      hp2_awlen;
 wire            hp2_awlock;
 wire [2:0]      hp2_awprot;
-wire [3:0]      hp2_awqos;
+//wire [3:0]      hp2_awqos;
 wire [2:0]      hp2_awsize;
 wire            hp2_awvalid;
 wire            hp2_awuser;
+wire            hp2_awready;
 
 wire [127:0]    hp2_wdata;
 wire [5:0]      hp2_wid;
@@ -370,11 +372,11 @@ tlk2711 tlk2711a_inst (
 // -----------------------
     wire                        fpga_reg_wen_vio;
     wire [15:0]                 fpga_reg_waddr_vio;
-    wire [HP0_DATA_WIDTH-1:0]   fpga_reg_wdata_vio;
+    wire [63:0]                 fpga_reg_wdata_vio;
     wire                        fpga_reg_ren_vio;           
     wire [15:0]                 fpga_reg_raddr_vio;
-    wire [HP0_DATA_WIDTH-1:0]   fpga_reg_rdata_vio;
-/*
+    wire [63:0]                 fpga_reg_rdata_vio;
+
     ila_2711_rx ila_2711_rx_inst (
 	.clk(tlk2711b_rx_clk), // input wire clk
 	.probe0(tlk2711b_rklsb), // input wire [0:0]  probe0  
@@ -391,13 +393,16 @@ tlk2711 tlk2711a_inst (
         .probe_out4(fpga_reg_raddr_vio),
 
         .probe_in0(fpga_reg_rdata_vio)
-);
-*/
+    );
+
     tlk2711_top #(    
         .ADDR_WIDTH(DDR_ADDR_WIDTH),
-	    .RDATA_WIDTH(HP0_DATA_WIDTH), //HP0_DATA_WIDTH
-	    .WDATA_WIDTH(HP0_DATA_WIDTH), // HP0_DATA_WIDTH
-	    .WBYTE_WIDTH(HP0_DATA_WIDTH/8),  // HP0_DATA_WIDTH/8
+	    .AXI_RDATA_WIDTH(HP0_DATA_WIDTH), //HP0_DATA_WIDTH
+	    .AXI_WDATA_WIDTH(HP0_DATA_WIDTH), // HP0_DATA_WIDTH
+	    .AXI_WBYTE_WIDTH(HP0_DATA_WIDTH/8),  // HP0_DATA_WIDTH/8
+        .STREAM_RDATA_WIDTH(STREAM_DATA_WIDTH), 
+	    .STREAM_WDATA_WIDTH(STREAM_DATA_WIDTH),
+	    .STREAM_WBYTE_WIDTH(STREAM_DATA_WIDTH/8),  
         .DLEN_WIDTH(16)
     ) tlk2711_top (
         .clk(clk_80),

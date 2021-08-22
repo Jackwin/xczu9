@@ -20,9 +20,12 @@
 module tlk2711_top 
 #(       
     parameter ADDR_WIDTH = 48,
-    parameter RDATA_WIDTH = 64,
-    parameter WDATA_WIDTH = 64,
-    parameter WBYTE_WIDTH = 8,   
+    parameter AXI_RDATA_WIDTH = 64,
+    parameter AXI_WDATA_WIDTH = 64,
+    parameter AXI_WBYTE_WIDTH = 8,
+    parameter STREAM_RDATA_WIDTH = 64,
+    parameter STREAM_WDATA_WIDTH = 64,
+    parameter STREAM_WBYTE_WIDTH = 8,
     parameter DLEN_WIDTH = 16  
 )
 (  
@@ -68,10 +71,10 @@ module tlk2711_top
     output [1:0]    m_axi_arburst,
     output [2:0]    m_axi_arprot,
     output [3:0]    m_axi_arcache,
-    output [3:0]    m_axi_aruser,
+    output          m_axi_aruser,
    
     //AXI4 Memory Mapped Read Data Interface Signals
-    input [RDATA_WIDTH-1:0]   m_axi_rdata,
+    input [AXI_RDATA_WIDTH-1:0]   m_axi_rdata,
     input [1:0]     m_axi_rresp,
     input           m_axi_rlast,
     input           m_axi_rvalid,
@@ -90,8 +93,8 @@ module tlk2711_top
     output [3:0]    m_axi_awuser,   
 
     //AXI4 Memory Mapped Write Data Interface Signals
-    output [WDATA_WIDTH-1:0]  m_axi_wdata,
-    output [WBYTE_WIDTH-1:0]  m_axi_wstrb,
+    output [AXI_WDATA_WIDTH-1:0]  m_axi_wdata,
+    output [AXI_WBYTE_WIDTH-1:0]  m_axi_wstrb,
     output          m_axi_wlast,
     output          m_axi_wvalid,
     input           m_axi_wready,
@@ -134,11 +137,11 @@ module tlk2711_top
     wire                    dma_rd_ready;
     wire                    dma_rd_valid;
     wire                    dma_rd_last;
-    wire [RDATA_WIDTH-1:0]  dma_rd_data;
+    wire [STREAM_RDATA_WIDTH-1:0]  dma_rd_data;
 
     wire                    dma_wr_valid;
-    wire [WBYTE_WIDTH-1:0]  dma_wr_keep;
-    wire [WDATA_WIDTH-1:0]  dma_wr_data;
+    wire [STREAM_WBYTE_WIDTH-1:0]  dma_wr_keep;
+    wire [STREAM_WDATA_WIDTH-1:0]  dma_wr_data;
     wire                    dma_wr_ready;
     wire                    wr_finish;
 
@@ -178,9 +181,12 @@ module tlk2711_top
     );
  
     tlk2711_dma #(
-        .RDATA_WIDTH(RDATA_WIDTH),
-        .WDATA_WIDTH(WDATA_WIDTH), 
-        .WBYTE_WIDTH(WBYTE_WIDTH),   
+        .AXI_RDATA_WIDTH(AXI_RDATA_WIDTH),
+        .AXI_WDATA_WIDTH(AXI_WDATA_WIDTH), 
+        .AXI_WBYTE_WIDTH(AXI_WBYTE_WIDTH), 
+        .STREAM_RDATA_WIDTH(STREAM_RDATA_WIDTH),
+        .STREAM_WDATA_WIDTH(STREAM_WDATA_WIDTH), 
+        .STREAM_WBYTE_WIDTH(STREAM_WBYTE_WIDTH),   
         .ADDR_WIDTH(ADDR_WIDTH),
         .DLEN_WIDTH(DLEN_WIDTH)  
     ) tlk2711_dma (
@@ -255,7 +261,7 @@ module tlk2711_top
     );
 
     tlk2711_tx_data #(
-        .DATA_WIDTH(RDATA_WIDTH)
+        .DATA_WIDTH(STREAM_RDATA_WIDTH)
     ) tlk2711_tx_data (
         .clk(clk),
         .rst(rst),
@@ -283,8 +289,8 @@ module tlk2711_top
     tlk2711_rx_link #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DLEN_WIDTH(DLEN_WIDTH), 
-        .DATA_WIDTH(WDATA_WIDTH),
-        .WBYTE_WIDTH(WBYTE_WIDTH)
+        .DATA_WIDTH(STREAM_WDATA_WIDTH),
+        .WBYTE_WIDTH(STREAM_WBYTE_WIDTH)
     ) tlk2711_rx_link (
         .clk(clk),
         .rst(rst),
