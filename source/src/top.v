@@ -776,7 +776,8 @@ always @(posedge clk_80) begin
 end
 
 datamover_validation  # (
-    .DDR_ADDR_WIDTH(DDR_ADDR_WIDTH)
+    .DDR_ADDR_WIDTH(DDR_ADDR_WIDTH),
+    .INIT_DATA(64'h0706050403020100)
     )datamover_validation_inst(
     .clk(clk_80),
     .rst(rst_80),

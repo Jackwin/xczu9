@@ -25,6 +25,7 @@ module  tlk2711_tx_data
     input                   rst,
 
     input                   i_soft_reset,
+    input                   i_stop_test,
     input [3:0]             i_tx_mode,
     input                   i_tx_start,
     input [15:0]            i_tx_packet_body, //body length in byte, 870B here for fixed value
@@ -66,10 +67,8 @@ module  tlk2711_tx_data
     localparam K29_7 = 8'hFD;
 
     //frame header
-    localparam HEAD_0 = 8'h16;
-    localparam HEAD_1 = 8'hE1;
-    localparam HEAD_2 = 8'h90;
-    localparam HEAD_3 = 8'hEB;
+    localparam HEAD_0 = 16'hEB90;
+    localparam HEAD_1 = 16'hE116;
 
     //data type
     localparam TX_IND = 8'h81;
@@ -99,6 +98,7 @@ module  tlk2711_tx_data
     reg  fifo_enable;
     wire fifo_full, fifo_wren, fifo_rden;
     wire [15:0] fifo_rdata;
+    wire fifo_empty;
 
     assign o_dma_rd_ready = ~fifo_full;
 
@@ -121,7 +121,7 @@ module  tlk2711_tx_data
         .rd_en(fifo_rden),
         .dout(fifo_rdata),
         .full(fifo_full),
-        .empty()
+        .empty(fifo_empty)
     );
 
     reg [15:0] frame_cnt = 'd0;
@@ -225,7 +225,21 @@ module  tlk2711_tx_data
     
     reg         tail_frame;
     reg [2:0]   state_cnt;
-    reg [4:0]   test_data_cnt;
+    reg [7:0]   test_data_cnt;
+    reg         test_mode_stop_flag;
+
+    always @(posedge clk) begin
+        if (rst | i_soft_reset) begin
+            test_mode_stop_flag <= 1'b0;
+        end else begin
+            if (i_stop_test) begin
+                test_mode_stop_flag <= 1'b1;
+            end 
+            if (test_mode_stop_flag & state_cnt == DATA_s & (&test_data_cnt))
+                test_mode_stop_flag <= 1'b0;
+        end
+    end
+
     
     always@(posedge clk)
     begin
@@ -242,15 +256,15 @@ module  tlk2711_tx_data
         end 
         else 
         begin
+            // TODO: Add a power-up state to send the 1ms sync code
             if (tx_mode == LOOPBACK_MODE || tx_mode == TEST_MODE)
             begin
-                //o_2711_tkmsb <= 'b1;
-                //o_2711_tklsb <= 'b1;
-                if (i_soft_reset) begin
+                if (i_soft_reset || i_stop_test) begin
                     state_cnt <= 'h0;
                     test_data_cnt <= 'h0;
                 end
                 case(state_cnt)
+                // TODO Add an idle state
                 COMMA1_s: begin // send K-code to sync the link
                     o_2711_tkmsb <= 'b0;
                     o_2711_tklsb <= 'b1;
@@ -274,11 +288,14 @@ module  tlk2711_tx_data
                 DATA_s: begin
                     o_2711_tkmsb <= 'b0;
                     o_2711_tklsb <= 'b1;
-                    o_2711_txd <= {2{3'h0, test_data_cnt}};
+                    o_2711_txd <= {2{test_data_cnt}};
                     o_2711_tkmsb <= 'b0;
                     o_2711_tklsb <= 'b0;
-                    if (&test_data_cnt) test_data_cnt <= 'h0;
-                    else test_data_cnt <= test_data_cnt + 'd1;
+                    if (&test_data_cnt) begin
+                        test_data_cnt <= 'h0;
+                        state_cnt <= 'h0;
+                    end
+                    else test_data_cnt <= test_data_cnt + 16'h0101;
                 end
                 default: test_data_cnt <= 'h0;
                 endcase
@@ -297,7 +314,12 @@ module  tlk2711_tx_data
                         o_2711_tkmsb <= 'b0;
                         o_2711_tklsb <= 'b0;
                         o_2711_txd   <= 'd0;
-                        if (i_tx_start)
+                        // REVIEW: Here not fifo_empty means the to-read data has been in the FIFO, 
+                        // so the send can be kicked off. But, need to confirm that the fifo should
+                        // be empty after every round of sending.
+                        // During the process of sending data, i_tx_start is asserted to be '1' all
+                        // the time. When the sendin is done, it is dis-asserted by the software.
+                        if (i_tx_start & ~fifo_empty)
                             tx_state <= tx_begin;  
                     end        
                     tx_begin:
@@ -317,7 +339,8 @@ module  tlk2711_tx_data
                         o_2711_txd   <= {D5_6, K28_5};
                         if (i_soft_reset)
                             tx_state <= tx_idle; 
-                        else if (sync_cnt == 'd99999) // The sync period is 1ms, and the clock is 100MHz
+                       // else if (sync_cnt == 'd99999) // The sync period is 1ms, and the clock is 100MHz
+                       else if (sync_cnt == 'd5) // The sync period is 1ms, and the clock is 100MHz
                             tx_state <= tx_start_frame; 
                     end        
                     tx_start_frame:
@@ -334,7 +357,7 @@ module  tlk2711_tx_data
                     begin
                         o_2711_tkmsb <= 'b0;
                         o_2711_tklsb <= 'b0;
-                        o_2711_txd   <= head_cnt ? {HEAD_3, HEAD_2} : {HEAD_1, HEAD_0};
+                        o_2711_txd   <= head_cnt ? HEAD_1 : HEAD_0;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else if (head_cnt)                 
@@ -344,7 +367,7 @@ module  tlk2711_tx_data
                     begin
                         o_2711_tkmsb <= 'b0;
                         o_2711_tklsb <= 'b0;
-                        o_2711_txd   <= frame_cnt == i_tx_body_num ? {FILE_END, TX_IND} : {8'b0, TX_IND};
+                        o_2711_txd   <= (frame_cnt == i_tx_body_num) ? {TX_IND, FILE_END} : {TX_IND, 8'b0};
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else

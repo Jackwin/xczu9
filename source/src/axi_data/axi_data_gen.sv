@@ -3,7 +3,8 @@
 module axi_data_gen #(
     parameter DATA_WIDTH = 32,
     parameter LENGTH_WIDTH = 9,
-    parameter STRB_WIDTH = DATA_WIDTH/8
+    parameter STRB_WIDTH = DATA_WIDTH/8,
+    parameter INIT_DATA = 0
 
 )(
     input logic                     clk,
@@ -60,10 +61,10 @@ end
 
 always_ff @(posedge clk) begin
     if (rst) begin
-        gen_data <= 'h0;
+        gen_data <= INIT_DATA;
     end else begin
         if (cnt_ena & i_ready) begin
-            gen_data <= gen_data + 1'd1;
+            gen_data <= gen_data + {STRB_WIDTH{8'h01}};
         end 
     end
 end

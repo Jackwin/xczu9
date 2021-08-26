@@ -1,7 +1,8 @@
 `timescale 1ns/1ps
 
 module datamover_validation # (
-    parameter DDR_ADDR_WIDTH = 40
+    parameter DDR_ADDR_WIDTH = 40,
+    parameter INIT_DATA = 0
     )(
     input                               clk,
     input                               rst,
@@ -163,7 +164,8 @@ end
 
 axi_data_gen # (
     .DATA_WIDTH(64),
-    .LENGTH_WIDTH(16)
+    .LENGTH_WIDTH(16),
+    .INIT_DATA(INIT_DATA)
 )axi_data_gen_inst (
     .clk(clk),
     .rst(rst),

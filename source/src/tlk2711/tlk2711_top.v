@@ -242,17 +242,17 @@ module tlk2711_top
         .m_axi_bready(m_axi_bready)
     );
 
-    reg         tx_start;
-    reg [2:0]   tx_cfg_done;
-    reg [2:0]   rx_cfg_done;
-    reg         rx_start;
+    // reg         tx_start;
+    // reg [2:0]   tx_cfg_done;
+    // reg [2:0]   rx_cfg_done;
+    // reg         rx_start;
 
-    always @(posedge clk) begin
-        tx_cfg_done <= {tx_cfg_done[2:1], tx_config_done};
-        rx_cfg_done <= {rx_cfg_done[2:1], rx_config_done};
-        tx_start <= ~tx_cfg_done[2] & tx_cfg_done[1];
-        rx_start <= ~rx_cfg_done[2] & rx_cfg_done[1];
-    end
+    // always @(posedge clk) begin
+    //     tx_cfg_done <= {tx_cfg_done[1:0], tx_config_done};
+    //     rx_cfg_done <= {rx_cfg_done[1:0], rx_config_done};
+    //     tx_start <= ~tx_cfg_done[2] & tx_cfg_done[1];
+    //     rx_start <= ~rx_cfg_done[2] & rx_cfg_done[1];
+    // end
 
     tlk2711_tx_cmd #(
         .ADDR_WIDTH(ADDR_WIDTH),
@@ -265,7 +265,7 @@ module tlk2711_top
         .o_rd_cmd_req(rd_cmd_req),
         .o_rd_cmd_data(rd_cmd_data), 
         .i_dma_rd_last(dma_rd_last), 
-        .i_tx_start(tx_start),
+        .i_tx_start(tx_config_done),
         .i_tx_base_addr(tx_base_addr),
         .i_tx_packet_body(tx_packet_body), 
         .i_tx_packet_tail(tx_packet_tail), 
