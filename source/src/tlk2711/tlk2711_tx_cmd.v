@@ -42,14 +42,20 @@ module  tlk2711_tx_cmd
     reg [15:0] tx_frame_cnt = 'd0;
     reg [DLEN_WIDTH-1:0] rd_bbt = 'd0;
     reg [ADDR_WIDTH-1:0] rd_addr = 'd0;
+    reg tx_start_r;
+    reg tx_start;
+    
+    always@(posedge clk) begin
+        tx_start_r <= i_tx_start;
+        tx_start <= ~tx_start_r & i_tx_start;
+    end
 
     assign o_rd_cmd_data = {rd_addr, rd_bbt};
-
-    always@(posedge clk)
-    begin
+    
+    always@(posedge clk) begin
         if (rst) 
             tx_frame_cnt <= 'd0;
-        else if (i_tx_start | i_soft_rst)
+        else if (tx_start | i_soft_rst)
             tx_frame_cnt <= 'd0;
         else if (i_dma_rd_last & tx_frame_cnt == i_tx_body_num)    
             tx_frame_cnt <= 'd0;
@@ -60,18 +66,14 @@ module  tlk2711_tx_cmd
     reg rd_cmd_req;
     reg [15:0] packet_body_align8, packet_tail_align8;
     
-    always@(posedge clk)
-    begin
-        if (rst)
-        begin
+    always@(posedge clk) begin
+        if (rst) begin
             rd_cmd_req         <= 'b0;
             o_rd_cmd_req       <= 'b0;
             packet_body_align8 <= 'd0;
             rd_bbt  <= 'd0;
             rd_addr <= 'd0;
-        end
-        else
-        begin
+        end else begin
             rd_cmd_req <= i_dma_rd_last & tx_frame_cnt != i_tx_body_num;
             packet_body_align8[15:3] <= i_tx_packet_body[15:3] + |i_tx_packet_body[2:0];
             
@@ -80,11 +82,10 @@ module  tlk2711_tx_cmd
             
             packet_tail_align8[2:0]  <= 'd0;
 
-            if (rd_cmd_req | i_tx_start)
-            begin
+            if (rd_cmd_req | tx_start) begin
                 o_rd_cmd_req <= 'b1;
                 // TODO check the log in the sim
-                if (i_tx_start) begin
+                if (tx_start) begin
                     $display("%t: tx body length is %d", $time, i_tx_packet_body);
                     $display("%t: tx tail len is %d", $time, i_tx_packet_tail);
                     $display("%t: tx body number is %d", $time, i_tx_body_num);
@@ -93,7 +94,7 @@ module  tlk2711_tx_cmd
             else if (i_rd_cmd_ack)  
                 o_rd_cmd_req <= 'b0;
 
-            if (i_tx_start | i_soft_rst)
+            if (tx_start | i_soft_rst)
                 rd_addr <= i_tx_base_addr;
             else if (rd_cmd_req)    
                 rd_addr <= rd_addr + i_tx_packet_body;
@@ -108,7 +109,7 @@ ila_tx_cmd ila_tx_cmd_inst(
 .probe1(o_rd_cmd_req),
 .probe2(o_rd_cmd_data),
 .probe3(i_dma_rd_last),
-.probe4(i_tx_start),
+.probe4(tx_start),
 .probe5(i_tx_base_addr),
 .probe6(i_tx_packet_body),
 .probe7(i_tx_packet_tail),

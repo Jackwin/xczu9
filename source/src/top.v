@@ -815,34 +815,34 @@ datamover_validation  # (
     .o_mm2s_rd_tready(user_mm2s_rd_tready)
 );
 
-ila_datamover ila_datamover_inst (
-	.clk(clk_80), // input wire clk
+//ila_datamover ila_datamover_inst (
+//	.clk(clk_80), // input wire clk
 
-	.probe0(user_s2mm_wr_cmd_tready), // input wire [0:0]  probe0  
-	.probe1(user_s2mm_wr_cmd_tdata), // input wire [71:0]  probe1 
-	.probe2(user_s2mm_wr_cmd_tvalid), // input wire [0:0]  probe2 
-	.probe3(user_s2mm_wr_tdata), // input wire [63:0]  probe3 
-	.probe4(user_s2mm_wr_tkeep), // input wire [7:0]  probe4 
-	.probe5(user_s2mm_wr_tlast), // input wire [0:0]  probe5 
-	.probe6(user_s2mm_wr_tvalid), // input wire [0:0]  probe6 
-	.probe7(user_s2mm_wr_tready), // input wire [0:0]  probe7 
-	.probe8(user_s2mm_sts_tvalid), // input wire [0:0]  probe8 
-	.probe9(user_s2mm_sts_tdata), // input wire [3:0]  probe9 
-	.probe10(user_s2mm_sts_tlast), // input wire [0:0]  probe10 
-	.probe11(user_mm2s_rd_tdata), // input wire [63:0]  probe11 
-	.probe12(user_mm2s_rd_tkeep), // input wire [7:0]  probe12 
-	.probe13(user_mm2s_rd_tlast), // input wire [0:0]  probe13 
-	.probe14(user_mm2s_rd_tvalid), // input wire [0:0]  probe14 
-	.probe15(user_mm2s_rd_cmd_tvalid), // input wire [0:0]  probe15 
-	.probe16(user_mm2s_rd_cmd_tdata), // input wire [71:0]  probe16 
-	.probe17(user_mm2s_rd_cmd_tready), // input wire [0:0]  probe17
-	.probe18(mm2s_error),
-    .probe19(m_axis_mm2s_sts_tkeep), // input wire [0:0]  probe19 
-	.probe20(m_axis_mm2s_sts_tlast), // input wire [0:0]  probe20 
-	.probe21(m_axis_mm2s_sts_tvalid), // input wire [0:0]  probe21 
-	.probe22(m_axis_mm2s_sts_tdata), // input wire [7:0]  probe22
-	.probe23(s2mm_error)
-);
+//	.probe0(user_s2mm_wr_cmd_tready), // input wire [0:0]  probe0  
+//	.probe1(user_s2mm_wr_cmd_tdata), // input wire [71:0]  probe1 
+//	.probe2(user_s2mm_wr_cmd_tvalid), // input wire [0:0]  probe2 
+//	.probe3(user_s2mm_wr_tdata), // input wire [63:0]  probe3 
+//	.probe4(user_s2mm_wr_tkeep), // input wire [7:0]  probe4 
+//	.probe5(user_s2mm_wr_tlast), // input wire [0:0]  probe5 
+//	.probe6(user_s2mm_wr_tvalid), // input wire [0:0]  probe6 
+//	.probe7(user_s2mm_wr_tready), // input wire [0:0]  probe7 
+//	.probe8(user_s2mm_sts_tvalid), // input wire [0:0]  probe8 
+//	.probe9(user_s2mm_sts_tdata), // input wire [3:0]  probe9 
+//	.probe10(user_s2mm_sts_tlast), // input wire [0:0]  probe10 
+//	.probe11(user_mm2s_rd_tdata), // input wire [63:0]  probe11 
+//	.probe12(user_mm2s_rd_tkeep), // input wire [7:0]  probe12 
+//	.probe13(user_mm2s_rd_tlast), // input wire [0:0]  probe13 
+//	.probe14(user_mm2s_rd_tvalid), // input wire [0:0]  probe14 
+//	.probe15(user_mm2s_rd_cmd_tvalid), // input wire [0:0]  probe15 
+//	.probe16(user_mm2s_rd_cmd_tdata), // input wire [71:0]  probe16 
+//	.probe17(user_mm2s_rd_cmd_tready), // input wire [0:0]  probe17
+//	.probe18(mm2s_error),
+//    .probe19(m_axis_mm2s_sts_tkeep), // input wire [0:0]  probe19 
+//	.probe20(m_axis_mm2s_sts_tlast), // input wire [0:0]  probe20 
+//	.probe21(m_axis_mm2s_sts_tvalid), // input wire [0:0]  probe21 
+//	.probe22(m_axis_mm2s_sts_tdata), // input wire [7:0]  probe22
+//	.probe23(s2mm_error)
+//);
 /*
 ila_hp2 ila_hp2_i(
     .clk(clk_80),

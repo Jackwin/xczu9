@@ -80,6 +80,8 @@ module  tlk2711_tx_data
     localparam COMMA2_s = 2'd1;
     localparam SOF_s = 2'd2;
     localparam DATA_s = 2'd3;
+	
+	parameter BODY_LENGTH = 16'd870;
 
     reg       [3:0]           tx_state;
     localparam                tx_idle = 4'd0;
@@ -256,10 +258,12 @@ module  tlk2711_tx_data
         end 
         else 
         begin
+            state_cnt <= 'h0;
+            state_cnt <= 'h0;
             // TODO: Add a power-up state to send the 1ms sync code
             if (tx_mode == LOOPBACK_MODE || tx_mode == TEST_MODE)
             begin
-                if (i_soft_reset || i_stop_test) begin
+                if (i_soft_reset) begin
                     state_cnt <= 'h0;
                     test_data_cnt <= 'h0;
                 end
@@ -299,18 +303,13 @@ module  tlk2711_tx_data
                 end
                 default: test_data_cnt <= 'h0;
                 endcase
-            end
-            else if (tx_mode == KCODE_MODE)
-            begin
+            end else if (tx_mode == KCODE_MODE) begin
                 o_2711_tkmsb <= 'b1;
                 o_2711_tklsb <= 'b1;
                 o_2711_txd   <= {K28_2, K27_7};
-            end 
-            else
-            begin
+            end else begin
                 case(tx_state)
-                    tx_idle:
-                    begin
+                    tx_idle:begin
                         o_2711_tkmsb <= 'b0;
                         o_2711_tklsb <= 'b0;
                         o_2711_txd   <= 'd0;
@@ -400,7 +399,7 @@ module  tlk2711_tx_data
                         o_2711_txd   <= fifo_rdata;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
-                        else if (vld_data_cnt == 'd434)
+                        else if (vld_data_cnt == (BODY_LENGTH / 2 - 1) )
                             tx_state <= tx_frame_tail;
                     end        
                     tx_frame_tail:

@@ -279,7 +279,7 @@ module tlk2711_top
         .rst(rst),
         .i_soft_reset(soft_rst),
         .i_tx_mode(tx_mode),
-        .i_tx_start(tx_start),
+        .i_tx_start(tx_config_done),
         .i_tx_packet_body(tx_packet_body), 
         .i_tx_packet_tail(tx_packet_tail),
         .i_tx_body_num(tx_body_num),
