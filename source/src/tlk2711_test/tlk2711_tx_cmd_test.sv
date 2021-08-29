@@ -1,6 +1,6 @@
 
 
-module tlk2711_tx_cmd (
+module tlk2711_tx_cmd_test (
     input logic         i_clk,
     input logic         i_rst;
     input logic         i_soft_rst,
@@ -22,6 +22,8 @@ module tlk2711_tx_cmd (
     input logic         i_dma_rdcmd_ready,
     output logic [71:0] o_dma_rdcmd_data,
     output logic        o_dma_rdcmd_valid,
+
+    input logic         i_dma_tranfer_done,
     
     output logic [21:0] o_packet_body,
     output logic [9:0]  o_packet_tail,
@@ -100,6 +102,101 @@ always_comb begin : blockName
     dma_rdcmd_data = {8'd0, ddr_rd_addr, 1'b0, 1'b1, 7'd1, 14'd0, s2mm_rd_length};
 end
 
+/*
+less than 256
+256
+
+cmd issue times
+
+fifo depth
+
+one packet 820
+
+tx data issue read cmd 
+
+
+issue: body body发4次
+DMA address alignment
+*/
+
+enum logic [1:0] {
+    CMD_IDLE_s = 2'd0,
+    CMD_ISSUE_s = 2'd1，
+    CMD_WAIT_s = 2'd2,
+    CMD_END_s = 2'd3
+}cmd_cs, cmd_ns;
+
+logic [31:0]    rd_saddr;
+logic [9:0]     rd_length;
+logic [15:0]    dma_rd_cmd_num;
+logic [15:0]    dma_rd_cmd_cnt;
+
+always_ff @(i_clk) begin
+    if (i_rst | i_sys_rst) begin
+        cmd_cs <= CMD_IDLE_s
+    end else begin
+        cmd_cs <= cmd_ns;
+    end
+end
+
+always_comb begin
+    cmd_ns <= cmd_cs;
+
+    case(cmd_cs)
+    CMD_IDLE_s: begin
+        if (send_start) begin
+            cmd_ns = CMD_ISSUE_s;
+        end
+    end
+    CMD_ISSUE_s: begin
+        if (i_dma_rdcmd_ready) begin
+            cmd_ns = CMD_WAIT_s;
+        end
+    end
+    CMD_WAIT_s: begin
+        if ((dma_rd_cmd_cnt == dma_rd_cmd_num - 1) & i_dma_tranfer_done) begin
+            cmd_ns <= CMD_END_s;
+        end else if (i_dma_tranfer_done) begin
+             cmd_ns = CMD_ISSUE_s;
+        end
+    end
+    CMD_END_s: begin
+        cmd_ns <= CMD_IDLE_s;
+    end
+    default: begin
+        cmd_ns <= CMD_IDLE_s;
+    end
+    endcase
+end
+
+always_ff @(i_clk) begin
+    if (i_rst | i_soft_rst) begin
+        dma_rd_cmd_cnt <= 'h0;
+        dma_rd_cmd_num <= 'h0;
+    end else begin
+        case(cmd_cs)
+        CMD_IDLE_s: begin
+            dma_rd_cmd_num <= 'h0;
+            dma_rd_cmd_cnt <= 'h0;
+        end
+        CMD_ISSUE_s: begin
+            
+        end
+
+    end
+    
+end
+
+
+always_ff @(i_clk) begin
+    if (i_rst | i_sys_rst) begin
+        dma_rd_cmd_num <= 'h0;
+        dma_rd_cmd_num <= 'h0
+    end else begin
+        if 
+    end
+    
+end
 
     
 endmodule
