@@ -4,8 +4,23 @@
         bootargs = "earlycon console=ttyPS0,115200 clk_ignore_unused cpuidle.off=1 root=/dev/mmcblk1p2 rw rootwait";
         stdout-path = "serial0:115200n8";
     };
-};
 
+    reserved-memory {
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
+        reserved_for_fpga: map_fpga@40000000{
+            no-map;
+            reg = <0x0 0x40000000 0x0 0x40000000>;
+        };
+    };
+    fpga-driver@0{
+        status = "okay";
+        compatible = "xlnx, reserved-memory";
+        memory-region = <&reserved_for_fpga>;
+        interrupt = <0 89 4>;
+    };
+};
 
 &qspi {
     flash@0 {
@@ -19,49 +34,10 @@
     };
 };
 
-&gem3 {
-    status="okay";
-    phy-handle = <&phyc>; 
-    pinctrl-names = "default"; 
-    local-mac-address = [00 0a 35 00 22 01]; 
-    phyc: phy@1 { 
-        reg = <0x1>;
-    };
-};
-
-&gem1 {
-    status="okay";
-    phy-handle=<&phy1>;
-    gmii2rgmii-phy-handle=<&gmiitorgmii>;
-    phy-mode="rgmii-rxid";
-    xlnx,has-mdio=<0x1>;
-    mdio:mdio {
-        #address-cells = <1>;
-        #size-cells = <0>;
-        phy1: phy@1 {
-            reg = <1>;
-        };
-
-        gmiitorgmii: gmiitorgmii@8 {
-            compatible = "xlnx,gmii-to-rgmii-4.0";
-            reg = <8>;
-            phy-handle= <&phy1>;
-        };
-    };
-};
-
 
 &sdhci1 {
     status = "okay";
-    no-1-8-v;
     disable-wp;
-    max-frequency=<10000000>;
-    //broken-mmc-highspeed;
-
-};
-
-&sdhci0 {
-    status = "okay";
     no-1-8-v;
 };
 
