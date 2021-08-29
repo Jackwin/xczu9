@@ -189,7 +189,7 @@ module reg_mgt
     assign o_loss_irq = i_loss_interrupt;
     assign o_reg_rdata = rd_reg; 
 // Review
-/*
+
 ila_mgt ila_mgt_i (
     .clk(clk),
     .probe0(i_reg_wen),
@@ -211,7 +211,7 @@ ila_mgt ila_mgt_i (
     .probe16(o_tx_base_addr)
 
 );
-*/
+
     
 endmodule
 

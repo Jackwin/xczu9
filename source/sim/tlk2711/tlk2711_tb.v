@@ -19,6 +19,10 @@ module tlk2711_tb(
     reg [15:0]  RX_IRQ_REG       = 16'h0200;
     reg [15:0]  LOSS_IRQ_REG      = 16'h0300;
 
+	parameter DDR_ADDR_WIDTH = 40;
+	parameter HP0_DATA_WIDTH = 128;
+	parameter STREAM_DATA_WIDTH = 64;	
+
  
     wire             o_tx_irq;
     wire             o_rx_irq;
@@ -44,7 +48,7 @@ module tlk2711_tb(
     wire [3:0]   m_axi_aruser ;
     wire         m_axi_arvalid;
     reg          m_axi_arready = 1'b1;
-    reg [63:0]   m_axi_rdata = 16'd1;
+    reg [HP0_DATA_WIDTH-1:0]   m_axi_rdata = 16'd1;
     reg [1:0]    m_axi_rresp = 2'b00;
     wire         m_axi_rlast;
     wire         m_axi_rvalid;
@@ -210,11 +214,14 @@ module tlk2711_tb(
     assign i_2711_rxd   = o_2711_txd;
     
     tlk2711_top #(    
-       .ADDR_WIDTH(48),
-	     .RDATA_WIDTH(64), 
-	     .WDATA_WIDTH(64), 
-	     .WBYTE_WIDTH(8),   
-       .DLEN_WIDTH(16)
+    	.ADDR_WIDTH(DDR_ADDR_WIDTH),
+	    .AXI_RDATA_WIDTH(HP0_DATA_WIDTH), //HP0_DATA_WIDTH
+	    .AXI_WDATA_WIDTH(HP0_DATA_WIDTH), // HP0_DATA_WIDTH
+	    .AXI_WBYTE_WIDTH(HP0_DATA_WIDTH/8),  // HP0_DATA_WIDTH/8
+        .STREAM_RDATA_WIDTH(STREAM_DATA_WIDTH), 
+	    .STREAM_WDATA_WIDTH(STREAM_DATA_WIDTH),
+	    .STREAM_WBYTE_WIDTH(STREAM_DATA_WIDTH/8),  
+        .DLEN_WIDTH(16)
     ) tlk2711_top (
         .clk(clk),
         .rst(rst),

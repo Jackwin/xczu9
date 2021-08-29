@@ -63,6 +63,41 @@ module  tlk2711_rx_link
     //frame end
     localparam K30_7 = 8'hFE;
     localparam K29_7 = 8'hFD;
+    //sync code
+    localparam K28_5 = 8'hBC;
+    localparam D5_6  = 8'hC5;
+
+    // Rx Lenght
+    // 882 byte used for the test.
+    // There are 3-type lengths, uint of byte, for the application.
+    localparam TEST_LENGTH = 16'd882;
+    localparam TDI_IMAGE_LENGTH = 16'd10752;
+    localparam TDI_VIDEO_LENGTH = 16'd4608;
+    localparam IMAGE_LENGTH = 16'd10752;
+
+    localparam IDLE_s = 4'd0;
+    localparam SYNC_s = 4'd1;
+    localparam FRAME_START_s = 4'd2;
+    localparam FRAME_HEAD_s = 4'd3;
+    localparam DATA_TYPE_s = 4'd4;
+    localparam END_FLAG_s = 4'd5;
+    localparam LINE_INFOR_s = 4'd6;
+    localparam DATA_LENGTH_s = 4'd7;
+    localparam RECV_DATA_s = 4'd8;
+    localparam CHECK_DATA_s = 4'd9;
+    localparam FRAME_END_s = 4'd10;
+
+    localparam FRAME_HEAD_FLAG = 32'heb90_e116;
+
+    reg [3:0] cs;
+    reg [3:0] ns;
+
+    // Store the frame inform
+
+    reg [7:0]   data_mode;
+    reg [7:0]   data_end_flag;
+    reg [15:0]  line_number;
+    reg [15:0]  data_length;
 
     reg [15:0] rx_frame_cnt = 'd0;
     reg [DLEN_WIDTH-1:0] valid_byte = 'd0;
@@ -74,7 +109,7 @@ module  tlk2711_rx_link
 
     reg frame_start, frame_end, frame_valid;
     // TODO modify the bit length to adapt to the 5120 pixels
-    reg [9:0] frame_data_cnt, valid_data_num, trans_data_num;
+    reg [15:0] frame_data_cnt, valid_data_num, trans_data_num;
 
     always@(posedge clk)
     begin
@@ -91,19 +126,62 @@ module  tlk2711_rx_link
             frame_end   <= i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K29_7, K30_7});
             tlk2711_rxd <= i_2711_rxd;
 
-            if (frame_start)
-            begin
+            if (frame_start)begin
                 frame_valid    <= 'b1;
                 frame_data_cnt <= 'd0; 
             end    
-            else if (frame_valid && frame_data_cnt == 'd440)
-            begin
+            // Rx mode case
+            // 1. 882Byte 2. (5120clk+256clk)*2B = 10752Byte 3. (2048clk+256clk)*2B = 4608Byte
+            else if (frame_valid && frame_data_cnt == ((TEST_LENGTH - 2) / 2)) begin
                 frame_valid    <= 'b0;
                 frame_data_cnt <= 'd0;    
-            end  
-            else if (frame_valid)
+            end else if (frame_valid)
                 frame_data_cnt <= frame_data_cnt + 1;
         end 
+    end
+
+    // Rx state
+
+    always @(posedge clk) begin
+        if (rst | i_soft_rst) begin
+            cs <= IDLE_s;
+        end else begin
+            cs <= ns;
+        end
+    end
+
+    always @(*) begin
+        ns = cs;
+        case(cs)
+        IDLE_s: begin
+            if (~i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {D5_6, K28_5})) begin
+                ns = SYNC_s;
+            end
+        end
+        SYNC_s: begin
+            if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K28_2, K27_7})) begin
+                ns = FRAME_START_s;
+            end
+        end
+        FRAME_START_s: begin
+            if ({tlk2711_rxd, i_2711_rxd} == FRAME_HEAD_FLAG) begin
+                ns = DATA_TYPE_s;
+            end
+        end
+        DATA_TYPE_s: ns = END_FLAG_s;
+        END_FLAG_s: ns = LINE_INFOR_s;
+        LINE_INFOR_s: ns = RECV_DATA_s;
+        DATA_LENGTH_s: ns = RECV_DATA_s;
+        RECV_DATA_s: begin
+            if (frame_data_cnt == data_length[15:1] - 1) begin
+                ns = CHECK_DATA_s;
+            end
+        end
+        CHECK_DATA_s: ns = FRAME_END_s;
+        FRAME_END_s: if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K29_7, K30_7})) begin
+            ns = IDLE_s;
+        end
+        endcase 
     end
 
     always@(posedge clk)

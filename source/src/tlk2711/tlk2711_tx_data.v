@@ -130,6 +130,8 @@ module  tlk2711_tx_data
     reg [15:0] valid_dlen = 'd0; 
     reg [15:0] verif_dcnt = 'd0;
 
+    reg [15:0] verify_data = 'h0;
+
     always@(posedge clk)
     begin
         if (i_soft_reset)
@@ -148,7 +150,23 @@ module  tlk2711_tx_data
         if (i_soft_reset | tx_state == tx_start_frame)
             verif_dcnt <= 'd0;
         else if (tx_state == tx_file_sign | tx_state == tx_frame_num | tx_state == tx_vld_dlen | tx_state == tx_vld_data)  
-            verif_dcnt <= verif_dcnt + 2;
+            verif_dcnt <= verif_dcnt + 2;   
+    end
+
+    always @(*) begin
+        if (i_soft_reset)
+            verify_data = 'd0;
+        else begin
+            case(tx_state)
+                tx_idle, tx_begin, tx_sync, tx_start_frame: begin
+                    verify_data = 'h0;
+                end
+                tx_frame_num, tx_vld_dlen, tx_vld_data, tx_frame_tail: begin
+                     verify_data = verify_data + o_2711_txd;
+                 end
+                 default: verify_data = 'h0;
+            endcase
+        end
     end
 
     reg [3:0] tx_mode;
@@ -318,7 +336,8 @@ module  tlk2711_tx_data
                         // be empty after every round of sending.
                         // During the process of sending data, i_tx_start is asserted to be '1' all
                         // the time. When the sendin is done, it is dis-asserted by the software.
-                        if (i_tx_start & ~fifo_empty)
+                       //if (i_tx_start & ~fifo_empty)
+                       if (i_tx_start)
                             tx_state <= tx_begin;  
                     end        
                     tx_begin:
@@ -399,14 +418,15 @@ module  tlk2711_tx_data
                         o_2711_txd   <= fifo_rdata;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
-                        else if (vld_data_cnt == (BODY_LENGTH / 2 - 1) )
+                        else if (vld_data_cnt == (i_tx_packet_body[16:1] - 1))
                             tx_state <= tx_frame_tail;
                     end        
                     tx_frame_tail:
                     begin
                         o_2711_tkmsb <= 'b0;
                         o_2711_tklsb <= 'b0;
-                        o_2711_txd   <= verif_dcnt;
+                       // o_2711_txd   <= verif_dcnt;
+                        o_2711_txd <= verify_data;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else
@@ -438,7 +458,7 @@ module  tlk2711_tx_data
                 end
                 else if (o_tx_interrupt)
                     tail_frame <= 'b0;
-                o_tx_interrupt <= (tx_state == tx_backward) & (backward_cnt == 'd256) & tail_frame;
+                o_tx_interrupt <= (tx_state == tx_backward) & (backward_cnt == 'd255) & tail_frame;
             end    
         end
     end
@@ -470,7 +490,8 @@ tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
     .probe20(i_dma_rd_last),
     .probe21(i_dma_rd_data),
     .probe22(o_dma_rd_ready),
-    .probe23(o_tx_interrupt)
+    .probe23(o_tx_interrupt),
+    .probe24(verify_data)
 );
 
 
