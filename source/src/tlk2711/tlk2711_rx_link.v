@@ -77,15 +77,13 @@ module  tlk2711_rx_link
 
     localparam IDLE_s = 4'd0;
     localparam SYNC_s = 4'd1;
-    localparam FRAME_START_s = 4'd2;
-    localparam FRAME_HEAD_s = 4'd3;
-    localparam DATA_TYPE_s = 4'd4;
-    localparam END_FLAG_s = 4'd5;
-    localparam LINE_INFOR_s = 4'd6;
-    localparam DATA_LENGTH_s = 4'd7;
-    localparam RECV_DATA_s = 4'd8;
-    localparam CHECK_DATA_s = 4'd9;
-    localparam FRAME_END_s = 4'd10;
+    localparam FRAME_HEAD_s = 4'd2;
+    localparam DATA_TYPE_s = 4'd3;
+    localparam LINE_INFOR_s = 4'd4;
+    localparam DATA_LENGTH_s = 4'd5;
+    localparam RECV_DATA_s = 4'd6;
+    localparam CHECK_DATA_s = 4'd7;
+    localparam FRAME_END_s = 4'd8;
 
     localparam FRAME_HEAD_FLAG = 32'heb90_e116;
 
@@ -111,34 +109,35 @@ module  tlk2711_rx_link
     // TODO modify the bit length to adapt to the 5120 pixels
     reg [15:0] frame_data_cnt, valid_data_num, trans_data_num;
 
-    always@(posedge clk)
-    begin
-        if (rst) 
-        begin
-            frame_start    <= 'b0;
-            frame_end      <= 'b0;
-            frame_valid    <= 'b0;
-            frame_data_cnt <= 'd0;
-        end    
-        else 
-        begin
-            frame_start <= i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K28_2, K27_7});
-            frame_end   <= i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K29_7, K30_7});
-            tlk2711_rxd <= i_2711_rxd;
+    // always@(posedge clk)
+    // begin
+    //     if (rst) 
+    //     begin
+    //         frame_start    <= 'b0;
+    //         frame_end      <= 'b0;
+    //         frame_valid    <= 'b0;
+    //         frame_data_cnt <= 'd0;
+    //     end    
+    //     else 
+    //     begin
+    //         frame_start <= i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K28_2, K27_7});
+    //         frame_end   <= i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K29_7, K30_7});
+    //         tlk2711_rxd <= i_2711_rxd;
 
-            if (frame_start)begin
-                frame_valid    <= 'b1;
-                frame_data_cnt <= 'd0; 
-            end    
-            // Rx mode case
-            // 1. 882Byte 2. (5120clk+256clk)*2B = 10752Byte 3. (2048clk+256clk)*2B = 4608Byte
-            else if (frame_valid && frame_data_cnt == ((TEST_LENGTH - 2) / 2)) begin
-                frame_valid    <= 'b0;
-                frame_data_cnt <= 'd0;    
-            end else if (frame_valid)
-                frame_data_cnt <= frame_data_cnt + 1;
-        end 
-    end
+    //         if (frame_start)begin
+    //             frame_valid    <= 'b1;
+    //             frame_data_cnt <= 'd0; 
+    //         end    
+    //         // Rx mode case
+    //         // 1. 882Byte 2. (5120clk+256clk)*2B = 10752Byte 3. (2048clk+256clk)*2B = 4608Byte
+    //         else if (frame_valid && frame_data_cnt == ((TEST_LENGTH - 2) / 2)) begin
+    //             frame_valid    <= 'b0;
+    //             frame_data_cnt <= 'd0;    
+    //         end else if (frame_valid)
+    //             frame_data_cnt <= frame_data_cnt + 1;
+    //     end 
+    // end
+
 
     // Rx state
 
@@ -151,37 +150,73 @@ module  tlk2711_rx_link
     end
 
     always @(*) begin
-        ns = cs;
+        ns <= cs;
         case(cs)
         IDLE_s: begin
             if (~i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {D5_6, K28_5})) begin
-                ns = SYNC_s;
+                ns <= SYNC_s;
             end
         end
         SYNC_s: begin
             if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K28_2, K27_7})) begin
-                ns = FRAME_START_s;
+                ns <= FRAME_HEAD_s;
             end
         end
-        FRAME_START_s: begin
+        FRAME_HEAD_s: begin
             if ({tlk2711_rxd, i_2711_rxd} == FRAME_HEAD_FLAG) begin
-                ns = DATA_TYPE_s;
+                ns <= DATA_TYPE_s;
             end
         end
-        DATA_TYPE_s: ns = END_FLAG_s;
-        END_FLAG_s: ns = LINE_INFOR_s;
-        LINE_INFOR_s: ns = RECV_DATA_s;
-        DATA_LENGTH_s: ns = RECV_DATA_s;
+        DATA_TYPE_s: ns <= LINE_INFOR_s;
+        LINE_INFOR_s: ns <= DATA_LENGTH_s;
+        DATA_LENGTH_s: ns <= RECV_DATA_s;
         RECV_DATA_s: begin
+            // data length must be larger than or equal to 2
             if (frame_data_cnt == data_length[15:1] - 1) begin
-                ns = CHECK_DATA_s;
+                ns <= CHECK_DATA_s;
             end
         end
         CHECK_DATA_s: ns = FRAME_END_s;
         FRAME_END_s: if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K29_7, K30_7})) begin
-            ns = IDLE_s;
+            ns <= IDLE_s;
         end
         endcase 
+    end
+
+    always @(posedge clk) begin
+        if (rst | i_soft_rst) begin
+            data_mode <= 0;
+            data_end_flag <= 'h0;
+            line_number <='h0;
+            data_length <= 'h0;
+        end else begin
+            if (cs == DATA_TYPE_s) {data_mode, data_end_flag} <= i_2711_rxd;
+            if (cs == LINE_INFOR_s) line_number <= i_2711_rxd;
+            if (cs == DATA_LENGTH_s) data_length <= i_2711_rxd;
+        end
+    end
+
+    always @(posedge clk) begin
+        if (rst | i_soft_rst) begin
+            frame_data_cnt <= 'h0;
+            frame_valid <= 'h0;
+            frame_end <= 'h0;
+        end else begin
+            if (cs == RECV_DATA_s) begin
+                frame_data_cnt <= frame_data_cnt + 1'd1;
+                frame_valid <= 1'b1;
+            end else if (cs == CHECK_DATA_s) begin
+                frame_data_cnt <= 'h0;
+                frame_valid <= 1'b0;
+            end
+
+            if (cs == FRAME_END_s) frame_end <= 1'b1;
+            else frame_end <= 1'b0;
+        end
+    end
+
+    always @(posedge clk) begin
+        tlk2711_rxd <= i_2711_rxd;
     end
 
     always@(posedge clk)
@@ -217,6 +252,8 @@ module  tlk2711_rx_link
 
     assign o_dma_wr_valid = ~fifo_empty & i_dma_wr_ready;
     assign o_dma_wr_keep = {WBYTE_WIDTH{1'b1}};
+
+    // TODO fifo control logics
 
     always@(posedge clk)
     begin
