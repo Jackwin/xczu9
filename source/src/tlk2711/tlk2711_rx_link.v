@@ -45,7 +45,7 @@ module  tlk2711_rx_link
     output [DATA_WIDTH-1:0]             o_dma_wr_data,
 
     output                              o_rx_interrupt,
-    output reg [31:0]                   o_rx_total_packet, //total packet len in byte
+    output [31:0]                       o_rx_total_packet, //total packet len in byte
     output reg [15:0]                   o_rx_packet_tail, //tail length in byte
     output [15:0]                       o_rx_body_num,
 
@@ -172,6 +172,7 @@ module  tlk2711_rx_link
         DATA_LENGTH_s: ns <= RECV_DATA_s;
         RECV_DATA_s: begin
             // data length must be larger than or equal to 2
+            // TODO  Deal with the data length
             if (frame_data_cnt == data_length[15:1] - 1) begin
                 ns <= CHECK_DATA_s;
             end
@@ -253,7 +254,15 @@ module  tlk2711_rx_link
     assign o_dma_wr_valid = ~fifo_empty & i_dma_wr_ready;
     assign o_dma_wr_keep = {WBYTE_WIDTH{1'b1}};
 
-    // TODO fifo control logics
+    always @(posedge clk) begin
+        if (rst | i_soft_rst) begin
+            fifo_wren <= 1'b0;
+        end else begin
+            if (cs == RECV_DATA_s) begin
+                fifo_wren <= 1'b1;
+            end
+        end
+    end
 
     always@(posedge clk)
     begin
@@ -269,18 +278,40 @@ module  tlk2711_rx_link
             trans_data_num <= wr_bbt[15:1] + 4;
             valid_data_num <= valid_byte[15:1] + 4;
 
-            if (frame_valid && frame_data_cnt == 'd4)
-            begin
-                fifo_wren <= 'b1;
-                valid_data_ind <= 'b1;
-            end  
-            else if (frame_valid && frame_data_cnt == valid_data_num)   
-                valid_data_ind <= 'b0;
-            else if (frame_valid && frame_data_cnt == trans_data_num)    
-                fifo_wren <= 'b0;
+            // if (frame_valid && frame_data_cnt == 'd4)
+            // begin
+            //     fifo_wren <= 'b1;
+            //     valid_data_ind <= 'b1;
+            // end  
+            // else if (frame_valid && frame_data_cnt == valid_data_num)   
+            //     valid_data_ind <= 'b0;
+            // else if (frame_valid && frame_data_cnt == trans_data_num)    
+            //     fifo_wren <= 'b0;
   
         end
     end
+
+    // Generate interrupt.
+    // Note the DMA trans
+
+    reg     one_frame_done;
+
+    always @(clk) begin
+        if (rst | i_soft_rst) begin
+            one_frame_done <= 1'b0;
+        end else begin
+            if (cs == FRAME_END_s) begin
+                one_frame_done <= 1'b1;
+            end else if (i_wr_finish) begin
+                one_frame_done <= 1'b0;
+            end
+        end
+    end
+
+    assign o_rx_interrupt = one_frame_done & i_wr_finish;
+    assign o_rx_body_num = line_number;
+    assign o_rx_total_packet = data_length;
+
     
     fifo_fwft_16_2048 fifo_fwft_rx (
         .clk(clk),
@@ -295,37 +326,37 @@ module  tlk2711_rx_link
 
     reg tail_frame_ind;
 
-    assign o_rx_interrupt = tail_frame_ind & i_wr_finish;
-    assign o_rx_body_num  = rx_frame_cnt;
+    //assign o_rx_interrupt = tail_frame_ind & i_wr_finish;
+   // assign o_rx_body_num  = rx_frame_cnt;
 
     always@(posedge clk)
     begin
         if (rst) 
         begin
             tail_frame_ind    <= 'b0;
-            o_rx_total_packet <= 'd0;
+            // o_rx_total_packet <= 'd0;
             o_rx_packet_tail  <= 'd0;
             rx_frame_cnt      <= 'd0;
         end
         else
         begin
-            if (frame_valid & frame_data_cnt == 'd2 & tlk2711_rxd[15:8] == 'd1)
-                tail_frame_ind <= 'b1;
-            else if (i_wr_finish) 
-                tail_frame_ind <= 'b0;
+            // if (frame_valid & frame_data_cnt == 'd2 & tlk2711_rxd[15:8] == 'd1)
+            //     tail_frame_ind <= 'b1;
+            // else if (i_wr_finish) 
+            //     tail_frame_ind <= 'b0;
 
             if (i_rx_start & o_rx_interrupt)
                 rx_frame_cnt <= 'd0;
             else if (frame_end)      
                 rx_frame_cnt <= rx_frame_cnt + 1;
 
-            if (i_rx_start & o_rx_interrupt)
-                o_rx_total_packet <= 'd0;
-            else if (valid_data_ind)      
-                o_rx_total_packet <= o_rx_total_packet + 2;    
+            // if (i_rx_start & o_rx_interrupt)
+            //     o_rx_total_packet <= 'd0;
+            // else if (valid_data_ind)      
+            //     o_rx_total_packet <= o_rx_total_packet + 2;    
 
-            if (tail_frame_ind & o_wr_cmd_req && i_wr_cmd_ack)    
-                o_rx_packet_tail  <= valid_byte;
+            // if (tail_frame_ind & o_wr_cmd_req && i_wr_cmd_ack)    
+            //     o_rx_packet_tail  <= valid_byte;
         end    
     end 
 

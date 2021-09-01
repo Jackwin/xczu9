@@ -260,6 +260,20 @@ module  tlk2711_tx_data
         end
     end
 
+    reg  tx_cfg_flag;
+
+    always @(clk) begin
+        if (rst | i_soft_reset) begin
+            tx_cfg_flag <= 1'b0;
+        end else begin
+            if (i_tx_start) begin
+                tx_cfg_flag <= 1'b1;
+            end else if (tx_state == tx_backward) begin
+                tx_cfg_flag <= 1'b0;
+            end
+        end
+    end
+
     
     always@(posedge clk)
     begin
@@ -337,7 +351,8 @@ module  tlk2711_tx_data
                         // During the process of sending data, i_tx_start is asserted to be '1' all
                         // the time. When the sendin is done, it is dis-asserted by the software.
                        //if (i_tx_start & ~fifo_empty)
-                       if (i_tx_start)
+                       // For every sending, it's required to config the tx register
+                       if (tx_cfg_flag & ~fifo_empty)
                             tx_state <= tx_begin;  
                     end        
                     tx_begin:
