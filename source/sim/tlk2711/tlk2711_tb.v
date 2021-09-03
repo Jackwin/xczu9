@@ -189,7 +189,7 @@ module tlk2711_tb(
 		    num_video <= num_video - 1;
 		 
 		if(m_axi_rready & m_axi_rvalid)
-			m_axi_rdata <= m_axi_rdata + 'd2; // $random%1200; 
+			m_axi_rdata <= m_axi_rdata + 'd1; // $random%1200; 
 		
 	end
 	

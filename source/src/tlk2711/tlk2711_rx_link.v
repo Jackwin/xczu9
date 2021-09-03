@@ -20,7 +20,7 @@ module  tlk2711_rx_link
 #(
     parameter ADDR_WIDTH = 32,
     parameter DLEN_WIDTH = 16,
-	  parameter DATA_WIDTH = 64,
+	parameter DATA_WIDTH = 64,
     parameter WBYTE_WIDTH = 8
 )
 (
@@ -172,13 +172,12 @@ module  tlk2711_rx_link
         DATA_LENGTH_s: ns <= RECV_DATA_s;
         RECV_DATA_s: begin
             // data length must be larger than or equal to 2
-            // TODO  Deal with the data length
             if (frame_data_cnt == data_length[15:1] - 1) begin
                 ns <= CHECK_DATA_s;
             end
         end
         CHECK_DATA_s: ns <= FRAME_END_s;
-        FRAME_END_s: if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K29_7, K30_7})) begin
+        FRAME_END_s:  begin
             ns <= IDLE_s;
         end
         endcase 
@@ -220,33 +219,52 @@ module  tlk2711_rx_link
         tlk2711_rxd <= i_2711_rxd;
     end
 
-    always@(posedge clk)
-    begin
-        if (rst) 
-        begin
-            wr_bbt       <= 'd0;
-            valid_byte   <= 'd0;
+    always @(posedge clk) begin
+        if (rst | i_soft_rst) begin
             wr_addr      <= 'd0;
             o_wr_cmd_req <= 'b0;
-        end    
-        else 
-        begin           
-            if (frame_valid && frame_data_cnt == 'd4)  
-            begin
-                o_wr_cmd_req <= 'b1;
-                wr_bbt[DLEN_WIDTH-1:3] <= tlk2711_rxd[15:3] + |tlk2711_rxd[2:0]; 
+            wr_bbt       <= 'd0;
+        end else begin
+            if (cs == DATA_LENGTH_s) begin
+                // Recv data length is 882B, 10752B, 4608B. When write data to 
+                // DDR, the unit number is 8byte, so the software needs to
+                // tailor the correct number. For example, the received data
+                // is 882 bytes, but 888 bytes data will be written to DDR.
+                wr_bbt[DLEN_WIDTH-1:3] <= i_2711_rxd[15:3] + |i_2711_rxd[2:0]; 
                 wr_bbt[2:0]  <= 'd0;
-                valid_byte   <= tlk2711_rxd;
-            end    
-            else if (i_wr_cmd_ack)
-                o_wr_cmd_req <= 'b0;
-
+                o_wr_cmd_req <= 1'b1;
+            end else if (i_wr_cmd_ack) begin
+                o_wr_cmd_req <= 1'b0;
+            end
             if (i_rx_start)
                 wr_addr <= i_rx_base_addr;
+            // REVIEW: Get the wr_addr from the fpga_mgt?
             else if (frame_end)
                 wr_addr <= wr_addr + wr_bbt;
-        end 
+        end
     end
+
+    // always@(posedge clk) begin
+    //     if (rst) begin
+    //         wr_bbt       <= 'd0;
+    //         valid_byte   <= 'd0;
+    //         wr_addr      <= 'd0;
+    //         o_wr_cmd_req <= 'b0;
+    //     end else begin           
+    //         if (frame_valid && frame_data_cnt == 'd4)  begin
+    //             o_wr_cmd_req <= 'b1;
+    //             wr_bbt[DLEN_WIDTH-1:3] <= tlk2711_rxd[15:3] + |tlk2711_rxd[2:0]; 
+    //             wr_bbt[2:0]  <= 'd0;
+    //             valid_byte   <= tlk2711_rxd;
+    //         end else if (i_wr_cmd_ack)
+    //             o_wr_cmd_req <= 'b0;
+
+    //         if (i_rx_start)
+    //             wr_addr <= i_rx_base_addr;
+    //         else if (frame_end)
+    //             wr_addr <= wr_addr + wr_bbt;
+    //     end 
+    // end
 
     reg  fifo_wren, valid_data_ind;
     wire fifo_empty;
