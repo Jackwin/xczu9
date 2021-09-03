@@ -433,7 +433,7 @@ module  tlk2711_tx_data
                         o_2711_txd   <= fifo_rdata;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
-                        else if (vld_data_cnt == (i_tx_packet_body[16:1] - 1))
+                        else if (vld_data_cnt == (i_tx_packet_body[15:1] - 1))
                             tx_state <= tx_frame_tail;
                     end        
                     tx_frame_tail:

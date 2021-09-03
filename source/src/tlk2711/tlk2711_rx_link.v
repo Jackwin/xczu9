@@ -177,7 +177,7 @@ module  tlk2711_rx_link
                 ns <= CHECK_DATA_s;
             end
         end
-        CHECK_DATA_s: ns = FRAME_END_s;
+        CHECK_DATA_s: ns <= FRAME_END_s;
         FRAME_END_s: if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K29_7, K30_7})) begin
             ns <= IDLE_s;
         end
