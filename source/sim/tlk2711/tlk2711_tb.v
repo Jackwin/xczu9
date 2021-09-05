@@ -19,6 +19,8 @@ module tlk2711_tb(
     reg [15:0]  RX_IRQ_REG       = 16'h0200;
     reg [15:0]  LOSS_IRQ_REG      = 16'h0300;
 
+	reg [15:0]  IRQ_REG       = 16'h0100;
+
 	parameter DDR_ADDR_WIDTH = 40;
 	parameter HP0_DATA_WIDTH = 128;
 	parameter STREAM_DATA_WIDTH = 64;	
@@ -48,7 +50,8 @@ module tlk2711_tb(
     wire [3:0]   m_axi_aruser ;
     wire         m_axi_arvalid;
     reg          m_axi_arready = 1'b1;
-    reg [HP0_DATA_WIDTH-1:0]   m_axi_rdata = 16'd1;
+    reg [HP0_DATA_WIDTH-1:0]   m_axi_rdata = {16'd4, 16'd5, 16'd6, 16'd7, 
+											16'd0, 16'd1, 16'd2, 16'd3};
     reg [1:0]    m_axi_rresp = 2'b00;
     wire         m_axi_rlast;
     wire         m_axi_rvalid;
@@ -63,7 +66,7 @@ module tlk2711_tb(
     wire [3:0]   m_axi_awuser ;
     wire         m_axi_awvalid;
     reg          m_axi_awready = 1'b1;
-    wire [63:0]  m_axi_wdata;
+    wire [HP0_DATA_WIDTH-1:0]  m_axi_wdata;
     wire [7:0]   m_axi_wstrb;
     wire         m_axi_wlast;
     wire         m_axi_wvalid;
@@ -88,11 +91,12 @@ module tlk2711_tb(
 		#10 clk = ~clk;  // 100M	
 	end
 	
-	reg            i_reg_wen, i_reg_ren;
-	reg  [15:0]    i_reg_waddr, i_reg_raddr;
-	reg  [63:0]    i_reg_wdata;
-	wire [63:0]    i_reg_rdata;
-	reg  [10:0]    start_cnt = 'd0;
+	reg            	i_reg_wen, i_reg_ren;
+	reg  [15:0]    	i_reg_waddr, i_reg_raddr;
+	reg  [63:0]    	i_reg_wdata;
+	wire [63:0]    	i_reg_rdata;
+	reg  [10:0]    	start_cnt = 'd0;
+	wire [63:0] 	o_reg_rdata;
 	
 	always@(posedge clk)                             
 	begin
@@ -152,29 +156,44 @@ module tlk2711_tb(
 		endcase	
 	end
 
-  always@(posedge clk)
-	begin
-	  if (o_tx_irq)
-	  begin
-	  	i_reg_ren   <= 'b1;
-	  	i_reg_raddr <= TX_IRQ_REG;
-	  end	
-	  else if (o_rx_irq)
-	  begin
-	  	i_reg_ren   <= 'b1;
-	  	i_reg_raddr <= RX_IRQ_REG;
-	  end	
-	  else if (o_loss_irq)
-	  begin
-	  	i_reg_ren   <= 'b1;
-	  	i_reg_raddr <= LOSS_IRQ_REG;
-	  end	
-	  else
-	  begin
-	  	i_reg_ren   <= 'b0;
-	  	i_reg_raddr <= 'd0;
-	  end
-	end
+//   always@(posedge clk)
+// 	begin
+// 	  if (o_tx_irq)
+// 	  begin
+// 	  	i_reg_ren   <= 'b1;
+// 	  	i_reg_raddr <= TX_IRQ_REG;
+// 	  end	
+// 	  else if (o_rx_irq)
+// 	  begin
+// 	  	i_reg_ren   <= 'b1;
+// 	  	i_reg_raddr <= RX_IRQ_REG;
+// 	  end	
+// 	  else if (o_loss_irq)
+// 	  begin
+// 	  	i_reg_ren   <= 'b1;
+// 	  	i_reg_raddr <= LOSS_IRQ_REG;
+// 	  end	
+// 	  else
+// 	  begin
+// 	  	i_reg_ren   <= 'b0;
+// 	  	i_reg_raddr <= 'd0;
+// 	  end
+// 	end
+
+	always@(posedge clk) begin
+		if (rst) begin
+			i_reg_ren <= 1'b0;
+			i_reg_raddr <= 'h0;
+		end else begin
+			if (o_tx_irq | o_rx_irq | o_loss_irq)begin
+				i_reg_ren   <= 'b1;
+				i_reg_raddr <= IRQ_REG;
+			end else begin
+				i_reg_ren <= 0;
+				i_reg_raddr <= 'h0;
+			end
+		end
+  	end
 
   reg [31:0] num_video = 32'd0;
   	
@@ -189,7 +208,7 @@ module tlk2711_tb(
 		    num_video <= num_video - 1;
 		 
 		if(m_axi_rready & m_axi_rvalid)
-			m_axi_rdata <= m_axi_rdata + 'd1; // $random%1200; 
+			m_axi_rdata <= m_axi_rdata + {8{16'h8}}; // $random%1200; 
 		
 	end
 	

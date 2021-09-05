@@ -425,6 +425,7 @@ tlk2711 tlk2711a_inst (
         .o_tx_irq(tlk2711_tx_irq),
         .o_rx_irq(tlk2711_rx_irq),
         .o_loss_irq(tlk2711_loss_irq),
+
         //tlk2711 interface
         // TODO rx should use rx_clk
         .i_2711_rkmsb(tlk2711b_rkmsb),
@@ -567,9 +568,9 @@ mpsoc mpsoc_inst (
     .s_axi_hp0_wstrb(m_axi_wstrb),
     .s_axi_hp0_wvalid(m_axi_wvalid),
 
-    .tlk2711_los(tlk2711_loss_irq),
-    .tlk2711_rx_irq(tlk2711_rx_irq),
-    .tlk2711_tx_irq(tlk2711_tx_irq),
+    .i_tlk2711_loss_irq(tlk2711_loss_irq),
+    .i_tlk2711_rx_irq(tlk2711_rx_irq),
+    .i_tlk2711_tx_irq(tlk2711_tx_irq),
 
     // ---  Test DMA -----------------
 

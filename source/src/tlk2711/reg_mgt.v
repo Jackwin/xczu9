@@ -36,6 +36,7 @@ module reg_mgt
     output              o_tx_irq,
     output              o_rx_irq,
     output              o_loss_irq,
+  
     
     // TX port set
     output reg [ADDR_WIDTH-1:0]   o_tx_base_addr, //read data address from DDR to tx module
@@ -53,10 +54,10 @@ module reg_mgt
     output reg                    o_rx_config_done,
 
     input                         i_rx_interrupt, //when asserted, the packet information is valid at the same time
-    input  [31:0]                 i_rx_total_packet,
-    input  [15:0]                 i_rx_packet_body, //870B here the same as tx configuration and no need to reported 
-    input  [15:0]                 i_rx_packet_tail,
-    input  [15:0]                 i_rx_body_num,
+    input  [15:0]                 i_rx_frame_length,
+    input  [15:0]                 i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
+    //input  [15:0]                 i_rx_packet_tail,
+   // input  [15:0]                 i_rx_body_num,
 
     input                         i_loss_interrupt,
     input                         i_sync_loss,
@@ -67,6 +68,7 @@ module reg_mgt
     );
 
     localparam  SOFT_R_REG       = 16'h0000;
+    localparam  IRQ_REG          = 16'h0100;
     localparam  TX_IRQ_REG       = 16'h0100;
     localparam  RX_IRQ_REG       = 16'h0200;
     localparam  RX_LOSS_REG      = 16'h0300;
@@ -79,14 +81,11 @@ module reg_mgt
     (*keep="true"*)reg  [63:0] reg_wdata;
     (*keep="true"*)reg  [15:0] reg_waddr;
 	
-    always@(posedge clk)
-    begin
+    always@(posedge clk)begin
         if(rst)
             reg_wen <= 0;
-        else 
-        begin
-			if(i_reg_wen)
-			begin
+        else begin
+			if(i_reg_wen) begin
 				reg_waddr <= i_reg_waddr;
 			    reg_wdata <= i_reg_wdata;
 			end
@@ -94,8 +93,7 @@ module reg_mgt
         end        
     end
 
-    always@(posedge clk)
-    begin
+    always@(posedge clk) begin
         if( reg_wen && ( reg_waddr == 16'h0100 )) // for tx config done
             o_tx_config_done <=  1'b1;
         else 
@@ -104,31 +102,27 @@ module reg_mgt
         if( reg_wen && ( reg_waddr == 16'h0200 )) // for rx config done
             o_rx_config_done <=  1'b1;
         else 
-            o_rx_config_done <= 1'b0;    
- 
+            o_rx_config_done <= 1'b0;
     end
 
-    always@(posedge clk)
-    begin
+    always@(posedge clk) begin
         if( reg_wen )
           case(reg_waddr)
             //tx
             16'h0108:   o_tx_base_addr    <= reg_wdata;
             16'h0110:   o_tx_total_packet <= reg_wdata;
-            16'h0118:                         
-            begin                             
-                        o_tx_packet_body  <= reg_wdata[15:0]; //configured as 870B here
-                        o_tx_packet_tail  <= reg_wdata[15+32:32];
+            16'h0118:begin                             
+                o_tx_packet_body  <= reg_wdata[15:0]; //configured as 870B here
+                o_tx_packet_tail  <= reg_wdata[15+32:32];
             end                        
-            16'h0120:
-            begin
-                        o_tx_mode         <= reg_wdata[3:0];  
-                        // REVIEW the tx_body is limited to 65536x870B = 54MB
-                        o_tx_body_num     <= reg_wdata[32+15:32];
+            16'h0120:begin
+                o_tx_mode         <= reg_wdata[3:0];  
+                // REVIEW the tx_body is limited to 65536x870B = 54MB
+                o_tx_body_num     <= reg_wdata[32+15:32];
             end
             //rx
             16'h0208:
-                        o_rx_base_addr    <= reg_wdata;  
+                o_rx_base_addr    <= reg_wdata;  
             
           endcase
     end
@@ -139,16 +133,14 @@ module reg_mgt
     reg soft_rst_reg = 1'b0;
     reg [7:0] count = 8'd0; 
 
-    always @ (posedge clk)
-    begin
+    always @ (posedge clk) begin
         if (i_reg_wen && i_reg_waddr == SOFT_R_REG )
             soft_rst_reg <= 1'b1;       
         else if (count==8'hff)
             soft_rst_reg <= 1'b0;
     end
 
-    always @ (posedge clk)
-    begin
+    always @ (posedge clk) begin
         if (soft_rst_reg==1'b1)
             count <= count - 8'd1;
         else
@@ -163,6 +155,9 @@ module reg_mgt
     wire tx_intr_rd;
     wire rx_intr_rd;
     wire loss_intr_rd;
+    wire intr_rd;
+
+    assign intr_rd = (i_reg_raddr == IRQ_REG) && i_reg_ren;
     
     assign tx_intr_rd = (i_reg_raddr == TX_IRQ_REG) && i_reg_ren;
     assign rx_intr_rd = (i_reg_raddr == RX_IRQ_REG) && i_reg_ren;
@@ -171,25 +166,49 @@ module reg_mgt
     reg [63:0]  rd_reg = 'd0;
     reg [63:0]  rx_status;
 
-    always @ (posedge clk )
-    begin
-        if(tx_intr_rd)
-            rd_reg <= 64'h1010;
-        else if (rx_intr_rd) 
-            rd_reg <= rx_status;
-        else if (loss_intr_rd)    
-            rd_reg <= {31'b0, i_sync_loss, 31'b0, i_link_loss};
+    // TODO  Suppor more regs read
+    always @ (posedge clk ) begin
+        if (rst) begin
+            rx_status <= 'h0;
+            rd_reg <= 'h0;
+        end else begin
+            // if(tx_intr_rd)
+            //     rd_reg <= 64'h1010;
+            // else if (rx_intr_rd) 
+            //     rd_reg <= rx_status;
+            // else if (loss_intr_rd)    
+            //     rd_reg <= {31'b0, i_sync_loss, 31'b0, i_link_loss};
 
-        if (i_rx_interrupt)
-            rx_status <= {i_rx_body_num, i_rx_packet_tail, i_rx_total_packet};
+            if (intr_rd)
+                rd_reg <= rx_status;
+
+            if (i_rx_interrupt)
+                rx_status <= {4'd2, 28'h0, i_rx_frame_num, i_rx_frame_length};
+            else if (i_tx_interrupt)
+                 rx_status <= {4'd1, 28'd0, 16'h0000, 16'h5aa5};
+            else if (i_loss_interrupt) 
+                rx_status <= {4'd3, 32'h0, 30'h0, i_sync_loss, i_link_loss};
+        end
     end
+
+   // assign o_irq = i_tx_interrupt | i_rx_interrupt | i_loss_interrupt;
+
+    // always @(posedge clk) begin
+    //     if (rst) begin
+    //         o_irq_msg <= 'h0;
+    //     end else begin
+    //         if (i_rx_interrupt) begin
+    //             o_irq_msg[63:60] <= 4'd1;
+    //         end else if (i_loss_interrupt)
+    //     end
+    // end
 
     assign o_tx_irq = i_tx_interrupt;
     assign o_rx_irq = i_rx_interrupt;
     assign o_loss_irq = i_loss_interrupt;
     assign o_reg_rdata = rd_reg; 
 // Review
-
+/*
 ila_mgt ila_mgt_i (
     .clk(clk),
     .probe0(i_reg_wen),
@@ -211,7 +230,7 @@ ila_mgt ila_mgt_i (
     .probe16(o_tx_base_addr)
 
 );
-
+*/
     
 endmodule
 

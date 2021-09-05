@@ -84,18 +84,19 @@ module  tlk2711_tx_data
 	parameter BODY_LENGTH = 16'd870;
 
     reg       [3:0]           tx_state;
-    localparam                tx_idle = 4'd0;
-    localparam                tx_begin = 4'd1;
-    localparam                tx_sync = 4'd2;
-    localparam                tx_start_frame = 4'd3;
-    localparam                tx_frame_head = 4'd4;
-    localparam                tx_file_sign = 4'd5;
-    localparam                tx_frame_num = 4'd6;
-    localparam                tx_vld_dlen = 4'd7;
-    localparam                tx_vld_data = 4'd8;
-    localparam                tx_frame_tail = 4'd9;
-    localparam                tx_end_frame = 4'd10;
-    localparam                tx_backward = 4'd11;
+    localparam                tx_pwr_sync= 4'd0;
+    localparam                tx_idle = 4'd1;
+    localparam                tx_begin = 4'd2;
+    localparam                tx_sync = 4'd3;
+    localparam                tx_start_frame = 4'd4;
+    localparam                tx_frame_head = 4'd5;
+    localparam                tx_file_sign = 4'd6;
+    localparam                tx_frame_num = 4'd7;
+    localparam                tx_vld_dlen = 4'd8;
+    localparam                tx_vld_data = 4'd9;
+    localparam                tx_frame_tail = 4'd10;
+    localparam                tx_end_frame = 4'd11;
+    localparam                tx_backward = 4'd12;
 
     reg  fifo_enable;
     wire fifo_full, fifo_wren, fifo_rden;
@@ -115,6 +116,7 @@ module  tlk2711_tx_data
     assign fifo_wren = i_dma_rd_valid & o_dma_rd_ready & fifo_enable;
     assign fifo_rden = (tx_state == tx_vld_data | tx_state == tx_frame_tail); //cmd request 872B and only transfer 870B, the last data will be ignored
     
+    // TODO The data loaded from DMA is larger than the to-send, which cause bubles.
     fifo_fwft_64_512 fifo_fwft_tx (
         .clk(clk),
         .srst(rst | i_soft_reset),
@@ -216,12 +218,12 @@ module  tlk2711_tx_data
 
 
     reg [16:0] sync_cnt; //for 1ms in 100MHz clk, count 100000 cycles
+    reg [16:0] pwr_sync_cnt; //for 1ms in 100MHz clk, count 100000 cycles
     reg        head_cnt; //frame head counter, count 2 cycles
     reg [8:0]  vld_data_cnt; //valid data counter, count 435 cycles
     reg [8:0]  backward_cnt; //backward counter between frames, count 257 cycles
 
-    always@(posedge clk)
-    begin
+    always@(posedge clk) begin
         if (tx_state == tx_begin)
             sync_cnt <= 'd0;
         else if (tx_state == tx_sync)
@@ -274,6 +276,16 @@ module  tlk2711_tx_data
         end
     end
 
+    // power-up 1ms sync
+    always @(posedge clk) begin
+        if (rst) begin
+            pwr_sync_cnt <= 'h0;
+        end else if (tx_state == tx_pwr_sync) begin
+            pwr_sync_cnt <= pwr_sync_cnt + 1;
+        end else begin
+            pwr_sync_cnt <= 'h0;
+        end
+    end
     
     always@(posedge clk)
     begin
@@ -341,6 +353,10 @@ module  tlk2711_tx_data
                 o_2711_txd   <= {K28_2, K27_7};
             end else begin
                 case(tx_state)
+                    tx_pwr_sync: begin
+                        //if (pwr_sync_cnt == 16'd9999) tx_state <= tx_idle
+                        if (pwr_sync_cnt == 16'd99) tx_state <= tx_idle;
+                    end
                     tx_idle:begin
                         o_2711_tkmsb <= 'b0;
                         o_2711_tklsb <= 'b0;
@@ -468,10 +484,10 @@ module  tlk2711_tx_data
                             tx_state <= tail_frame ? tx_idle : tx_start_frame;
                     end        
                 endcase
+
                 if (tx_state == tx_end_frame && frame_cnt == i_tx_body_num) begin
                     tail_frame <= 'b1;
-                end
-                else if (o_tx_interrupt)
+                end else if (o_tx_interrupt)
                     tail_frame <= 'b0;
                 o_tx_interrupt <= (tx_state == tx_backward) & (backward_cnt == 'd255) & tail_frame;
             end    

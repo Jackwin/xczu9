@@ -97,7 +97,8 @@ module  tlk2711_tx_cmd
             if (tx_start | i_soft_rst)
                 rd_addr <= i_tx_base_addr;
             else if (rd_cmd_req)    
-                rd_addr <= rd_addr + i_tx_packet_body;
+                //rd_addr <= rd_addr + i_tx_packet_body;
+                rd_addr <= rd_addr + packet_body_align8;
             
             rd_bbt <= tx_frame_cnt == i_tx_body_num ? packet_tail_align8 : packet_body_align8;
         end

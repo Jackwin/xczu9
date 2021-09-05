@@ -46,7 +46,7 @@ module tlk2711_top
     output              o_tx_irq,
     output              o_rx_irq,
     output              o_loss_irq,
-    
+
     //tlk2711 interface
     input               i_2711_rkmsb,
     input               i_2711_rklsb,
@@ -117,10 +117,10 @@ module tlk2711_top
     wire [ADDR_WIDTH-1:0]   rx_base_addr;
     wire                    rx_config_done;
     wire                    rx_interrupt;
-    wire [31:0]             rx_total_packet;
+    wire [15:0]             rx_frame_length;
     wire [15:0]             rx_packet_body; 
     wire [15:0]             rx_packet_tail;
-    wire [15:0]             rx_body_num;
+    wire [15:0]             rx_frame_num;
 
     wire                    loss_interrupt;
     wire                    sync_loss;
@@ -159,6 +159,7 @@ module tlk2711_top
        .o_tx_irq(o_tx_irq),
        .o_rx_irq(o_rx_irq),
        .o_loss_irq(o_loss_irq),
+      
        .o_tx_base_addr(tx_base_addr), 
        .o_tx_total_packet(tx_total_packet), 
        .o_tx_packet_body(tx_packet_body), 
@@ -170,10 +171,10 @@ module tlk2711_top
        .o_rx_base_addr(rx_base_addr), 
        .o_rx_config_done(rx_config_done),
        .i_rx_interrupt(rx_interrupt), 
-       .i_rx_total_packet(rx_total_packet),
-       .i_rx_packet_body(rx_packet_body), 
-       .i_rx_packet_tail(rx_packet_tail),
-       .i_rx_body_num(rx_body_num),
+       .i_rx_frame_length(rx_frame_length),
+       //.i_rx_packet_body(rx_packet_body), 
+      // .i_rx_packet_tail(rx_packet_tail),
+       .i_rx_frame_num(rx_frame_num),
        .i_loss_interrupt(loss_interrupt),
        .i_sync_loss(sync_loss),
        .i_link_loss(link_loss),
@@ -318,9 +319,9 @@ module tlk2711_top
         .o_dma_wr_keep(dma_wr_keep),
         .o_dma_wr_data(dma_wr_data),
         .o_rx_interrupt(rx_interrupt),
-        .o_rx_total_packet(rx_total_packet),
-        .o_rx_packet_tail(rx_packet_tail),
-        .o_rx_body_num(rx_body_num),
+        .o_rx_frame_length(rx_frame_length),
+        //.o_rx_packet_tail(rx_packet_tail),
+        .o_rx_frame_num(rx_frame_num),
         .i_2711_rkmsb(i_2711_rkmsb),
         .i_2711_rklsb(i_2711_rklsb),
         .i_2711_rxd(i_2711_rxd),
