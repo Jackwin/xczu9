@@ -39,17 +39,17 @@ module  tlk2711_tx_data
     output                  o_dma_rd_ready,
     output reg              o_tx_interrupt,
 
-    output reg              o_2711_tkmsb,
-    output reg              o_2711_tklsb,
-    output reg              o_2711_enable,
-    output reg              o_2711_loopen,
-    output reg              o_2711_lckrefn,
-    output reg              o_2711_testen,
-    output reg              o_2711_prbsen,
-    output reg [15:0]       o_2711_txd
+    output                  o_2711_tkmsb,
+    output                  o_2711_tklsb,
+    output                  o_2711_enable,
+    output                  o_2711_loopen,
+    output                  o_2711_lckrefn,
+    output                  o_2711_testen,
+    output                  o_2711_prbsen,
+    output [15:0]           o_2711_txd
    
 );
-   
+
     localparam NORM_MODE = 4'd0;
     localparam LOOPBACK_MODE = 4'd1; // Internal chip loopback test
     localparam KCODE_MODE = 4'd2;
@@ -98,15 +98,45 @@ module  tlk2711_tx_data
     localparam                tx_end_frame = 4'd11;
     localparam                tx_backward = 4'd12;
 
-    reg  fifo_enable;
-    wire fifo_full, fifo_wren, fifo_rden;
+    reg         tlk2711_tkmsb;
+    reg         tlk2711_tklsb;
+    reg         tlk2711_enable;
+    reg         tlk2711_loopen;
+    reg         tlk2711_lckrefn;
+    reg         tlk2711_testen;
+    reg         tlk2711_prbsen;
+    reg [15:0]  tlk2711_txd;
+
+    reg         tlk2711_tkmsb_1r;
+    reg         tlk2711_tklsb_1r;
+    reg [15:0]  tlk2711_txd_1r;
+
+    reg         fifo_enable;
+    wire        fifo_full, fifo_wren, fifo_rden;
     wire [15:0] fifo_rdata;
-    wire fifo_empty;
+    wire        fifo_empty;
+
+    assign o_2711_tkmsb = tlk2711_tkmsb_1r;
+    assign o_2711_tklsb = tlk2711_tklsb_1r;
+    assign o_2711_enable = tlk2711_enable;
+    assign o_2711_loopen = tlk2711_loopen;
+    assign o_2711_lckrefn = tlk2711_lckrefn;
+    assign o_2711_testen = tlk2711_testen;
+    assign o_2711_prbsen = tlk2711_prbsen;
+    assign o_2711_txd = tlk2711_txd_1r;
+
+    always @(posedge clk) begin
+        tlk2711_tkmsb_1r <= tlk2711_tkmsb;
+        tlk2711_tklsb_1r <= tlk2711_tklsb;
+        if (tx_state == tx_end_frame)
+            tlk2711_txd_1r <= checksum;
+        else
+            tlk2711_txd_1r <= tlk2711_txd;
+    end
 
     assign o_dma_rd_ready = ~fifo_full;
 
-    always@(posedge clk)
-    begin
+    always@(posedge clk) begin
         if (rst | i_soft_reset) 
             fifo_enable <= 'b0;
         else if (i_tx_start && i_tx_mode == NORM_MODE)
@@ -132,10 +162,9 @@ module  tlk2711_tx_data
     reg [15:0] valid_dlen = 'd0; 
     reg [15:0] verif_dcnt = 'd0;
 
-    reg [15:0] verify_data = 'h0;
+    reg [15:0] checksum = 'h0;
 
-    always@(posedge clk)
-    begin
+    always@(posedge clk) begin
         if (i_soft_reset)
             frame_cnt <= 'd0;
         // REVIEW 
@@ -155,33 +184,33 @@ module  tlk2711_tx_data
             verif_dcnt <= verif_dcnt + 2;   
     end
 
-    always @(*) begin
+    // Calculate the checksum
+    always @(posedge clk) begin
         if (i_soft_reset)
-            verify_data = 'd0;
+            checksum <= 'd0;
         else begin
             case(tx_state)
                 tx_idle, tx_begin, tx_sync, tx_start_frame: begin
-                    verify_data = 'h0;
+                    checksum <= 'h0;
                 end
                 tx_frame_num, tx_vld_dlen, tx_vld_data, tx_frame_tail: begin
-                     verify_data = verify_data + o_2711_txd;
+                     checksum <= checksum + tlk2711_txd;
                  end
-                 default: verify_data = 'h0;
+                 default: checksum <= 'h0;
             endcase
         end
     end
 
     reg [3:0] tx_mode;
 
-    always@(posedge clk)
-    begin
+    always@(posedge clk) begin
         if (rst)
         begin
-            o_2711_enable  <= 'b0;
-            o_2711_loopen  <= 'b0;
-            o_2711_lckrefn <= 'b0;
-            o_2711_testen <= 'b0;
-            o_2711_prbsen <= 'b0;
+            tlk2711_enable  <= 'b0;
+            tlk2711_loopen  <= 'b0;
+            tlk2711_lckrefn <= 'b0;
+            tlk2711_testen <= 'b0;
+            tlk2711_prbsen <= 'b0;
         end else
         begin
             if (i_soft_reset)
@@ -189,29 +218,22 @@ module  tlk2711_tx_data
             else if (i_tx_start)                          
                 tx_mode <= i_tx_mode; 
             // TODO Add stop control signal to switch to IDLE
-            if (tx_mode == LOOPBACK_MODE)
-            begin
-                o_2711_loopen  <= 'b1;
-                o_2711_lckrefn <= 'b1;
-                o_2711_enable  <= 'b1;
-            end 
-            else if (tx_mode == KCODE_MODE)
-            begin
-                o_2711_loopen  <= 'b0;
-                o_2711_lckrefn <= 'b1;
-                o_2711_enable  <= 'b1;
-            end 
-            else if (tx_mode == TEST_MODE)
-            begin
-                o_2711_loopen  <= 'b0;
-                o_2711_lckrefn <= 'b1;
-                o_2711_enable  <= 'b1;
-            end
-            else 
-            begin
-                o_2711_loopen  <= 'b0;
-                o_2711_lckrefn <= 'b1;
-                o_2711_enable  <= 'b1;
+            if (tx_mode == LOOPBACK_MODE) begin
+                tlk2711_loopen  <= 'b1;
+                tlk2711_lckrefn <= 'b1;
+                tlk2711_enable  <= 'b1;
+            end else if (tx_mode == KCODE_MODE) begin
+                tlk2711_loopen  <= 'b0;
+                tlk2711_lckrefn <= 'b1;
+                tlk2711_enable  <= 'b1;
+            end else if (tx_mode == TEST_MODE) begin
+                tlk2711_loopen  <= 'b0;
+                tlk2711_lckrefn <= 'b1;
+                tlk2711_enable  <= 'b1;
+            end else begin
+                tlk2711_loopen  <= 'b0;
+                tlk2711_lckrefn <= 'b1;
+                tlk2711_enable  <= 'b1;
             end
         end
     end
@@ -292,9 +314,9 @@ module  tlk2711_tx_data
         if(rst)
         begin
             tx_state     <= tx_idle;
-            o_2711_tkmsb <= 'b0;
-            o_2711_tklsb <= 'b0;
-            o_2711_txd   <= 'd0;
+            tlk2711_tkmsb <= 'b0;
+            tlk2711_tklsb <= 'b0;
+            tlk2711_txd   <= 'd0;
             tail_frame   <= 'b0;
             o_tx_interrupt <= 'b0;
             state_cnt <= 'h0;
@@ -314,31 +336,31 @@ module  tlk2711_tx_data
                 case(state_cnt)
                 // TODO Add an idle state
                 COMMA1_s: begin // send K-code to sync the link
-                    o_2711_tkmsb <= 'b0;
-                    o_2711_tklsb <= 'b1;
-                    o_2711_txd <= {D5_6, K28_5};
+                    tlk2711_tkmsb <= 'b0;
+                    tlk2711_tklsb <= 'b1;
+                    tlk2711_txd <= {D5_6, K28_5};
                     state_cnt <= state_cnt + 1'd1;
                     test_data_cnt <= 'h0;
                 end
 
                 COMMA2_s: begin
-                    o_2711_tkmsb <= 'b0;
-                    o_2711_tklsb <= 'b1;
-                    o_2711_txd <= {D5_6, K28_5};
+                    tlk2711_tkmsb <= 'b0;
+                    tlk2711_tklsb <= 'b1;
+                    tlk2711_txd <= {D5_6, K28_5};
                     state_cnt <= state_cnt + 1'd1;
                 end
                 SOF_s: begin
-                    o_2711_tkmsb <= 'b1;
-                    o_2711_tklsb <= 'b1;
-                    o_2711_txd <= {K28_2, K27_7};
+                    tlk2711_tkmsb <= 'b1;
+                    tlk2711_tklsb <= 'b1;
+                    tlk2711_txd <= {K28_2, K27_7};
                     state_cnt <= state_cnt + 1'd1;
                 end
                 DATA_s: begin
-                    o_2711_tkmsb <= 'b0;
-                    o_2711_tklsb <= 'b1;
-                    o_2711_txd <= {2{test_data_cnt}};
-                    o_2711_tkmsb <= 'b0;
-                    o_2711_tklsb <= 'b0;
+                    tlk2711_tkmsb <= 'b0;
+                    tlk2711_tklsb <= 'b1;
+                    tlk2711_txd <= {2{test_data_cnt}};
+                    tlk2711_tkmsb <= 'b0;
+                    tlk2711_tklsb <= 'b0;
                     if (&test_data_cnt) begin
                         test_data_cnt <= 'h0;
                         state_cnt <= 'h0;
@@ -348,19 +370,19 @@ module  tlk2711_tx_data
                 default: test_data_cnt <= 'h0;
                 endcase
             end else if (tx_mode == KCODE_MODE) begin
-                o_2711_tkmsb <= 'b1;
-                o_2711_tklsb <= 'b1;
-                o_2711_txd   <= {K28_2, K27_7};
+                tlk2711_tkmsb <= 'b1;
+                tlk2711_tklsb <= 'b1;
+                tlk2711_txd   <= {K28_2, K27_7};
             end else begin
                 case(tx_state)
                     tx_pwr_sync: begin
                         //if (pwr_sync_cnt == 16'd9999) tx_state <= tx_idle
                         if (pwr_sync_cnt == 16'd99) tx_state <= tx_idle;
                     end
-                    tx_idle:begin
-                        o_2711_tkmsb <= 'b0;
-                        o_2711_tklsb <= 'b0;
-                        o_2711_txd   <= 'd0;
+                    tx_idle: begin
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b0;
+                        tlk2711_txd   <= 'd0;
                         // REVIEW: Here not fifo_empty means the to-read data has been in the FIFO, 
                         // so the send can be kicked off. But, need to confirm that the fifo should
                         // be empty after every round of sending.
@@ -371,113 +393,102 @@ module  tlk2711_tx_data
                        if (tx_cfg_flag & ~fifo_empty)
                             tx_state <= tx_begin;  
                     end        
-                    tx_begin:
-                    begin
-                        o_2711_tkmsb <= 'b0;
-                        o_2711_tklsb <= 'b0;
-                        o_2711_txd   <= 'd0;
+                    tx_begin: begin
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b0;
+                        tlk2711_txd   <= 'd0;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else       
                             tx_state <= tx_sync;
                     end       
-                    tx_sync:
-                    begin
-                        o_2711_tkmsb <= 'b0;
-                        o_2711_tklsb <= 'b1;
-                        o_2711_txd   <= {D5_6, K28_5};
+                    tx_sync: begin
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b1;
+                        tlk2711_txd   <= {D5_6, K28_5};
                         if (i_soft_reset)
                             tx_state <= tx_idle; 
                        // else if (sync_cnt == 'd99999) // The sync period is 1ms, and the clock is 100MHz
                        else if (sync_cnt == 'd5) // The sync period is 1ms, and the clock is 100MHz
                             tx_state <= tx_start_frame; 
                     end        
-                    tx_start_frame:
-                    begin
-                        o_2711_tkmsb <= 'b1;
-                        o_2711_tklsb <= 'b1;
-                        o_2711_txd   <= {K28_2, K27_7};
+                    tx_start_frame: begin
+                        tlk2711_tkmsb <= 'b1;
+                        tlk2711_tklsb <= 'b1;
+                        tlk2711_txd   <= {K28_2, K27_7};
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else                  
                             tx_state <= tx_frame_head;
                     end        
-                    tx_frame_head:
-                    begin
-                        o_2711_tkmsb <= 'b0;
-                        o_2711_tklsb <= 'b0;
-                        o_2711_txd   <= head_cnt ? HEAD_1 : HEAD_0;
+                    tx_frame_head: begin
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b0;
+                        tlk2711_txd   <= head_cnt ? HEAD_1 : HEAD_0;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else if (head_cnt)                 
                             tx_state <= tx_file_sign;
                     end        
-                    tx_file_sign:
-                    begin
-                        o_2711_tkmsb <= 'b0;
-                        o_2711_tklsb <= 'b0;
-                        o_2711_txd   <= (frame_cnt == i_tx_body_num) ? {TX_IND, FILE_END} : {TX_IND, 8'b0};
+                    tx_file_sign:begin
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b0;
+                        tlk2711_txd   <= (frame_cnt == i_tx_body_num) ? {TX_IND, FILE_END} : {TX_IND, 8'b0};
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else
                             tx_state <= tx_frame_num;
                     end        
-                    tx_frame_num:
-                    begin
-                        o_2711_tkmsb <= 'b0;
-                        o_2711_tklsb <= 'b0;
-                        o_2711_txd   <= frame_cnt;
+                    tx_frame_num:begin
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b0;
+                        tlk2711_txd   <= frame_cnt;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else
                             tx_state <= tx_vld_dlen;
                     end        
-                    tx_vld_dlen:
-                    begin
-                        o_2711_tkmsb <= 'b0;
-                        o_2711_tklsb <= 'b0;
-                        o_2711_txd   <= valid_dlen;
+                    tx_vld_dlen:begin
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b0;
+                        tlk2711_txd   <= valid_dlen;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else
                             tx_state <= tx_vld_data;
                     end        
-                    tx_vld_data:
-                    begin
-                        o_2711_tkmsb <= 'b0;
-                        o_2711_tklsb <= 'b0;
-                        o_2711_txd   <= fifo_rdata;
+                    tx_vld_data:begin
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b0;
+                        tlk2711_txd   <= fifo_rdata;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else if (vld_data_cnt == (i_tx_packet_body[15:1] - 1))
                             tx_state <= tx_frame_tail;
                     end        
-                    tx_frame_tail:
-                    begin
-                        o_2711_tkmsb <= 'b0;
-                        o_2711_tklsb <= 'b0;
-                       // o_2711_txd   <= verif_dcnt;
-                        o_2711_txd <= verify_data;
+                    tx_frame_tail:begin
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b0;
+                       // tlk2711_txd   <= verif_dcnt;
+                        tlk2711_txd <= checksum;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else
                             tx_state <= tx_end_frame;
                     end        
-                    tx_end_frame:
-                    begin
-                        o_2711_tkmsb <= 'b1;
-                        o_2711_tklsb <= 'b1;
-                        o_2711_txd   <= {K29_7, K30_7};
+                    tx_end_frame:begin
+                        tlk2711_tkmsb <= 'b1;
+                        tlk2711_tklsb <= 'b1;
+                        tlk2711_txd   <= {K29_7, K30_7};
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else
                             tx_state <= tx_backward;
                     end        
-                    tx_backward:
-                    begin
-                        o_2711_tkmsb <= 'b0;
-                        o_2711_tklsb <= 'b1;
-                        o_2711_txd   <= {D5_6, K28_5};
+                    tx_backward:begin
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b1;
+                        tlk2711_txd   <= {D5_6, K28_5};
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else if (backward_cnt == 'd255)
@@ -504,16 +515,16 @@ tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
     .probe3(tx_state),
     .probe4(state_cnt),
     .probe5(test_data_cnt),
-    .probe6(o_2711_txd),
-    .probe7(o_2711_tkmsb),
-    .probe8(o_2711_tklsb),
+    .probe6(tlk2711_txd),
+    .probe7(tlk2711_tkmsb),
+    .probe8(tlk2711_tklsb),
     .probe9(o_tx_interrupt),
     .probe10(sync_cnt),
     .probe11(head_cnt),
     .probe12(vld_data_cnt),
     .probe13(backward_cnt),
-    .probe14(o_2711_enable),
-    .probe15(o_2711_loopen),
+    .probe14(tlk2711_enable),
+    .probe15(tlk2711_loopen),
     .probe16(i_tx_packet_body),
     .probe17(i_tx_packet_tail),
     .probe18(i_tx_body_num),
@@ -522,7 +533,7 @@ tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
     .probe21(i_dma_rd_data),
     .probe22(o_dma_rd_ready),
     .probe23(o_tx_interrupt),
-    .probe24(verify_data)
+    .probe24(checksum)
 );
 
 
