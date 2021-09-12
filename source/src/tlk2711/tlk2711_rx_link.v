@@ -89,8 +89,8 @@ module  tlk2711_rx_link
 
     localparam FRAME_HEAD_FLAG = 32'heb90_e116;
 
-    reg [3:0] cs;
-    reg [3:0] ns;
+    reg [3:0]   cs;
+    reg [3:0]   ns;
 
     // Store the frame inform
 
@@ -99,12 +99,15 @@ module  tlk2711_rx_link
     reg [15:0]  line_number;
     reg [15:0]  data_length;
     reg [1:0]   to_align64;
+    reg [15:0]  checksum;
 
-    reg [15:0] rx_frame_cnt = 'd0;
-    reg [DLEN_WIDTH-1:0] valid_byte = 'd0;
-    reg [DLEN_WIDTH-1:0] wr_bbt = 'd0;
-    reg [ADDR_WIDTH-1:0] wr_addr = 'd0;
-    reg [15:0]   tlk2711_rxd;
+
+    reg [15:0]              rx_frame_cnt = 'd0;
+    reg [DLEN_WIDTH-1:0]    valid_byte = 'd0;
+    reg [DLEN_WIDTH-1:0]    wr_bbt = 'd0;
+    reg [ADDR_WIDTH-1:0]    wr_addr = 'd0;
+    reg [15:0]              tlk2711_rxd;
+    reg                     checksum_error;
 
     assign o_wr_cmd_data = {wr_addr, wr_bbt};
 
@@ -157,6 +160,38 @@ module  tlk2711_rx_link
             ns <= IDLE_s;
         end
         endcase 
+    end
+
+    // Calculate the checksum
+    // TODO check not an integrated frame 9-10
+    always @(posedge clk) begin
+        if (rst | i_soft_rst) begin
+            checksum <= 'h0; 
+            checksum_error <= 1'b0;
+        end else begin
+            case(cs)
+            IDLE_s, SYNC_s, FRAME_HEAD_s: begin
+                checksum <= 'h0;
+                checksum_error <= 1'b0;
+            end
+            DATA_TYPE_s, LINE_INFOR_s, DATA_LENGTH_s, RECV_DATA_s: begin
+                checksum <= checksum + i_2711_rxd;
+            end
+            CHECK_DATA_s: begin
+                if (checksum != i_2711_rxd) begin
+                    checksum_error <= 1'b1;
+                end else begin
+                    checksum_error <= 1'b0;
+                end
+            end
+            FRAME_END1_s, FRAME_END2_s: begin
+                checksum_error <= checksum_error;
+            end
+            default: begin
+                checksum_error <= checksum_error;
+            end
+            endcase
+        end
     end
 
     always @(posedge clk) begin
