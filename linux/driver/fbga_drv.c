@@ -218,7 +218,7 @@ static int fbga_drv_probe(struct platform_device *pdev)
 	fb_drv = kmalloc(sizeof(struct fbga_drv), GFP_KERNEL);
 	if (fb_drv == NULL)
 	{
-		dev_err(dev, "unable to allocate device structure\n");
+		printk( "unable to allocate device structure\n");
 		return -ENOMEM;
 	}
     memset(fb_drv, 0, sizeof(fb_drv));
@@ -226,13 +226,13 @@ static int fbga_drv_probe(struct platform_device *pdev)
     /* Get reserved memory region from Device-tree */
     np = of_parse_phandle(dev->of_node, "memory-region", 0);
     if (!np) {
-        dev_err(dev, "No %s specified\n", "memory-region");
+        printk( "No %s specified\n", "memory-region");
         goto error_handle1;
     }
   
     // rc = of_address_to_resource(np, 0, &r_mem);
     // if (rc) {
-    //     dev_err(dev, "No memory address assigned to the region\n");
+    //     printk( "No memory address assigned to the region\n");
 	// 	return -EINVAL;
     // }
   
@@ -241,13 +241,13 @@ static int fbga_drv_probe(struct platform_device *pdev)
     // printk("\nStart map the bram paddr:%08x and vaddr:%08x\n", r_mem.start, fb_drv->vaddr_bram);
     // if(!fb_drv->vaddr_bram) 
     // {
-    //     dev_err(dev, "cannot map the mem\n");
+    //     printk( "cannot map the mem\n");
 	// 	goto error_handle1;
     // }
 
     rc = of_address_to_resource(np, 0, &r_mem);
     if (rc) {
-        dev_err(dev, "No memory address assigned to the region\n");
+        printk( "No memory address assigned to the region\n");
         return -EINVAL;
     }
     fb_drv->paddr_data = (void*)r_mem.start;
@@ -255,13 +255,13 @@ static int fbga_drv_probe(struct platform_device *pdev)
     dev_info(dev, "Allocated reserved memory, vaddr: 0x%p, paddr: 0x%p\n", fb_drv->vaddr_data, fb_drv->paddr_data);
     if(!fb_drv->vaddr_data) 
     {
-        dev_err(dev, "cannot map the mem\n");
+        printk( "cannot map the mem\n");
         goto error_handle1;
     }
 
     rc = of_address_to_resource(np, 1, &r_mem);
     if (rc) {
-        dev_err(dev, "No memory address assigned to the region\n");
+        printk( "No memory address assigned to the region\n");
         return -EINVAL;
     }
     fb_drv->paddr_devm = (void*)r_mem.start;
@@ -269,7 +269,7 @@ static int fbga_drv_probe(struct platform_device *pdev)
     dev_info(dev, "Allocated reserved memory, vaddr: 0x%p, paddr: 0x%p\n", fb_drv->vaddr_devm, fb_drv->paddr_devm);
     if(!fb_drv->vaddr_devm) 
     {
-        dev_err(dev, "cannot map the mem\n");
+        printk( "cannot map the mem\n");
         goto error_handle1;
     }
 
@@ -303,8 +303,11 @@ static int fbga_drv_probe(struct platform_device *pdev)
     //}
         
     fb_drv->irq = platform_get_irq(pdev,0);
-    if (fb_drv->irq <= 0)
+    if (fb_drv->irq <= 0){
+
+        printk("fb_drv irq is %d\n", fb_drv->irq);
         return -EINVAL;
+    }
     
     fb_drv->pdev = pdev;
     
@@ -392,7 +395,7 @@ static int fbga_drv_remove(struct platform_device *pdev)
 }
 
 static struct of_device_id fbga_drv_of_match[] = {
-	{ .compatible = "vendor,fbga_drv", },
+	{ .compatible = "xlnx, fpga_zu9", },
 	{ /* end of list */ },
 };
 

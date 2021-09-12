@@ -16,8 +16,9 @@
     };
     fpga-driver@0{
         status = "okay";
-        compatible = "xlnx, reserved-memory";
+        compatible = "xlnx, fpga_zu9";
         memory-region = <&reserved_for_fpga>;
+        interrupt-parent = <&gic>;
         interrupt = <0 89 4>;
     };
 };
@@ -38,6 +39,11 @@
 &sdhci1 {
     status = "okay";
     disable-wp;
+    no-1-8-v;
+};
+
+&sdhci0 {
+    status="okay";
     no-1-8-v;
 };
 
