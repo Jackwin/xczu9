@@ -52,9 +52,9 @@ module  tlk2711_rx_link
     input                               i_2711_rkmsb,
     input                               i_2711_rklsb,
     input  [15:0]                       i_2711_rxd,
-    output reg                          o_loss_interrupt,
-    output reg                          o_sync_loss,
-    output reg                          o_link_loss
+    output                              o_loss_interrupt,
+    output                              o_sync_loss,
+    output                              o_link_loss
 );
     
     //frame start
@@ -360,19 +360,19 @@ module  tlk2711_rx_link
 
     always@(posedge clk) begin
         if (rst | i_soft_rst) begin
-            o_sync_loss      <= 'b0;
-            o_link_loss      <= 'b0;
+            // o_sync_loss      <= 'b0;
+            // o_link_loss      <= 'b0;
             o_loss_interrupt <= 'b0;
         end else begin
-        	  if (~i_2711_rkmsb & ~i_2711_rklsb & (i_2711_rxd == 16'hC5BC))
-                o_sync_loss <= 'b1;
-            else if (o_loss_interrupt)
-                o_sync_loss <= 'b0;
+        	//   if (~i_2711_rkmsb & ~i_2711_rklsb & (i_2711_rxd == 16'hC5BC))
+            //     o_sync_loss <= 'b1;
+            // else if (o_loss_interrupt)
+            //     o_sync_loss <= 'b0;
                 
-            if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == 16'hFFFF))    
-                o_link_loss <= 'b1;
-            else if (o_loss_interrupt)
-                o_link_loss <= 'b0;
+            // if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == 16'hFFFF))    
+            //     o_link_loss <= 'b1;
+            // else if (o_loss_interrupt)
+            //     o_link_loss <= 'b0;
                 
             if (o_loss_interrupt)
                 o_loss_interrupt <= 'b0;
@@ -381,6 +381,76 @@ module  tlk2711_rx_link
         end
     end 
 
+    reg [23:0]  link_loss_timer;
+    reg         link_loss_flag;
+    reg         link_loss;
+    // After the link loss happends, another detection will be launched after 100ms to avoid 
+    // frequent interrups to the host.
+
+    always@(posedge clk) begin
+        if (rst | i_soft_rst) begin
+            link_loss_flag <= 1'b0;
+            link_loss <= 1'b0;
+            link_loss_timer <= 'h0;
+        end else begin
+            if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == 16'hFFFF) & ~link_loss_flag) begin
+                link_loss <= 1'b1;
+            end else begin
+                link_loss <= 1'b0;
+            end
+
+            if (link_loss) begin
+                link_loss_flag <= 1'b1;
+            end else if (link_loss_timer == 24'd10000000) begin
+                link_loss_flag <= 1'b0;
+            end
+
+            if (link_loss_flag) begin
+                link_loss_timer <= link_loss_timer + 1'd1;
+            end else begin
+                link_loss_timer <= 'h0;
+            end
+        end
+    end
+
+    assign o_link_loss = link_loss;
+
+    reg         sync_loss;
+    reg         sync_loss_flag;
+    reg [23:0]  sync_loss_timer;
+    wire        recv_data_flag;
+    assign recv_data_flag = cs == DATA_TYPE_s | cs == LINE_INFOR_s | 
+                            cs == DATA_LENGTH_s | cs == RECV_DATA_s |
+                            cs == CHECK_DATA_s | cs == FRAME_END1_s;
+
+    // When sync loss happens, the host issues the soft reset
+    always@(posedge clk) begin
+        if (rst | i_soft_rst) begin
+            sync_loss <= 1'b0;
+            sync_loss_timer <= 'h0;
+            sync_loss_flag <= 1'b0;
+        end else begin
+            if ((i_2711_rkmsb | i_2711_rklsb) & recv_data_flag & ~sync_loss_flag) begin
+                sync_loss <= 1'b1;
+            end else begin
+                sync_loss <= 1'b0;
+            end
+
+            if (sync_loss) begin
+                sync_loss_flag <= 1'b1;
+            end else if (sync_loss_timer == 24'd10000000) begin
+                sync_loss_flag <= 1'b0;
+            end
+                
+            if (sync_loss_flag) begin
+                sync_loss_timer <= sync_loss_timer + 1'b1;
+            end else begin
+                sync_loss_timer <= 'h0;
+            end
+        end
+    end
+
+    assign o_sync_loss = sync_loss;
 
 // TODO debug rx
 /*
