@@ -46,12 +46,13 @@ module  tlk2711_rx_link
 
     output                              o_rx_interrupt,
     output [15:0]                       o_rx_frame_length, 
-   // output reg [15:0]                   o_rx_packet_tail, 
     output [15:0]                       o_rx_frame_num,
 
     input                               i_2711_rkmsb,
     input                               i_2711_rklsb,
     input  [15:0]                       i_2711_rxd,
+
+    output                              o_fifo_status,
     output                              o_loss_interrupt,
     output                              o_sync_loss,
     output                              o_link_loss
@@ -335,6 +336,8 @@ module  tlk2711_rx_link
     assign fifo_rden = o_dma_wr_valid;
     assign o_dma_wr_data = fifo_dout;
     assign fifo_din = tlk2711_rxd;
+
+    assign o_fifo_status = fifo_empty;
     // TODO Add more data to ensure the valid data are readout
     fifo_fwft_16_2048 fifo_fwft_rx (
         .clk(clk),
@@ -348,7 +351,7 @@ module  tlk2711_rx_link
     );
 
     always@(posedge clk) begin
-        if (rst) begin
+        if (rst | i_soft_rst) begin
             rx_frame_cnt      <= 'd0;
         end else begin
             if (i_rx_start & o_rx_interrupt)
@@ -356,34 +359,16 @@ module  tlk2711_rx_link
             else if (frame_end)      
                 rx_frame_cnt <= rx_frame_cnt + 1;
         end    
-    end 
+    end
 
-    always@(posedge clk) begin
-        if (rst | i_soft_rst) begin
-            // o_sync_loss      <= 'b0;
-            // o_link_loss      <= 'b0;
-            o_loss_interrupt <= 'b0;
-        end else begin
-        	//   if (~i_2711_rkmsb & ~i_2711_rklsb & (i_2711_rxd == 16'hC5BC))
-            //     o_sync_loss <= 'b1;
-            // else if (o_loss_interrupt)
-            //     o_sync_loss <= 'b0;
-                
-            // if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == 16'hFFFF))    
-            //     o_link_loss <= 'b1;
-            // else if (o_loss_interrupt)
-            //     o_link_loss <= 'b0;
-                
-            if (o_loss_interrupt)
-                o_loss_interrupt <= 'b0;
-            else if (o_sync_loss | o_link_loss)
-                o_loss_interrupt <= 'b1;
-        end
-    end 
+    // TODO Add logics to ensure the fifo data is read out when link/sync loss happens 9-14
+
+    assign o_loss_interrupt = link_loss | sync_loss;
 
     reg [23:0]  link_loss_timer;
     reg         link_loss_flag;
     reg         link_loss;
+
     // After the link loss happends, another detection will be launched after 100ms to avoid 
     // frequent interrups to the host.
 

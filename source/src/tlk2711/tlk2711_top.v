@@ -127,23 +127,25 @@ module tlk2711_top
     wire                    link_loss;
     wire                    soft_rst;
 
-    wire [DLEN_WIDTH+ADDR_WIDTH-1:0]   rd_cmd_data;
-    wire                    rd_cmd_req;
-    wire                    rd_cmd_ack;
-    wire [DLEN_WIDTH+ADDR_WIDTH-1:0]   wr_cmd_data;
-    wire                    wr_cmd_req;
-    wire                    wr_cmd_ack;
-    
-    wire                    dma_rd_ready;
-    wire                    dma_rd_valid;
-    wire                    dma_rd_last;
-    wire [STREAM_RDATA_WIDTH-1:0]  dma_rd_data;
+    wire [DLEN_WIDTH+ADDR_WIDTH-1:0]    rd_cmd_data;
+    wire                                rd_cmd_req;
+    wire                                rd_cmd_ack;
+    wire [DLEN_WIDTH+ADDR_WIDTH-1:0]    wr_cmd_data;
+    wire                                wr_cmd_req;
+    wire                                wr_cmd_ack;
 
-    wire                    dma_wr_valid;
-    wire [STREAM_WBYTE_WIDTH-1:0]  dma_wr_keep;
-    wire [STREAM_WDATA_WIDTH-1:0]  dma_wr_data;
-    wire                    dma_wr_ready;
-    wire                    wr_finish;
+    wire                                dma_rd_ready;
+    wire                                dma_rd_valid;
+    wire                                dma_rd_last;
+    wire [STREAM_RDATA_WIDTH-1:0]       dma_rd_data;
+
+    wire                                dma_wr_valid;
+    wire [STREAM_WBYTE_WIDTH-1:0]       dma_wr_keep;
+    wire [STREAM_WDATA_WIDTH-1:0]       dma_wr_data;
+    wire                                dma_wr_ready;
+    wire                                wr_finish;
+            
+    wire                                rx_fifo_status;
 
    reg_mgt #(       
        .ADDR_WIDTH(ADDR_WIDTH)
@@ -172,9 +174,8 @@ module tlk2711_top
        .o_rx_config_done(rx_config_done),
        .i_rx_interrupt(rx_interrupt), 
        .i_rx_frame_length(rx_frame_length),
-       //.i_rx_packet_body(rx_packet_body), 
-      // .i_rx_packet_tail(rx_packet_tail),
        .i_rx_frame_num(rx_frame_num),
+       .i_rx_fifo_status(rx_fifo_status),
        .i_loss_interrupt(loss_interrupt),
        .i_sync_loss(sync_loss),
        .i_link_loss(link_loss),
@@ -325,6 +326,7 @@ module tlk2711_top
         .i_2711_rkmsb(i_2711_rkmsb),
         .i_2711_rklsb(i_2711_rklsb),
         .i_2711_rxd(i_2711_rxd),
+        .o_fifo_status(rx_fifo_status),
         .o_loss_interrupt(loss_interrupt),
         .o_sync_loss(sync_loss),
         .o_link_loss(link_loss)

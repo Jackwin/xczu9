@@ -39,36 +39,46 @@ module reg_mgt
   
     
     // TX port set
-    output reg [ADDR_WIDTH-1:0]   o_tx_base_addr, //read data address from DDR to tx module
-    output reg [31:0]             o_tx_total_packet, //total file packet length in byte
-    output reg [15:0]             o_tx_packet_body, //body length in byte, 870B here for fixed value
-    output reg [15:0]             o_tx_packet_tail, //tail length in byte
-    output reg [15:0]             o_tx_body_num,  //body number, total_packet = packet_body*body_num + packet_tail
-    output reg [3:0]              o_tx_mode, // 0--norm mode, 1--loopback mode, 2--kcode mode
-    output reg                    o_tx_config_done, // configured when all the above register is done and start the transfer 
-
-    input                         i_tx_interrupt, // inform cpu after the total packet transfer is finished
+    //read data address from DDR to tx module
+    output reg [ADDR_WIDTH-1:0]   o_tx_base_addr, 
+    //total file packet length in byte
+    output reg [31:0]             o_tx_total_packet, 
+    //body length in byte, 870B here for fixed value
+    output reg [15:0]             o_tx_packet_body, 
+    //tail length in byte
+    output reg [15:0]             o_tx_packet_tail, 
+    //body number, total_packet = packet_body*body_num + packet_tail
+    output reg [15:0]             o_tx_body_num, 
+    // 0--norm mode, 1--loopback mode, 2--kcode mode
+    output reg [3:0]              o_tx_mode,
+    // configured when all the above register is done and start the transfer 
+    output reg                    o_tx_config_done,
+    // inform cpu after the total packet transfer is finished
+    input                         i_tx_interrupt, 
 
     //RX port set
-    output reg [ADDR_WIDTH-1:0]   o_rx_base_addr, //write data address to DDR from rx module
+    //write data address to DDR from rx module
+    output reg [ADDR_WIDTH-1:0]   o_rx_base_addr, 
     output reg                    o_rx_config_done,
 
     input                         i_rx_interrupt, //when asserted, the packet information is valid at the same time
     input  [15:0]                 i_rx_frame_length,
     input  [15:0]                 i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
-    //input  [15:0]                 i_rx_packet_tail,
-   // input  [15:0]                 i_rx_body_num,
-
-    input                         i_loss_interrupt,
-    input                         i_sync_loss,
-    input                         i_link_loss,
+    
+    input                       i_rx_fifo_status,   
+    input                       i_loss_interrupt,
+    input                       i_sync_loss,
+    input                       i_link_loss,
 
     output                        o_soft_rst
     
     );
 
     localparam  SOFT_R_REG       = 16'h0000;
+    localparam  TX_CFG_REG       = 16'h0008;
+    localparam  RX_CFG_REG       = 16'h0010;
     localparam  IRQ_REG          = 16'h0100;
+
     localparam  TX_IRQ_REG       = 16'h0100;
     localparam  RX_IRQ_REG       = 16'h0200;
     localparam  RX_LOSS_REG      = 16'h0300;
@@ -76,6 +86,8 @@ module reg_mgt
 //////////////////////////////////////////////////////////////////////////
 //  TX and RX register configuration
 //////////////////////////////////////////////////////////////////////////
+
+    // TODO Add tx and rx status & ctrl register 9-14
 
     (*keep="true"*)reg         reg_wen;
     (*keep="true"*)reg  [63:0] reg_wdata;
@@ -94,12 +106,12 @@ module reg_mgt
     end
 
     always@(posedge clk) begin
-        if( reg_wen && ( reg_waddr == 16'h0100 )) // for tx config done
+        if( reg_wen && ( reg_waddr == TX_CFG_REG )) // for tx config done
             o_tx_config_done <=  1'b1;
         else 
             o_tx_config_done <= 1'b0;
 
-        if( reg_wen && ( reg_waddr == 16'h0200 )) // for rx config done
+        if( reg_wen && ( reg_waddr == RX_CFG_REG )) // for rx config done
             o_rx_config_done <=  1'b1;
         else 
             o_rx_config_done <= 1'b0;
@@ -187,7 +199,7 @@ module reg_mgt
             else if (i_tx_interrupt)
                  rx_status <= {4'd1, 28'd0, 16'h0000, 16'h5aa5};
             else if (i_loss_interrupt) 
-                rx_status <= {4'd3, 32'h0, 30'h0, i_sync_loss, i_link_loss};
+                rx_status <= {4'd3, 32'h0, 29'h0, i_rx_fifo_status, i_sync_loss, i_link_loss};
         end
     end
 
