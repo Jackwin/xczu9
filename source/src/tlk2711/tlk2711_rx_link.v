@@ -38,6 +38,9 @@ module  tlk2711_rx_link
     input                               i_rx_start,
     input  [ADDR_WIDTH-1:0]             i_rx_base_addr,
 
+    // To read the remained data in FIFO when link/sync loss happens
+    input                               i_rx_fifo_rd,
+
     input                               i_dma_wr_ready,
     input                               i_wr_finish,
     output                              o_dma_wr_valid,
@@ -333,7 +336,7 @@ module  tlk2711_rx_link
     assign o_rx_frame_num = line_number;
     assign o_rx_frame_length = data_length;
 
-    assign fifo_rden = o_dma_wr_valid;
+    assign fifo_rden = o_dma_wr_valid | i_rx_fifo_rd;
     assign o_dma_wr_data = fifo_dout;
     assign fifo_din = tlk2711_rxd;
 

@@ -39,6 +39,8 @@ module  tlk2711_tx_data
     output                  o_dma_rd_ready,
     output reg              o_tx_interrupt,
 
+    output [9:0]            o_tx_status;
+
     output                  o_2711_tkmsb,
     output                  o_2711_tklsb,
     output                  o_2711_enable,
@@ -309,10 +311,8 @@ module  tlk2711_tx_data
         end
     end
     
-    always@(posedge clk)
-    begin
-        if(rst)
-        begin
+    always@(posedge clk) begin
+        if(rst) begin
             tx_state     <= tx_idle;
             tlk2711_tkmsb <= 'b0;
             tlk2711_tklsb <= 'b0;
@@ -321,14 +321,11 @@ module  tlk2711_tx_data
             o_tx_interrupt <= 'b0;
             state_cnt <= 'h0;
             test_data_cnt <= 'h0;
-        end 
-        else 
-        begin
+        end else begin
             state_cnt <= 'h0;
             state_cnt <= 'h0;
             // TODO: Add a power-up state to send the 1ms sync code
-            if (tx_mode == LOOPBACK_MODE || tx_mode == TEST_MODE)
-            begin
+            if (tx_mode == LOOPBACK_MODE || tx_mode == TEST_MODE) begin
                 if (i_soft_reset) begin
                     state_cnt <= 'h0;
                     test_data_cnt <= 'h0;
@@ -504,6 +501,8 @@ module  tlk2711_tx_data
             end    
         end
     end
+
+    assign o_tx_status = {fifo_empty, fifo_full, tx_state, tx_mode};
 
 // TODO  debug the port
 

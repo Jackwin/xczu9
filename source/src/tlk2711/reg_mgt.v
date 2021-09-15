@@ -63,7 +63,9 @@ module reg_mgt
     input  [15:0]                   i_rx_frame_length,
     input  [15:0]                   i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
     
-    input                           i_rx_status,   
+    input [5:0]                     i_rx_status,
+    input [9:0]                     i_tx_status,
+
     input                           i_loss_interrupt,
     input                           i_sync_loss,
     input                           i_link_loss,
@@ -151,6 +153,10 @@ module reg_mgt
             RX_STATUS_REG: begin
                 reg_rdata[5:0] <= i_rx_status;
                 reg_data[63:6] <= 'h0;
+            end
+            TX_STATUS_REG: begin
+                reg_rdata[9:0] <= i_tx_status;
+                reg_data[63:10] <= 'h0;
             end
             default;
         endcase

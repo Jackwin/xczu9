@@ -145,7 +145,9 @@ module tlk2711_top
     wire                                dma_wr_ready;
     wire                                wr_finish;
             
-    wire                                rx_fifo_status;
+    wire [5:0]                          rx_status;
+    wire [9:0]                          tx_status;
+    wire                                rx_fifo_rd;
 
    reg_mgt #(       
        .ADDR_WIDTH(ADDR_WIDTH)
@@ -172,9 +174,12 @@ module tlk2711_top
        .i_tx_interrupt(tx_interrupt), 
        .o_rx_base_addr(rx_base_addr), 
        .o_rx_config_done(rx_config_done),
+       .o_rx_fifo_rd(rx_fifo_rd),
+
        .i_rx_interrupt(rx_interrupt), 
        .i_rx_frame_length(rx_frame_length),
        .i_rx_frame_num(rx_frame_num),
+       .i_tx_status(tx_status),
        .i_rx_status(rx_status),
        .i_loss_interrupt(loss_interrupt),
        .i_sync_loss(sync_loss),
@@ -290,6 +295,7 @@ module tlk2711_top
         .i_dma_rd_data(dma_rd_data),
         .o_dma_rd_ready(dma_rd_ready),
         .o_tx_interrupt(tx_interrupt),
+        .o_tx_status(tx_status),
         .o_2711_tkmsb(o_2711_tkmsb),
         .o_2711_tklsb(o_2711_tklsb),
         .o_2711_enable(o_2711_enable),
@@ -314,6 +320,7 @@ module tlk2711_top
         .o_wr_cmd_data(wr_cmd_data), 
         .i_rx_start(rx_config_done),
         .i_rx_base_addr(rx_base_addr),
+        .i_rx_fifo_rd(rx_fifo_rd),
         .i_dma_wr_ready(dma_wr_ready),
         .i_wr_finish(wr_finish),
         .o_dma_wr_valid(dma_wr_valid),
