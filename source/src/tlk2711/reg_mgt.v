@@ -22,20 +22,17 @@ module reg_mgt
     parameter ADDR_WIDTH = 32
 )
 (  
-    input               clk,
-    input               rst,
-    
-    input               i_reg_wen,
-    input      [15:0]   i_reg_waddr,
-    input      [63:0]   i_reg_wdata,
-
-    input               i_reg_ren,
-    input      [15:0]   i_reg_raddr,
-    output     [63:0]   o_reg_rdata,
-
-    output              o_tx_irq,
-    output              o_rx_irq,
-    output              o_loss_irq,
+    input                       clk,
+    input                       rst,
+    input                       i_reg_wen,
+    input [15:0]                i_reg_waddr,
+    input [63:0]                i_reg_wdata,
+    input                       i_reg_ren,
+    input [15:0]                i_reg_raddr,
+    output [63:0]               o_reg_rdata,
+    output                      o_tx_irq,
+    output                      o_rx_irq,
+    output                      o_loss_irq,
   
     
     // TX port set
@@ -58,26 +55,36 @@ module reg_mgt
 
     //RX port set
     //write data address to DDR from rx module
-    output reg [ADDR_WIDTH-1:0]   o_rx_base_addr, 
-    output reg                    o_rx_config_done,
+    output reg [ADDR_WIDTH-1:0]     o_rx_base_addr, 
+    output reg                      o_rx_config_done,
+    output reg                      o_rx_fifo_rd,
 
-    input                         i_rx_interrupt, //when asserted, the packet information is valid at the same time
-    input  [15:0]                 i_rx_frame_length,
-    input  [15:0]                 i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
+    input                           i_rx_interrupt, //when asserted, the packet information is valid at the same time
+    input  [15:0]                   i_rx_frame_length,
+    input  [15:0]                   i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
     
-    input                       i_rx_fifo_status,   
-    input                       i_loss_interrupt,
-    input                       i_sync_loss,
-    input                       i_link_loss,
+    input                           i_rx_status,   
+    input                           i_loss_interrupt,
+    input                           i_sync_loss,
+    input                           i_link_loss,
 
     output                        o_soft_rst
     
     );
 
-    localparam  SOFT_R_REG       = 16'h0000;
-    localparam  TX_CFG_REG       = 16'h0008;
-    localparam  RX_CFG_REG       = 16'h0010;
-    localparam  IRQ_REG          = 16'h0100;
+    localparam  SOFT_R_REG      = 16'h0000;
+    localparam  TX_CFG_REG      = 16'h0008;
+    localparam  RX_CFG_REG      = 16'h0010;
+    localparam  IRQ_REG         = 16'h0100;
+
+    localparam  TX_ADDR_REG     = 16'h0108;
+    localparam  TX_LENGTH_REG   = 16'h0110;
+    localparam  TX_PACKET_REG   = 16'h0118;
+    localparam  TX_STATUS_REG   = 16'h0120;
+
+    localparam  RX_ADDR_REG     = 16'h0208;
+    localparam  RX_CTRL_REG     = 16'h0210;
+    localparam  RX_STATUS_REG   = 16'h0218;
 
     localparam  TX_IRQ_REG       = 16'h0100;
     localparam  RX_IRQ_REG       = 16'h0200;
@@ -87,11 +94,10 @@ module reg_mgt
 //  TX and RX register configuration
 //////////////////////////////////////////////////////////////////////////
 
-    // TODO Add tx and rx status & ctrl register 9-14
-
-    (*keep="true"*)reg         reg_wen;
-    (*keep="true"*)reg  [63:0] reg_wdata;
-    (*keep="true"*)reg  [15:0] reg_waddr;
+    reg                 reg_wen;
+    reg [63:0]          reg_wdata;
+    reg [15:0]          reg_waddr;
+    reg [63:0]          reg_rdata;
 	
     always@(posedge clk)begin
         if(rst)
@@ -121,22 +127,33 @@ module reg_mgt
         if( reg_wen )
           case(reg_waddr)
             //tx
-            16'h0108:   o_tx_base_addr    <= reg_wdata;
-            16'h0110:   o_tx_total_packet <= reg_wdata;
-            16'h0118:begin                             
+            TX_ADDR_REG: o_tx_base_addr <= reg_wdata[ADDR_WIDTH-1:0];
+            TX_LENGTH_REG: o_tx_total_packet <= reg_wdata[31:0];
+            TX_PACKET_REG: begin                             
                 o_tx_packet_body  <= reg_wdata[15:0]; //configured as 870B here
+                o_tx_body_num     <= reg_wdata[16+15:16];
                 o_tx_packet_tail  <= reg_wdata[15+32:32];
+                o_tx_mode         <= reg_wdata[63:60];  
             end                        
-            16'h0120:begin
-                o_tx_mode         <= reg_wdata[3:0];  
-                // REVIEW the tx_body is limited to 65536x870B = 54MB
-                o_tx_body_num     <= reg_wdata[32+15:32];
-            end
             //rx
-            16'h0208:
-                o_rx_base_addr    <= reg_wdata;  
-            
+            RX_ADDR_REG:
+                o_rx_base_addr  <= reg_wdata[ADDR_WIDTH-1:0];  
+            RX_CTRL_REG: begin
+                o_rx_fifo_rd <= reg_wdata[0];
+            end
+            default;
           endcase
+    end
+
+    always @(posedge clk) begin
+        if (i_reg_ren)
+        case(i_reg_raddr)
+            RX_STATUS_REG: begin
+                reg_rdata[5:0] <= i_rx_status;
+                reg_data[63:6] <= 'h0;
+            end
+            default;
+        endcase
     end
 
 //////////////////////////////////////////////////////////////////////////
@@ -199,7 +216,7 @@ module reg_mgt
             else if (i_tx_interrupt)
                  rx_status <= {4'd1, 28'd0, 16'h0000, 16'h5aa5};
             else if (i_loss_interrupt) 
-                rx_status <= {4'd3, 32'h0, 29'h0, i_rx_fifo_status, i_sync_loss, i_link_loss};
+                rx_status <= {4'd3, 32'h0, 24'h0, i_rx_status, i_sync_loss, i_link_loss};
         end
     end
 

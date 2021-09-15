@@ -175,7 +175,7 @@ module tlk2711_top
        .i_rx_interrupt(rx_interrupt), 
        .i_rx_frame_length(rx_frame_length),
        .i_rx_frame_num(rx_frame_num),
-       .i_rx_fifo_status(rx_fifo_status),
+       .i_rx_status(rx_status),
        .i_loss_interrupt(loss_interrupt),
        .i_sync_loss(sync_loss),
        .i_link_loss(link_loss),
@@ -326,7 +326,7 @@ module tlk2711_top
         .i_2711_rkmsb(i_2711_rkmsb),
         .i_2711_rklsb(i_2711_rklsb),
         .i_2711_rxd(i_2711_rxd),
-        .o_fifo_status(rx_fifo_status),
+        .o_rx_status(rx_status),
         .o_loss_interrupt(loss_interrupt),
         .o_sync_loss(sync_loss),
         .o_link_loss(link_loss)

@@ -52,7 +52,7 @@ module  tlk2711_rx_link
     input                               i_2711_rklsb,
     input  [15:0]                       i_2711_rxd,
 
-    output                              o_fifo_status,
+    output [5:0]                        o_rx_status,
     output                              o_loss_interrupt,
     output                              o_sync_loss,
     output                              o_link_loss
@@ -303,7 +303,7 @@ module  tlk2711_rx_link
     end
 
     always@(posedge clk)begin
-        if (rst) begin
+        if (rst | i_soft_rst) begin
             valid_data_num <= 'd0;
             trans_data_num <= 'd0;
         end else begin
@@ -436,6 +436,9 @@ module  tlk2711_rx_link
     end
 
     assign o_sync_loss = sync_loss;
+
+    // Output the status to the host
+    assign o_rx_status = {fifo_empty, fifo_full, cs};
 
 // TODO debug rx
 /*
