@@ -152,11 +152,11 @@ module reg_mgt
         case(i_reg_raddr)
             RX_STATUS_REG: begin
                 reg_rdata[5:0] <= i_rx_status;
-                reg_data[63:6] <= 'h0;
+                reg_rdata[63:6] <= 'h0;
             end
             TX_STATUS_REG: begin
                 reg_rdata[9:0] <= i_tx_status;
-                reg_data[63:10] <= 'h0;
+                reg_rdata[63:10] <= 'h0;
             end
             default;
         endcase

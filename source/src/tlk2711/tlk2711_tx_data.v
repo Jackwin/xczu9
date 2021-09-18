@@ -39,7 +39,7 @@ module  tlk2711_tx_data
     output                  o_dma_rd_ready,
     output reg              o_tx_interrupt,
 
-    output [9:0]            o_tx_status;
+    output [9:0]            o_tx_status,
 
     output                  o_2711_tkmsb,
     output                  o_2711_tklsb,

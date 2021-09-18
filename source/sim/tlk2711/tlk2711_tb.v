@@ -156,6 +156,27 @@ module tlk2711_tb(
 		endcase	
 	end
 
+task task_reg_read;
+	input [15:0]  	i_addr;
+	output [63:0]   o_rd_data;
+	begin
+		@(posedge clk);
+		i_reg_ren = 1'b0;
+		i_reg_raddr = 1'b0;
+
+		@(posedge clk);
+		i_reg_ren = 1;
+		i_reg_raddr = i_addr;
+		@(posedge clk);
+		i_reg_ren = 0;
+		o_rd_data = o_reg_rdata;
+		repeat(3) @(posedge clk);
+
+		$display("%g The read data   :%h", $time, o_rd_data);
+	end
+endtask
+
+
 //   always@(posedge clk)
 // 	begin
 // 	  if (o_tx_irq)
@@ -180,20 +201,29 @@ module tlk2711_tb(
 // 	  end
 // 	end
 
-	always@(posedge clk) begin
-		if (rst) begin
-			i_reg_ren <= 1'b0;
-			i_reg_raddr <= 'h0;
-		end else begin
-			if (o_tx_irq | o_rx_irq | o_loss_irq)begin
-				i_reg_ren   <= 'b1;
-				i_reg_raddr <= IRQ_REG;
-			end else begin
-				i_reg_ren <= 0;
-				i_reg_raddr <= 'h0;
-			end
+	// always@(posedge clk) begin
+	// 	if (rst) begin
+	// 		i_reg_ren <= 1'b0;
+	// 		i_reg_raddr <= 'h0;
+	// 	end else begin
+	// 		if (o_tx_irq | o_rx_irq | o_loss_irq)begin
+	// 			i_reg_ren   <= 'b1;
+	// 			i_reg_raddr <= IRQ_REG;
+	// 		end else begin
+	// 			i_reg_ren <= 0;
+	// 			i_reg_raddr <= 'h0;
+	// 		end
+	// 	end
+  	// end
+	reg [64:0] 	reg_rd_data;
+	initial begin
+		i_reg_ren = 0;
+		i_reg_raddr = 0;
+		forever begin
+			wait(o_tx_irq | o_rx_irq | o_loss_irq);
+			task_reg_read(IRQ_REG, reg_rd_data);
 		end
-  	end
+	end
 
   reg [31:0] num_video = 32'd0;
   	
