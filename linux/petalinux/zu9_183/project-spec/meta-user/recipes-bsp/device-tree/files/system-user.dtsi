@@ -16,10 +16,10 @@
     };
     fpga-driver@0{
         status = "okay";
-        compatible = "xlnx, fpga_zu9";
+        compatible = "xlnx,fpga_zu9";
         memory-region = <&reserved_for_fpga>;
         interrupt-parent = <&gic>;
-        interrupt = <0 89 4>;
+        interrupts = <0 89 4>;
     };
 };
 
