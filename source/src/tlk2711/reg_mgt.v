@@ -65,6 +65,9 @@ module reg_mgt
     
     input [5:0]                     i_rx_status,
     input [9:0]                     i_tx_status,
+    input [7:0]                     i_rx_data_type,
+    input                           i_rx_file_end_flag,
+    input                           i_rx_checksum_flag,
 
     input                           i_loss_interrupt,
     input                           i_sync_loss,
@@ -199,30 +202,25 @@ module reg_mgt
     assign loss_intr_rd = (i_reg_raddr == RX_LOSS_REG) && i_reg_ren;
 
     reg [63:0]  rd_reg = 'd0;
-    reg [63:0]  rx_status;
+    reg [63:0]  rx_intr_status;
 
     // TODO  Suppor more regs read
     always @ (posedge clk ) begin
         if (rst) begin
-            rx_status <= 'h0;
+            rx_intr_status <= 'h0;
             rd_reg <= 'h0;
         end else begin
-            // if(tx_intr_rd)
-            //     rd_reg <= 64'h1010;
-            // else if (rx_intr_rd) 
-            //     rd_reg <= rx_status;
-            // else if (loss_intr_rd)    
-            //     rd_reg <= {31'b0, i_sync_loss, 31'b0, i_link_loss};
 
             if (intr_rd)
-                rd_reg <= rx_status;
+                rd_reg <= rx_intr_status;
 
             if (i_rx_interrupt)
-                rx_status <= {4'd2, 28'h0, i_rx_frame_num, i_rx_frame_length};
+                rx_intr_status <= {4'd2, 18'h0,i_rx_data_type, i_rx_file_end_flag,
+                                    i_rx_checksum_flag, i_rx_frame_num, i_rx_frame_length};
             else if (i_tx_interrupt)
-                 rx_status <= {4'd1, 28'd0, 16'h0000, 16'h5aa5};
+                 rx_intr_status <= {4'd1, 28'd0, 16'h0000, 16'h5aa5};
             else if (i_loss_interrupt) 
-                rx_status <= {4'd3, 32'h0, 24'h0, i_rx_status, i_sync_loss, i_link_loss};
+                rx_intr_status <= {4'd3, 32'h0, 24'h0, i_rx_status, i_sync_loss, i_link_loss};
         end
     end
 
@@ -243,7 +241,7 @@ module reg_mgt
     assign o_loss_irq = i_loss_interrupt;
     assign o_reg_rdata = rd_reg; 
 // Review
-/*
+
 ila_mgt ila_mgt_i (
     .clk(clk),
     .probe0(i_reg_wen),
@@ -257,15 +255,15 @@ ila_mgt ila_mgt_i (
     .probe8(o_tx_body_num),
     .probe9(o_tx_mode),
     .probe10(o_rx_base_addr),
-    .probe11(i_rx_total_packet),
-    .probe12(i_rx_packet_body),
-    .probe13(i_rx_packet_tail),
-    .probe14(i_rx_body_num),
+    .probe11(rx_intr_status),
+    .probe12(i_reg_raddr),
+    .probe13(i_rx_status),
+    .probe14(i_tx_status),
     .probe15(i_tx_interrupt),
     .probe16(o_tx_base_addr)
 
 );
-*/
+
     
 endmodule
 
