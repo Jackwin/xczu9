@@ -50,6 +50,9 @@ module  tlk2711_rx_link
     output                              o_rx_interrupt,
     output [15:0]                       o_rx_frame_length, 
     output [15:0]                       o_rx_frame_num,
+    output [7:0]                        o_rx_data_type,
+    output                              o_rx_file_end_flag,
+    output                              o_rx_checksum_flag,
 
     input                               i_2711_rkmsb,
     input                               i_2711_rklsb,
@@ -98,20 +101,23 @@ module  tlk2711_rx_link
 
     // Store the frame inform
 
-    reg [7:0]   data_mode;
-    reg [7:0]   data_end_flag;
-    reg [15:0]  line_number;
-    reg [15:0]  data_length;
-    reg [1:0]   to_align64;
-    reg [15:0]  checksum;
-
-
+    reg [7:0]               data_mode;
+    reg [7:0]               data_end_flag;
+    reg [15:0]              line_number;
+    reg [15:0]              data_length;
+    reg [1:0]               to_align64;
+    reg [15:0]              checksum;
+   
     reg [15:0]              rx_frame_cnt = 'd0;
     reg [DLEN_WIDTH-1:0]    valid_byte = 'd0;
     reg [DLEN_WIDTH-1:0]    wr_bbt = 'd0;
     reg [ADDR_WIDTH-1:0]    wr_addr = 'd0;
     reg [15:0]              tlk2711_rxd;
     reg                     checksum_error;
+
+    assign o_rx_data_type = data_mode;
+    assign o_rx_file_end_flag = data_end_flag[0];
+    assign o_rx_checksum_flag = checksum_error;
 
     assign o_wr_cmd_data = {wr_addr, wr_bbt};
 
@@ -444,7 +450,7 @@ module  tlk2711_rx_link
     assign o_rx_status = {fifo_empty, fifo_full, cs};
 
 // TODO debug rx
-/*
+
  ila_tlk2711_rx ila_tlk2711_rx_i(
     .clk(clk),
     .probe0(i_2711_rkmsb),
@@ -453,19 +459,19 @@ module  tlk2711_rx_link
     .probe3(o_loss_interrupt),
     .probe4(i_rx_start),
     .probe5(i_rx_base_addr),
-    .probe6(frame_start),
+    .probe6(link_loss),
     .probe7(frame_data_cnt),
     .probe8(rx_frame_cnt),
     .probe9(i_wr_cmd_ack),
     .probe10(o_rx_interrupt),
-    .probe11(o_rx_total_packet),
-    .probe12(o_rx_packet_tail),
-    .probe13(o_rx_body_num),
+    .probe11(link_loss_timer),
+    .probe12(link_loss_flag),
+    .probe13(link_loss),
     .probe14(fifo_wren),
     .probe15(wr_bbt)
     
 );
-*/
+
 endmodule 
          
          

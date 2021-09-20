@@ -126,6 +126,9 @@ module tlk2711_top
     wire                    sync_loss;
     wire                    link_loss;
     wire                    soft_rst;
+    wire [7:0]              rx_data_type;
+    wire                    rx_file_end_flag;
+    wire                    rx_checksum_flag;
 
     wire [DLEN_WIDTH+ADDR_WIDTH-1:0]    rd_cmd_data;
     wire                                rd_cmd_req;
@@ -179,6 +182,10 @@ module tlk2711_top
        .i_rx_interrupt(rx_interrupt), 
        .i_rx_frame_length(rx_frame_length),
        .i_rx_frame_num(rx_frame_num),
+       .i_rx_data_type(rx_data_type),
+       .i_rx_file_end_flag(rx_file_end_flag),
+       .i_rx_checksum_flag(rx_checksum_flag),
+
        .i_tx_status(tx_status),
        .i_rx_status(rx_status),
        .i_loss_interrupt(loss_interrupt),
@@ -328,8 +335,10 @@ module tlk2711_top
         .o_dma_wr_data(dma_wr_data),
         .o_rx_interrupt(rx_interrupt),
         .o_rx_frame_length(rx_frame_length),
-        //.o_rx_packet_tail(rx_packet_tail),
         .o_rx_frame_num(rx_frame_num),
+        .o_rx_data_type(rx_data_type),
+        .o_rx_file_end_flag(rx_file_end_flag),
+        .o_rx_checksum_flag(rx_checksum_flag),
         .i_2711_rkmsb(i_2711_rkmsb),
         .i_2711_rklsb(i_2711_rklsb),
         .i_2711_rxd(i_2711_rxd),

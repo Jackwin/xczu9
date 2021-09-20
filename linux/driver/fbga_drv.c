@@ -31,6 +31,7 @@ static struct fasync_struct *fb_async = NULL;
 struct fbga_drv *fb_drv = NULL;
 
 
+
 void write_reg64(struct fbga_drv* pdrv, uint64_t off, uint64_t val) {
     *(uint64_t*)(pdrv->vaddr_devm + off) = val;
 }
@@ -68,6 +69,7 @@ static int _dma_config_rx(struct data_config_t *param) {
         printk("wait for dma rx timeout\n");
         return -1;
     }
+
     uint64_t intsr = *(uint64_t *)(fb_drv->vaddr_devm + DMA_REGOFF_INTSR);
     uint64_t inttype = (intsr & ~DMA_INTSR_TYPE_MASK) >> DMA_INTSR_TYPE_SHIFT;
     if (3 == inttype) {
@@ -250,6 +252,7 @@ static const struct file_operations fbga_drv_fops=
 static irqreturn_t fbga_drv_irq(int irq, void *lp)
 {
 	printk("fbga_drv interrupt triggered\n");
+
     uint64_t intsr;
     read_reg64(fb_drv, DMA_REGOFF_INTSR, &intsr);
     printk("INTSR:%016x\n", intsr);
@@ -268,6 +271,7 @@ static irqreturn_t fbga_drv_irq(int irq, void *lp)
     }
     kill_fasync(&fb_async, SIGIO, POLL_IN);
 	printk("fbga_drv interrupt handled done\n");
+
 	return IRQ_HANDLED;
 }
 
