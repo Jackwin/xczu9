@@ -220,7 +220,7 @@ module reg_mgt
             else if (i_tx_interrupt)
                  rx_intr_status <= {4'd1, 28'd0, 16'h0000, 16'h5aa5};
             else if (i_loss_interrupt) 
-                rx_intr_status <= {4'd3, 32'h0, 24'h0, i_rx_status, i_sync_loss, i_link_loss};
+                rx_intr_status <= {4'd3, 32'h0, 20'h0, i_rx_status, i_sync_loss, i_link_loss};
         end
     end
 
@@ -260,7 +260,9 @@ ila_mgt ila_mgt_i (
     .probe13(i_rx_status),
     .probe14(i_tx_status),
     .probe15(i_tx_interrupt),
-    .probe16(o_tx_base_addr)
+    .probe16(o_tx_base_addr),
+    .probe17(i_link_loss),
+    .probe18(i_sync_loss)
 
 );
 
