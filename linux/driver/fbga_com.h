@@ -14,14 +14,17 @@
 #define IOCMD_DMA_CONFIGRX    0x401
 
 
-struct devm_data {
-    int32_t reg_off;
-    int32_t val;
+struct devm_data_t {
+    uint64_t reg_off;
+    uint64_t val;
 };
 
 struct data_config_t {
-    uint32_t addr_off;  //offset to addr_data
+//offset to addr_data
+    uint32_t addr_off;  
     uint64_t data_len;
+//data mode: 0--normal; 1--inside loop; 2--Kcode test; 3--data test
+    int32_t data_mode;
 };
 
 #endif
