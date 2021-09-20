@@ -30,15 +30,27 @@
 static struct fasync_struct *fb_async = NULL;
 struct fbga_drv *fb_drv = NULL;
 
+
+
+void write_reg64(struct fbga_drv* pdrv, uint64_t off, uint64_t val) {
+    *(uint64_t*)(pdrv->vaddr_devm + off) = val;
+}
+void read_reg64(struct fbga_drv* pdrv, uint64_t off, uint64_t* val) {
+    *val = *(uint64_t*)(pdrv->vaddr_devm + off);
+}
+
 /*config and start  dma tx, wati until irq or timeout*/ 
 static int _dma_config_tx(struct data_config_t *param) {
-    *(uint64_t *)(fb_drv->vaddr_devm + DMA_REGOFF_TXADDR) = fb_drv->paddr_data + param->addr_off;
-    *(uint64_t *)(fb_drv->vaddr_devm + DMA_REGOFF_TXLEN) = param->data_len;
+    write_reg64(fb_drv, DMA_REGOFF_TXADDR, fb_drv->paddr_data + param->addr_off);
+    write_reg64(fb_drv, DMA_REGOFF_TXLEN, param->data_len);
     uint32_t body_len = 870;
     uint32_t body_num = param->data_len / 870;
     uint32_t tail_len = param->data_len % 870;
-    *(uint64_t *)(fb_drv->vaddr_devm + DMA_REGOFF_TXTB) = tail_len << 32 | body_len;
-    *(uint64_t *)(fb_drv->vaddr_devm + DMA_REGOFF_TXEN) = 0;
+    uint64_t pack_conf = (body_num << DMA_TXPACK_BODYNUM_SHIFT) &
+            (tail_len << DMA_TXPACK_TAILLEN_SHIFT) &
+            (param->data_mode << DMA_TXPACK_MODE_SHIFT);
+    write_reg64(fb_drv, DMA_REGOFF_TXPACK, pack_conf);
+    write_reg64(fb_drv, DMA_REGOFF_TXEN, 0);
 
 	unsigned long timeout = msecs_to_jiffies(TIMEOUT_MS_DMATX);
     timeout = wait_for_completion_timeout(&fb_drv->cmp_dmatx, timeout);
@@ -50,14 +62,23 @@ static int _dma_config_tx(struct data_config_t *param) {
     return 0;
 }
 static int _dma_config_rx(struct data_config_t *param) {
-    *(uint64_t *)(fb_drv->vaddr_devm + DMA_REGOFF_RXADDR) = fb_drv->paddr_data + param->addr_off;
+    write_reg64(fb_drv, DMA_REGOFF_RXADDR, fb_drv->paddr_data + param->addr_off);
 	unsigned long timeout = msecs_to_jiffies(TIMEOUT_MS_DMATX);
     timeout = wait_for_completion_timeout(&fb_drv->cmp_dmarx, timeout);
     if (0 == timeout) {
         printk("wait for dma rx timeout\n");
         return -1;
     }
-    return 0; 
+
+    uint64_t intsr = *(uint64_t *)(fb_drv->vaddr_devm + DMA_REGOFF_INTSR);
+    uint64_t inttype = (intsr & ~DMA_INTSR_TYPE_MASK) >> DMA_INTSR_TYPE_SHIFT;
+    if (3 == inttype) {
+        printk("link error, INTSR: %016x\n", intsr);
+        return -2;
+    }
+
+    uint32_t len = intsr & DMA_INTSR_RECVLEN_MASK;
+    return len; 
 }
 
 int fbga_drv_open(struct inode * inode, struct file *filp)
@@ -134,7 +155,7 @@ static int fbga_fasync (int fd, struct file *filp, int on)
 static long fbga_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
     void __user *argp = (void __user*)arg;
-    struct devm_data devmd;
+    struct devm_data_t devmd;
     struct data_config_t param;
     int32_t reg;
     switch(cmd)
@@ -156,7 +177,14 @@ static long fbga_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
             break;
         case IOCMD_DMA_CONFIGRX:
             copy_from_user((char*)(&param), argp, sizeof(param));
-            _dma_config_rx(&param);
+            int32_t len = _dma_config_rx(&param);
+            if (len >= 0) {
+                param.data_len = len;
+                copy_to_user(argp, (char*)(&param), sizeof(param));
+            }
+            else {
+                return len;
+            }
             break;
         default :
             return -EINVAL;
@@ -224,19 +252,26 @@ static const struct file_operations fbga_drv_fops=
 static irqreturn_t fbga_drv_irq(int irq, void *lp)
 {
 	printk("fbga_drv interrupt triggered\n");
-    uint64_t intsr = *(uint64_t *)(fb_drv->vaddr_devm + DMA_REGOFF_INTSR);
+
+    uint64_t intsr;
+    read_reg64(fb_drv, DMA_REGOFF_INTSR, &intsr);
+    printk("INTSR:%016x\n", intsr);
     uint64_t inttype = (intsr & ~DMA_INTSR_TYPE_MASK) >> DMA_INTSR_TYPE_SHIFT;
     if (1 == inttype) {
         complete(&fb_drv->cmp_dmatx);
     }
-    else if (2 == inttype) {
+    else if (2 == inttype || 3 == inttype) {
         complete(&fb_drv->cmp_dmarx);
     }
     else {
-        printk("irq status error\n");
+        printk("irq status error, type:%d\n", inttype);
+        uint64_t rxsr;
+        read_reg64(fb_drv, DMA_REGOFF_RXSR, &rxsr);
+        printk("RXSR:%016x\n", rxsr);
     }
     kill_fasync(&fb_async, SIGIO, POLL_IN);
-	printk("fbga_drv interrupt handled\n");
+	printk("fbga_drv interrupt handled done\n");
+
 	return IRQ_HANDLED;
 }
 
@@ -388,7 +423,6 @@ static int fbga_drv_remove(struct platform_device *pdev)
 
 static struct of_device_id fbga_drv_of_match[] = {
 	{ .compatible = "xlnx,fpga_zu9", },
-    { .compatible = "baidu,paddle_mobile_fpga_drv",},
 	{ /* end of list */ },
 };
 
