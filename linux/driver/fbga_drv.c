@@ -30,7 +30,6 @@
 static struct fasync_struct *fb_async = NULL;
 struct fbga_drv *fb_drv = NULL;
 
-
 void write_reg64(struct fbga_drv* pdrv, uint64_t off, uint64_t val) {
     *(uint64_t*)(pdrv->vaddr_devm + off) = val;
 }
