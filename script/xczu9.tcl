@@ -130,7 +130,7 @@ if { $::argc > 0 } {
 set orig_proj_dir "[file normalize "$origin_dir/../vivado/xczu9"]"
 
 # Create project
-create_project ${_xil_proj_name_} ./${_xil_proj_name_} -part xczu9eg-ffvb1156-2-i
+create_project ${_xil_proj_name_} ./${_xil_proj_name_} -part xczu9eg-ffvb1156-2-i -f
 
 # Set the directory path for the new project
 set proj_dir [get_property directory [current_project]]
@@ -543,9 +543,9 @@ set files [list \
 add_files -norecurse -fileset $obj $files
 
 # Import local files from the original project
-set files [list \
- [file normalize "${origin_dir}/../vivado/xczu9/xczu9.sim/sim_1/behav/tlk2711_tb_behav.wcfg" ]\
-]
+# set files [list \
+#  [file normalize "${origin_dir}/../vivado/xczu9/xczu9.sim/sim_1/behav/tlk2711_tb_behav.wcfg" ]\
+# ]
 set imported_files [import_files -fileset sim_1 $files]
 
 # Set 'sim_1' fileset file properties for remote files
