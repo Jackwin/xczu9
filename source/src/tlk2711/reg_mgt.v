@@ -22,19 +22,23 @@ module reg_mgt
     parameter ADDR_WIDTH = 32
 )
 (  
-    input                       clk,
-    input                       rst,
+    // PS logics
+    input                       ps_clk,
+    input                       ps_rst,
     input                       i_reg_wen,
     input [15:0]                i_reg_waddr,
     input [63:0]                i_reg_wdata,
     input                       i_reg_ren,
     input [15:0]                i_reg_raddr,
     output [63:0]               o_reg_rdata,
+
+    // user logics
+    input                       clk,
+    input                       rst,
     output                      o_tx_irq,
     output                      o_rx_irq,
     output                      o_loss_irq,
   
-    
     // TX port set
     //read data address from DDR to tx module
     output reg [ADDR_WIDTH-1:0]   o_tx_base_addr, 
@@ -77,23 +81,75 @@ module reg_mgt
     
     );
 
-    localparam  SOFT_R_REG      = 16'h0000;
+   // localparam  SOFT_R_REG      = 16'h0000;
+    localparam  SOFT_R_REG      = 16'h0100;
     localparam  TX_CFG_REG      = 16'h0008;
     localparam  RX_CFG_REG      = 16'h0010;
-    localparam  IRQ_REG         = 16'h0100;
+   // localparam  IRQ_REG         = 16'h0100;
+    localparam  IRQ_REG         = 16'h0060;
+   
+    // localparam  TX_ADDR_REG     = 16'h0108;
+    // localparam  TX_LENGTH_REG   = 16'h0110;
+    // localparam  TX_PACKET_REG   = 16'h0118;
+    // localparam  TX_STATUS_REG   = 16'h0120;
 
-    localparam  TX_ADDR_REG     = 16'h0108;
-    localparam  TX_LENGTH_REG   = 16'h0110;
-    localparam  TX_PACKET_REG   = 16'h0118;
-    localparam  TX_STATUS_REG   = 16'h0120;
+    localparam  TX_ADDR_REG     = 16'h0020;
+    localparam  TX_LENGTH_REG   = 16'h0028;
+    localparam  TX_PACKET_REG   = 16'h0030;
+    localparam  TX_STATUS_REG   = 16'h0038;
 
-    localparam  RX_ADDR_REG     = 16'h0208;
-    localparam  RX_CTRL_REG     = 16'h0210;
-    localparam  RX_STATUS_REG   = 16'h0218;
+    // localparam  RX_ADDR_REG     = 16'h0208;
+    // localparam  RX_CTRL_REG     = 16'h0210;
+    // //localparam  RX_STATUS_REG   = 16'h0218;
+    //  localparam  RX_STATUS_REG   = 16'h0000;
 
-    localparam  TX_IRQ_REG       = 16'h0100;
-    localparam  RX_IRQ_REG       = 16'h0200;
-    localparam  RX_LOSS_REG      = 16'h0300;
+    localparam  RX_ADDR_REG     = 16'h0040;
+    localparam  RX_CTRL_REG     = 16'h0048;
+    //localparam  RX_STATUS_REG   = 16'h0218;
+    localparam  RX_STATUS_REG   = 16'h0000;
+
+    // localparam  TX_IRQ_REG       = 16'h0100;
+    // localparam  RX_IRQ_REG       = 16'h0200;
+    // localparam  RX_LOSS_REG      = 16'h0300;
+
+// ----------------------------------------------------------------------
+// Sync logics
+// ----------------------------------------------------------------------
+reg                       ps_reg_wen_1r;
+reg [15:0]                ps_reg_waddr_1r;
+reg [63:0]                ps_reg_wdata_1r;
+reg                       ps_reg_ren_1r;
+reg [15:0]                ps_reg_raddr_1r;
+reg [63:0]                ps_reg_rdata;
+
+reg                       usr_reg_wen;
+reg [15:0]                usr_reg_waddr;
+reg [63:0]                usr_reg_wdata;
+reg                       usr_reg_ren;
+reg [15:0]                usr_reg_raddr;
+reg [63:0]                usr_reg_rdata_1d;
+
+always @(posedge clk) begin
+    ps_reg_wen_1r <= i_reg_wen;
+    ps_reg_waddr_1r <= i_reg_waddr;
+    ps_reg_wdata_1r <= i_reg_wdata;
+    ps_reg_ren_1r <= i_reg_ren;
+    ps_reg_raddr_1r <= i_reg_raddr;
+    
+    usr_reg_wen <= ps_reg_wen_1r;
+    usr_reg_waddr <= ps_reg_waddr_1r;
+    usr_reg_wdata <= ps_reg_wdata_1r;
+    usr_reg_ren <= ps_reg_ren_1r;
+    usr_reg_raddr <= ps_reg_raddr_1r;
+
+end
+
+always @(posedge ps_clk) begin
+    usr_reg_rdata_1d <= rd_reg;
+    ps_reg_rdata <= usr_reg_rdata_1d;
+end
+
+assign o_reg_rdata = ps_reg_rdata; 
 
 //////////////////////////////////////////////////////////////////////////
 //  TX and RX register configuration
@@ -108,11 +164,11 @@ module reg_mgt
         if(rst)
             reg_wen <= 0;
         else begin
-			if(i_reg_wen) begin
-				reg_waddr <= i_reg_waddr;
-			    reg_wdata <= i_reg_wdata;
+			if(usr_reg_wen) begin
+				reg_waddr <= usr_reg_waddr;
+			    reg_wdata <= usr_reg_wdata;
 			end
-			reg_wen <= i_reg_wen;
+			reg_wen <= usr_reg_wen;
         end        
     end
 
@@ -151,8 +207,8 @@ module reg_mgt
     end
 
     always @(posedge clk) begin
-        if (i_reg_ren)
-        case(i_reg_raddr)
+        if (usr_reg_ren)
+        case(usr_reg_raddr)
             RX_STATUS_REG: begin
                 reg_rdata[5:0] <= i_rx_status;
                 reg_rdata[63:6] <= 'h0;
@@ -172,7 +228,7 @@ module reg_mgt
     reg [7:0] count = 8'd0; 
 
     always @ (posedge clk) begin
-        if (i_reg_wen && i_reg_waddr == SOFT_R_REG )
+        if (usr_reg_wen && usr_reg_waddr == SOFT_R_REG )
             soft_rst_reg <= 1'b1;       
         else if (count==8'hff)
             soft_rst_reg <= 1'b0;
@@ -190,16 +246,16 @@ module reg_mgt
 //////////////////////////////////////////////////////////////////////////
 //  TX and RX interrupt report
 //////////////////////////////////////////////////////////////////////////
-    wire tx_intr_rd;
-    wire rx_intr_rd;
-    wire loss_intr_rd;
+    // wire tx_intr_rd;
+    // wire rx_intr_rd;
+    // wire loss_intr_rd;
     wire intr_rd;
 
-    assign intr_rd = (i_reg_raddr == IRQ_REG) && i_reg_ren;
+    assign intr_rd = (usr_reg_raddr == IRQ_REG) && usr_reg_ren;
     
-    assign tx_intr_rd = (i_reg_raddr == TX_IRQ_REG) && i_reg_ren;
-    assign rx_intr_rd = (i_reg_raddr == RX_IRQ_REG) && i_reg_ren;
-    assign loss_intr_rd = (i_reg_raddr == RX_LOSS_REG) && i_reg_ren;
+    // assign tx_intr_rd = (usr_reg_raddr == TX_IRQ_REG) && usr_reg_ren;
+    //assign rx_intr_rd = (usr_reg_raddr == RX_IRQ_REG) && usr_reg_ren;
+    //assign loss_intr_rd = (usr_reg_raddr == RX_LOSS_REG) && usr_reg_ren;
 
     reg [63:0]  rd_reg = 'd0;
     reg [63:0]  rx_intr_status;
@@ -239,15 +295,15 @@ module reg_mgt
     assign o_tx_irq = i_tx_interrupt;
     assign o_rx_irq = i_rx_interrupt;
     assign o_loss_irq = i_loss_interrupt;
-    assign o_reg_rdata = rd_reg; 
+   // assign o_reg_rdata = rd_reg; 
 // Review
 
 ila_mgt ila_mgt_i (
     .clk(clk),
-    .probe0(i_reg_wen),
-    .probe1(i_reg_wdata),
-    .probe2(i_reg_waddr), 
-    .probe3(i_reg_ren),
+    .probe0(usr_reg_wen),
+    .probe1(usr_reg_wdata),
+    .probe2(usr_reg_waddr), 
+    .probe3(usr_reg_ren),
     .probe4(o_reg_rdata),
     .probe5(o_tx_total_packet),
     .probe6(o_tx_packet_body),
@@ -256,7 +312,7 @@ ila_mgt ila_mgt_i (
     .probe9(o_tx_mode),
     .probe10(o_rx_base_addr),
     .probe11(rx_intr_status),
-    .probe12(i_reg_raddr),
+    .probe12(usr_reg_raddr),
     .probe13(i_rx_status),
     .probe14(i_tx_status),
     .probe15(i_tx_interrupt),

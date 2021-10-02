@@ -29,8 +29,8 @@ module tlk2711_top
     parameter DLEN_WIDTH = 16  
 )
 (  
-    input               clk,
-    input               rst,
+    input               ps_clk,
+    input               ps_rst,
     
     //register config
     input               i_reg_wen,
@@ -48,6 +48,9 @@ module tlk2711_top
     output              o_loss_irq,
 
     //tlk2711 interface
+    input               clk,
+    input               rst,
+
     input               i_2711_rkmsb,
     input               i_2711_rklsb,
     input   [15:0]      i_2711_rxd,
@@ -155,8 +158,8 @@ module tlk2711_top
    reg_mgt #(       
        .ADDR_WIDTH(ADDR_WIDTH)
    ) reg_mgt (  
-       .clk(clk),
-       .rst(rst),
+       .ps_clk(ps_clk),
+       .ps_rst(ps_rst),
        .i_reg_wen(i_reg_wen),
        .i_reg_waddr(i_reg_waddr),
        .i_reg_wdata(i_reg_wdata),
@@ -166,7 +169,9 @@ module tlk2711_top
        .o_tx_irq(o_tx_irq),
        .o_rx_irq(o_rx_irq),
        .o_loss_irq(o_loss_irq),
-      
+
+       .clk(clk),
+       .rst(rst),
        .o_tx_base_addr(tx_base_addr), 
        .o_tx_total_packet(tx_total_packet), 
        .o_tx_packet_body(tx_packet_body), 

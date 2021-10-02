@@ -65,10 +65,12 @@ parameter DDR_ADDR_WIDTH = 40;
 parameter HP0_DATA_WIDTH = 128;
 parameter STREAM_DATA_WIDTH = 64;
 
-wire    clk_80;
-wire    locked;
-wire    rst_80;
-wire    clk_375;
+wire                        clk_100;
+wire                        locked;
+wire                        clk_100_rst;
+wire                        clk_375;
+wire                        pl_clk0_100m;
+wire                        pl_clk0_rst;
 
 wire [3:0]                  m_axi_arid;
 wire [DDR_ADDR_WIDTH-1:0]   m_axi_araddr;
@@ -108,8 +110,8 @@ wire                        fpga_reg_wen;
 wire                        fpga_reg_ren;
 wire [15:0]                 fpga_reg_waddr;
 wire [15:0]                 fpga_reg_raddr;
-wire [63:0]   fpga_reg_wdata;
-wire [631:0]   fpga_reg_rdata;
+wire [63:0]                 fpga_reg_wdata;
+wire [63:0]                 fpga_reg_rdata;
 
 wire                        tlk2711_tx_irq;
 wire                        tlk2711_rx_irq;
@@ -194,23 +196,23 @@ clk_wiz_0 clk_wiz_inst (
     .clk_in1(sys_clk_50),
     .reset(~sys_rstn), 
     .locked(locked),
-    .clk_80(clk_80),
+    .clk_100(clk_100),
     .clk_375(clk_375)
    
 );
 
 reset_bridge reset_80_inst(
-    .clk(clk_80),    
+    .clk(clk_100),    
     .arst_n(locked),  
-    .srst(rst_80)
+    .srst(clk_100_rst)
 );
 
 // --------------------- user led --------------------------------
 
 reg [26:0]  led_cnt;
 
-always @(posedge clk_80) begin
-    if (rst_80) begin
+always @(posedge clk_100) begin
+    if (clk_100_rst) begin
         led_cnt <= 'h0;
     end else begin
         led_cnt <= led_cnt + 1'd1;
@@ -222,8 +224,8 @@ assign usr_led = led_cnt[26];
 // --------------------- ethernet phy1 ---------------------------
 reg [15:0]     eth_rst_cnt;
 
-always @(posedge clk_80) begin
-    if (rst_80) begin
+always @(posedge clk_100) begin
+    if (clk_100_rst) begin
         eth_rst_cnt <= 'h0;
     end else if (&eth_rst_cnt != 1'b1) begin
         eth_rst_cnt <= eth_rst_cnt + 1'b1;
@@ -285,15 +287,15 @@ ila_emmc ila_emmc_i (
 */
 /*
 ila_emmc ila_emmc_i (
-	.clk(clk_80), // input wire clk
+	.clk(clk_100), // input wire clk
 	.probe0(mdio_phy_mdc), // input wire [0:0]  probe0  
 	.probe1(phy_resetn) // input wire [0:0]  probe1 
 );
 */
 
 // ------------------------ TLK2711-B --------------------------
-assign tlk2711b_gtx_clk = clk_80;
-assign tlk2711a_gtx_clk = clk_80;
+assign tlk2711b_gtx_clk = clk_100;
+assign tlk2711a_gtx_clk = clk_100;
 
 `ifdef TLK2711_TEST 
 wire        tlk2711b_start;
@@ -302,7 +304,7 @@ wire        tlk2711b_stop_ack;
 wire [2:0]  tlk2711b_mode;
 
 vio_tlk2711 vio_tlk2711b_i (
-  .clk(clk_80),                
+  .clk(clk_100),                
   .probe_out0(tlk2711b_start),  
   .probe_out1(tlk2711b_mode),  
   .probe_out2(tlk2711b_stop) 
@@ -310,8 +312,8 @@ vio_tlk2711 vio_tlk2711b_i (
 tlk2711 #(
     .DDR_ADDR_WIDTH(DD)
 )tlk2711b_inst (
-    .clk(clk_80),
-    .rst(rst_80),
+    .clk(clk_100),
+    .rst(clk_100_rst),
     .o_txd(tlk2711b_txd),
     .i_start(tlk2711b_start),
     .i_mode(tlk2711b_mode),
@@ -339,15 +341,15 @@ wire        tlk2711a_stop_ack;
 wire [2:0]  tlk2711a_mode;
 
 vio_tlk2711 vio_tlk2711a_i (
-  .clk(clk_80),                
+  .clk(clk_100),                
   .probe_out0(tlk2711a_start),  
   .probe_out1(tlk2711a_mode),  
   .probe_out2(tlk2711a_stop)
 );
 
 tlk2711 tlk2711a_inst (
-    .clk(clk_80),
-    .rst(rst_80),
+    .clk(clk_100),
+    .rst(clk_100_rst),
     .o_txd(tlk2711a_txd),
     .i_start(tlk2711a_start),
     .i_mode(tlk2711a_mode),
@@ -385,7 +387,7 @@ tlk2711 tlk2711a_inst (
     );
 
     vio_tlk2711_reg vio_tlk2711b_reg_i (
-        .clk(clk_80),                
+        .clk(clk_100),                
         .probe_out0(fpga_reg_wen_vio),
         .probe_out1(fpga_reg_waddr_vio),
         .probe_out2(fpga_reg_wdata_vio),
@@ -405,8 +407,8 @@ tlk2711 tlk2711a_inst (
 	    .STREAM_WBYTE_WIDTH(STREAM_DATA_WIDTH/8),  
         .DLEN_WIDTH(16)
     ) tlk2711_top (
-        .clk(clk_80),
-        .rst(rst_80),
+        .ps_clk(pl_clk0_100m),
+        .ps_rst(pl_clk0_rst),
 
         .i_reg_wen(fpga_reg_wen_vio),
         .i_reg_waddr(fpga_reg_waddr_vio),
@@ -421,6 +423,9 @@ tlk2711 tlk2711a_inst (
         // .i_reg_ren(fpga_reg_ren),
         // .i_reg_raddr(fpga_reg_raddr),
         // .o_reg_rdata(fpga_reg_rdata), 
+
+        .clk(clk_100),
+        .rst(clk_100_rst),
         //interrupt
         .o_tx_irq(tlk2711_tx_irq),
         .o_rx_irq(tlk2711_rx_irq),
@@ -513,8 +518,10 @@ mpsoc mpsoc_inst (
     */
     // FPGA MGT
     .dcm_locked(locked),
-    .fpga_mgt_aresetn(rst_80),
-    .fpga_mgt_clk(clk_80),
+    .fpga_mgt_aresetn(clk_100_rst),
+    .fpga_mgt_clk(clk_100),
+    .pl_clk0_100m(pl_clk0_100m),
+    .pl_clk0_rst(pl_clk0_rst),
     .i_reg_rdata(fpga_reg_rdata),
     .o_reg_raddr(fpga_reg_raddr),
     .o_reg_ren(fpga_reg_ren),
@@ -522,7 +529,7 @@ mpsoc mpsoc_inst (
     .o_reg_wdata(fpga_reg_wdata),
     .o_reg_wen(fpga_reg_wen),
 
-    .hp0_clk(clk_80),
+    .hp0_clk(clk_100),
 
     .s_axi_hp0_araddr(m_axi_araddr),
     .s_axi_hp0_arburst(m_axi_arburst),
@@ -574,7 +581,7 @@ mpsoc mpsoc_inst (
 
     // ---  Test DMA -----------------
 
-    .hp2_clk(clk_80),
+    .hp2_clk(clk_100),
 
     .hp2_araddr(hp2_araddr),
     .hp2_arburst(hp2_arburst),
@@ -626,12 +633,12 @@ mpsoc mpsoc_inst (
 // REVIEW Debug datamover
 
 tlk2711_datamover datamover_hp2 (
-    .m_axi_mm2s_aclk(clk_80),                        // input wire m_axi_mm2s_aclk
-    .m_axi_mm2s_aresetn(~rst_80),                  // input wire m_axi_mm2s_aresetn
+    .m_axi_mm2s_aclk(clk_100),                        // input wire m_axi_mm2s_aclk
+    .m_axi_mm2s_aresetn(~clk_100_rst),                  // input wire m_axi_mm2s_aresetn
     // AXI4 interface
     .mm2s_err(mm2s_error),                                      // output wire mm2s_err
-    .m_axis_mm2s_cmdsts_aclk(clk_80),        // input wire m_axis_mm2s_cmdsts_aclk
-    .m_axis_mm2s_cmdsts_aresetn(~rst_80),  // input wire m_axis_mm2s_cmdsts_aresetn
+    .m_axis_mm2s_cmdsts_aclk(clk_100),        // input wire m_axis_mm2s_cmdsts_aclk
+    .m_axis_mm2s_cmdsts_aresetn(~clk_100_rst),  // input wire m_axis_mm2s_cmdsts_aresetn
     
     .m_axis_mm2s_sts_tvalid(m_axis_mm2s_sts_tvalid),          // output wire m_axis_mm2s_sts_tvalid
     .m_axis_mm2s_sts_tready(1'b1),          // input wire m_axis_mm2s_sts_tready
@@ -672,11 +679,11 @@ tlk2711_datamover datamover_hp2 (
 
     // AXI4 interface FPGA -> ARM
 
-    .m_axi_s2mm_aclk(clk_80),                        // input wire m_axi_s2mm_aclk
-    .m_axi_s2mm_aresetn(~rst_80),                  // input wire m_axi_s2mm_aresetn
+    .m_axi_s2mm_aclk(clk_100),                        // input wire m_axi_s2mm_aclk
+    .m_axi_s2mm_aresetn(~clk_100_rst),                  // input wire m_axi_s2mm_aresetn
     .s2mm_err(s2mm_error),                                      // output wire s2mm_err
-    .m_axis_s2mm_cmdsts_awclk(clk_80),      // input wire m_axis_s2mm_cmdsts_awclk
-    .m_axis_s2mm_cmdsts_aresetn(~rst_80),  // input wire m_axis_s2mm_cmdsts_aresetn
+    .m_axis_s2mm_cmdsts_awclk(clk_100),      // input wire m_axis_s2mm_cmdsts_awclk
+    .m_axis_s2mm_cmdsts_aresetn(~clk_100_rst),  // input wire m_axis_s2mm_cmdsts_aresetn
    
     .m_axis_s2mm_sts_tvalid(user_s2mm_sts_tvalid),          // output wire m_axis_s2mm_sts_tvalid
     .m_axis_s2mm_sts_tready(1'b1),          // input wire m_axis_s2mm_sts_tready
@@ -735,13 +742,13 @@ wire [DDR_ADDR_WIDTH-1:0]     dm_start_rd_addr_vio;
 reg [15:0]      dm_rd_length;
 wire [15:0]     dm_rd_length_vio;
 
-always @(posedge clk_80) begin
+always @(posedge clk_100) begin
     gpio_r0 <= gpio;
     dm_start_gpio <= ~gpio_r0 & gpio;
 end
 
 vio_datamover vio_datamover_inst (
-  .clk(clk_80),                // input wire clk
+  .clk(clk_100),                // input wire clk
   .probe_out0(dm_start_vio),  // output wire [0 : 0] probe_out0
   .probe_out1(dm_length_vio),  // output wire [8 : 0] probe_out1
   .probe_out2(dm_start_addr_vio),  // output wire [31 : 0] probe_out2
@@ -751,13 +758,13 @@ vio_datamover vio_datamover_inst (
 
 assign dm_start = dm_start_vio;
 
-always @(posedge clk_80) begin
+always @(posedge clk_100) begin
     dm_start_vio_r0 <= dm_start_vio;
     dm_start_vio_p <= ~dm_start_vio_r0 & dm_start_vio;
 end
 
-always @(posedge clk_80) begin
-    if (rst_80) begin
+always @(posedge clk_100) begin
+    if (clk_100_rst) begin
         dm_length <= 'h0;
         dm_start_addr <= 'h0;
     end else begin
@@ -780,8 +787,8 @@ datamover_validation  # (
     .DDR_ADDR_WIDTH(DDR_ADDR_WIDTH),
     .INIT_DATA(64'h0706050403020100)
     )datamover_validation_inst(
-    .clk(clk_80),
-    .rst(rst_80),
+    .clk(clk_100),
+    .rst(clk_100_rst),
 
     .i_start(dm_start),
     .i_length(dm_length),
@@ -817,7 +824,7 @@ datamover_validation  # (
 );
 
 //ila_datamover ila_datamover_inst (
-//	.clk(clk_80), // input wire clk
+//	.clk(clk_100), // input wire clk
 
 //	.probe0(user_s2mm_wr_cmd_tready), // input wire [0:0]  probe0  
 //	.probe1(user_s2mm_wr_cmd_tdata), // input wire [71:0]  probe1 
@@ -846,7 +853,7 @@ datamover_validation  # (
 //);
 /*
 ila_hp2 ila_hp2_i(
-    .clk(clk_80),
+    .clk(clk_100),
 
     .probe0(hp2_wdata),
     .probe1(hp2_wstrb),
