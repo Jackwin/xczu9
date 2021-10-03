@@ -379,12 +379,12 @@ tlk2711 tlk2711a_inst (
     wire [15:0]                 fpga_reg_raddr_vio;
     wire [63:0]                 fpga_reg_rdata_vio;
 
-    ila_2711_rx ila_2711_rx_inst (
-	.clk(tlk2711b_rx_clk), // input wire clk
-	.probe0(tlk2711b_rklsb), // input wire [0:0]  probe0  
-	.probe1(tlk2711b_rkmsb), // input wire [0:0]  probe1 
-	.probe2(tlk2711b_rxd) // input wire [15:0]  probe2
-    );
+    // ila_2711_rx ila_2711_rx_inst (
+	// .clk(tlk2711b_rx_clk), // input wire clk
+	// .probe0(tlk2711b_rklsb), // input wire [0:0]  probe0  
+	// .probe1(tlk2711b_rkmsb), // input wire [0:0]  probe1 
+	// .probe2(tlk2711b_rxd) // input wire [15:0]  probe2
+    // );
 
     vio_tlk2711_reg vio_tlk2711b_reg_i (
         .clk(clk_100),                

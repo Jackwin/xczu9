@@ -103,7 +103,7 @@ module  tlk2711_tx_cmd
             rd_bbt <= tx_frame_cnt == i_tx_body_num ? packet_tail_align8 : packet_body_align8;
         end
     end
-/*
+
 ila_tx_cmd ila_tx_cmd_inst(
 .clk(clk),
 
@@ -123,6 +123,6 @@ ila_tx_cmd ila_tx_cmd_inst(
 .probe13(rd_addr),
 .probe14(rd_bbt)
 );
-*/
+
  
 endmodule 

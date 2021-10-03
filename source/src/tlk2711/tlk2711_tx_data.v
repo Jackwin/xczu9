@@ -322,8 +322,6 @@ module  tlk2711_tx_data
             state_cnt <= 'h0;
             test_data_cnt <= 'h0;
         end else begin
-            state_cnt <= 'h0;
-            state_cnt <= 'h0;
             // TODO: Add a power-up state to send the 1ms sync code
             if (tx_mode == LOOPBACK_MODE || tx_mode == TEST_MODE) begin
                 if (i_soft_reset) begin

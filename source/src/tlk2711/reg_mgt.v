@@ -81,36 +81,20 @@ module reg_mgt
     
     );
 
-   // localparam  SOFT_R_REG      = 16'h0000;
     localparam  SOFT_R_REG      = 16'h0100;
     localparam  TX_CFG_REG      = 16'h0008;
     localparam  RX_CFG_REG      = 16'h0010;
-   // localparam  IRQ_REG         = 16'h0100;
-    // localparam  TX_ADDR_REG     = 16'h0108;
-    // localparam  TX_LENGTH_REG   = 16'h0110;
-    // localparam  TX_PACKET_REG   = 16'h0118;
-    // localparam  TX_STATUS_REG   = 16'h0120;
 
     localparam  TX_ADDR_REG     = 16'h0020;
     localparam  TX_LENGTH_REG   = 16'h0028;
     localparam  TX_PACKET_REG   = 16'h0030;
     localparam  TX_STATUS_REG   = 16'h0038;
 
-    // localparam  RX_ADDR_REG     = 16'h0208;
-    // localparam  RX_CTRL_REG     = 16'h0210;
-    // //localparam  RX_STATUS_REG   = 16'h0218;
-    //  localparam  RX_STATUS_REG   = 16'h0000;
-
     localparam  RX_ADDR_REG     = 16'h0040;
     localparam  RX_CTRL_REG     = 16'h0048;
     localparam  RX_STATUS_REG   = 16'h0050;
-   // localparam  RX_STATUS_REG   = 16'h0000;
 
     localparam  IRQ_REG         = 16'h0060;
-
-    // localparam  TX_IRQ_REG       = 16'h0100;
-    // localparam  RX_IRQ_REG       = 16'h0200;
-    // localparam  RX_LOSS_REG      = 16'h0300;
 
 // ----------------------------------------------------------------------
 // Sync logics
@@ -254,17 +238,6 @@ assign o_reg_rdata = ps_reg_rdata;
 //////////////////////////////////////////////////////////////////////////
 //  TX and RX interrupt report
 //////////////////////////////////////////////////////////////////////////
-    // wire tx_intr_rd;
-    // wire rx_intr_rd;
-    // wire loss_intr_rd;
-    wire intr_rd;
-
-    assign intr_rd = (usr_reg_raddr == IRQ_REG) && usr_reg_ren;
-    
-    // assign tx_intr_rd = (usr_reg_raddr == TX_IRQ_REG) && usr_reg_ren;
-    //assign rx_intr_rd = (usr_reg_raddr == RX_IRQ_REG) && usr_reg_ren;
-    //assign loss_intr_rd = (usr_reg_raddr == RX_LOSS_REG) && usr_reg_ren;
-
     // TODO  Suppor more regs read
     always @ (posedge clk ) begin
         if (rst) begin
@@ -280,23 +253,9 @@ assign o_reg_rdata = ps_reg_rdata;
         end
     end
 
-   // assign o_irq = i_tx_interrupt | i_rx_interrupt | i_loss_interrupt;
-
-    // always @(posedge clk) begin
-    //     if (rst) begin
-    //         o_irq_msg <= 'h0;
-    //     end else begin
-    //         if (i_rx_interrupt) begin
-    //             o_irq_msg[63:60] <= 4'd1;
-    //         end else if (i_loss_interrupt)
-    //     end
-    // end
-
     assign o_tx_irq = i_tx_interrupt;
     assign o_rx_irq = i_rx_interrupt;
     assign o_loss_irq = i_loss_interrupt;
-   // assign o_reg_rdata = rd_reg; 
-// Review
 
 ila_mgt ila_mgt_i (
     .clk(clk),

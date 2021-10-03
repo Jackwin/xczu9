@@ -450,7 +450,7 @@ module  tlk2711_rx_link
     assign o_rx_status = {fifo_empty, fifo_full, cs};
 
 // TODO debug rx
-/*
+
  ila_tlk2711_rx ila_tlk2711_rx_i(
     .clk(clk),
     .probe0(i_2711_rkmsb),
@@ -468,10 +468,14 @@ module  tlk2711_rx_link
     .probe12(link_loss_flag),
     .probe13(link_loss),
     .probe14(fifo_wren),
-    .probe15(wr_bbt)
+    .probe15(wr_bbt),
+    .probe16(cs),
+    .probe17(sync_loss_timer),
+    .probe18(sync_loss_flag),
+    .probe19(sync_loss)
     
 );
-*/
+
 endmodule 
          
          
