@@ -77,7 +77,7 @@ module reg_mgt
     input                           i_sync_loss,
     input                           i_link_loss,
 
-    output                        o_soft_rst
+    output                         o_soft_rst
     
     );
 
@@ -86,8 +86,6 @@ module reg_mgt
     localparam  TX_CFG_REG      = 16'h0008;
     localparam  RX_CFG_REG      = 16'h0010;
    // localparam  IRQ_REG         = 16'h0100;
-    localparam  IRQ_REG         = 16'h0060;
-   
     // localparam  TX_ADDR_REG     = 16'h0108;
     // localparam  TX_LENGTH_REG   = 16'h0110;
     // localparam  TX_PACKET_REG   = 16'h0118;
@@ -105,8 +103,10 @@ module reg_mgt
 
     localparam  RX_ADDR_REG     = 16'h0040;
     localparam  RX_CTRL_REG     = 16'h0048;
-    //localparam  RX_STATUS_REG   = 16'h0218;
-    localparam  RX_STATUS_REG   = 16'h0000;
+    localparam  RX_STATUS_REG   = 16'h0050;
+   // localparam  RX_STATUS_REG   = 16'h0000;
+
+    localparam  IRQ_REG         = 16'h0060;
 
     // localparam  TX_IRQ_REG       = 16'h0100;
     // localparam  RX_IRQ_REG       = 16'h0200;
@@ -145,7 +145,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge ps_clk) begin
-    usr_reg_rdata_1d <= rd_reg;
+    usr_reg_rdata_1d <= reg_rdata;
     ps_reg_rdata <= usr_reg_rdata_1d;
 end
 
@@ -159,6 +159,7 @@ assign o_reg_rdata = ps_reg_rdata;
     reg [63:0]          reg_wdata;
     reg [15:0]          reg_waddr;
     reg [63:0]          reg_rdata;
+    reg [63:0]          rx_intr_status;
 	
     always@(posedge clk)begin
         if(rst)
@@ -208,17 +209,24 @@ assign o_reg_rdata = ps_reg_rdata;
 
     always @(posedge clk) begin
         if (usr_reg_ren)
-        case(usr_reg_raddr)
-            RX_STATUS_REG: begin
-                reg_rdata[5:0] <= i_rx_status;
-                reg_rdata[63:6] <= 'h0;
-            end
-            TX_STATUS_REG: begin
-                reg_rdata[9:0] <= i_tx_status;
-                reg_rdata[63:10] <= 'h0;
-            end
-            default;
-        endcase
+            case(usr_reg_raddr)
+                RX_STATUS_REG: begin
+                    reg_rdata[5:0] <= i_rx_status;
+                    reg_rdata[59:6] <= 'h0;
+                    reg_rdata[63:60] <= 'ha;
+                end
+                TX_STATUS_REG: begin
+                    reg_rdata[9:0] <= i_tx_status;
+                    reg_rdata[59:10] <= 'h0;
+                    reg_rdata[63:60] <= 'h9;
+                end
+                IRQ_REG: begin
+                    reg_rdata <= rx_intr_status;
+                end
+                default: begin
+                    reg_rdata <= 'h0;
+                end
+            endcase
     end
 
 //////////////////////////////////////////////////////////////////////////
@@ -257,19 +265,11 @@ assign o_reg_rdata = ps_reg_rdata;
     //assign rx_intr_rd = (usr_reg_raddr == RX_IRQ_REG) && usr_reg_ren;
     //assign loss_intr_rd = (usr_reg_raddr == RX_LOSS_REG) && usr_reg_ren;
 
-    reg [63:0]  rd_reg = 'd0;
-    reg [63:0]  rx_intr_status;
-
     // TODO  Suppor more regs read
     always @ (posedge clk ) begin
         if (rst) begin
             rx_intr_status <= 'h0;
-            rd_reg <= 'h0;
         end else begin
-
-            if (intr_rd)
-                rd_reg <= rx_intr_status;
-
             if (i_rx_interrupt)
                 rx_intr_status <= {4'd2, 18'h0,i_rx_data_type, i_rx_file_end_flag,
                                     i_rx_checksum_flag, i_rx_frame_num, i_rx_frame_length};

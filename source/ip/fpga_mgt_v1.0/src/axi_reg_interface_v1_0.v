@@ -1,21 +1,8 @@
-//////////////////////////////////////////////////////////////////////////////////
-// Company:  
-// Engineer: 
-//
-// Create Date:    2021-7-24
-// Design Name:
-// Module Name:    xdma_interface
-// Project Name:
-// Target Devices: ZCU102
-// Tool versions:
-// Description:   interface conversion between the user app and the xdma_IP
-//
-// Dependencies:
-//
-// Revision: 
-//
-//
-//////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
+// Without time-domain cross, the read latency is 2 clock cycles
+// With time-domain cross, the read latency is 5 clock cycles
+//------------------------------------------------------------------------------
+
 module axi_reg_interface #
     (
     parameter C_REG_WIDTH       = 32,
@@ -67,7 +54,9 @@ module axi_reg_interface #
     reg [C_REG_WIDTH-1:0] axil_rdata;
 
     reg reg_rden,reg_rden_d,reg_rden_2d;
+    reg reg_rden_3d, reg_rden_4d, reg_rden_5d;
     reg reg_rd_sel,reg_rd_sel_d,reg_rd_sel_2d;
+    reg reg_rd_sel_3d, reg_rd_sel_4d, reg_rd_sel_5d;
 
 //-----------------main body----------------------------//
 
@@ -181,7 +170,8 @@ module axi_reg_interface #
         end
         else
         begin
-            if (reg_rden_2d  && ~axil_rvalid)
+            //if (reg_rden_2d  && ~axil_rvalid)
+            if (reg_rden_5d  && ~axil_rvalid) //Cross time domain
             begin
                 axil_rvalid <= 1'b1;// Valid read data is available at the read data bus
                 axil_rresp  <= 2'b0; // 'OKAY' response
@@ -261,22 +251,35 @@ module axi_reg_interface #
     begin
         reg_rden_d <= reg_rden;
         reg_rden_2d <= reg_rden_d;
+        reg_rden_3d <= reg_rden_2d;
+        reg_rden_4d <= reg_rden_3d;
+        reg_rden_5d <= reg_rden_4d;
 
         reg_rd_sel_d <= reg_rd_sel;
         reg_rd_sel_2d <= reg_rd_sel_d;
+        reg_rd_sel_3d <= reg_rd_sel_2d;
+        reg_rd_sel_4d <= reg_rd_sel_3d;
+        reg_rd_sel_5d <= reg_rd_sel_4d;
     end
 
     reg [63:0] reg64_rdata = 'b0;
     always @(posedge clk)
     begin
-        if (reg_rden_2d & ~reg_rd_sel_2d)
+        // if (reg_rden_2d & ~reg_rd_sel_2d)
+        //     reg64_rdata <= i_reg_rdata;
+
+        if (reg_rden_5d & ~reg_rd_sel_5d)
             reg64_rdata <= i_reg_rdata;
+        
     end
 
     always @(posedge clk)
     begin
-        if (reg_rden_2d)
-            axil_rdata <= reg_rd_sel_2d ? reg64_rdata[63:32]:i_reg_rdata[31:0];
+        // if (reg_rden_2d)
+        //     axil_rdata <= reg_rd_sel_2d ? reg64_rdata[63:32]:i_reg_rdata[31:0];
+
+        if (reg_rden_5d)
+            axil_rdata <= reg_rd_sel_5d ? reg64_rdata[63:32]:i_reg_rdata[31:0];
     end
 
     assign o_reg_ren = reg64_rden;
