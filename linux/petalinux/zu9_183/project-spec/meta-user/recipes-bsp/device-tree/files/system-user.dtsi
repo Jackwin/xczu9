@@ -11,7 +11,7 @@
         ranges;
         reserved_for_fpga: map_fpga@40000000{
             no-map;
-            reg = <0x0 0x40000000 0x0 0x40000000 0x05 0x00000000 0x0 0x1000>;
+            reg = <0x0 0x40000000 0x0 0x40000000 0x0 0xb0000000 0x0 0x1000>;
         };
     };
     fpga-driver@0{
@@ -20,6 +20,10 @@
         memory-region = <&reserved_for_fpga>;
         interrupt-parent = <&gic>;
         interrupts = <0 89 4>;
+    };
+    
+    xlnk {
+        compatible = "xlnk,xlnk-1.0";
     };
 };
 

@@ -125,10 +125,10 @@ int test_dma_rx(struct dev_desc* devd) {
     dc.addr_off = 0;
     int32_t dlen = fcntl(devd->fd, IOCMD_DMA_CONFIGRX, &dc);
     if (dlen < 0) {
-        printf("dma rx faild:%d\n", dlen);
+        printf("dma rx faild, return:%d,stat:0x%x,\n", dlen, dc.status);
         return -1;
     }
-    printf("dma rx len: %d", dlen);
+    printf("dma rx len: %d, status:0x%x\n", dlen, dc.status);
     dlen = (dlen > 32) ? 32 : dlen;
     dump_mem(devd->map_data, dlen);
     return 0;
@@ -230,7 +230,7 @@ void run() {
 int main(int argc, char **argv)
 {
     memset(&g_dev_desc, 0, sizeof(struct dev_desc));
-    if (open_and_map(gc_strdevfile, &g_dev_desc < 0)) {
+    if (open_and_map(gc_strdevfile, &g_dev_desc) < 0) {
         printf("open_and_map failed\n");
         exit(-1);
     }

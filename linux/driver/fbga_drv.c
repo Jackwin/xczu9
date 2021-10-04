@@ -67,7 +67,9 @@ static int _dma_config_rx(struct data_config_t *param) {
         printk("wait for dma rx timeout\n");
         return -1;
     }
-    uint64_t intsr = *(uint64_t *)(fb_drv->vaddr_devm + DMA_REGOFF_INTSR);
+
+    uint64_t intsr;
+    read_reg64(fb_drv, DMA_REGOFF_INTSR, &intsr);
     uint64_t inttype = (intsr & ~DMA_INTSR_TYPE_MASK) >> DMA_INTSR_TYPE_SHIFT;
     if (3 == inttype) {
         printk("link error, INTSR: %016x\n", intsr);
@@ -75,7 +77,11 @@ static int _dma_config_rx(struct data_config_t *param) {
     }
 
     uint32_t len = intsr & DMA_INTSR_RECVLEN_MASK;
-    return len; 
+    param->data_len = len;
+    if (intsr & DMA_INTSR_FILEND_MASK) {
+        param->status |= TRANS_STAT_FILE_DONE;
+    }
+    return 0; 
 }
 
 int fbga_drv_open(struct inode * inode, struct file *filp)
@@ -154,7 +160,8 @@ static long fbga_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
     void __user *argp = (void __user*)arg;
     struct devm_data_t devmd;
     struct data_config_t param;
-    int32_t reg;
+    int32_t reg = 0;
+    int ret = 0;
     switch(cmd)
     {
         case IOCMD_DEVM_GET:
@@ -174,14 +181,9 @@ static long fbga_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
             break;
         case IOCMD_DMA_CONFIGRX:
             copy_from_user((char*)(&param), argp, sizeof(param));
-            int32_t len = _dma_config_rx(&param);
-            if (len >= 0) {
-                param.data_len = len;
-                copy_to_user(argp, (char*)(&param), sizeof(param));
-            }
-            else {
-                return len;
-            }
+            ret = _dma_config_rx(&param);
+            copy_to_user(argp, (char*)(&param), sizeof(param));
+            return ret;
             break;
         default :
             return -EINVAL;
@@ -190,7 +192,7 @@ static long fbga_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 }
 
 void data_vma_open(struct vm_area_struct *vma)
-{
+{   
     printk(KERN_NOTICE "Simple VMA open, virt %lx, phys %lx\n",
                             vma->vm_start, vma->vm_pgoff << PAGE_SHIFT);
     struct memory_data *md = (struct memory_data*)(vma->vm_private_data);
@@ -254,9 +256,11 @@ static irqreturn_t fbga_drv_irq(int irq, void *lp)
     printk("INTSR:%016x\n", intsr);
     uint64_t inttype = (intsr & ~DMA_INTSR_TYPE_MASK) >> DMA_INTSR_TYPE_SHIFT;
     if (1 == inttype) {
+        printk("tx complete\n");
         complete(&fb_drv->cmp_dmatx);
     }
     else if (2 == inttype || 3 == inttype) {
+        printk("rx complete\n");
         complete(&fb_drv->cmp_dmarx);
     }
     else {
@@ -265,7 +269,11 @@ static irqreturn_t fbga_drv_irq(int irq, void *lp)
         read_reg64(fb_drv, DMA_REGOFF_RXSR, &rxsr);
         printk("RXSR:%016x\n", rxsr);
     }
-    kill_fasync(&fb_async, SIGIO, POLL_IN);
+/*
+*/
+    if (fb_async) {
+        kill_fasync(&fb_async, SIGIO, POLL_IN);
+    }
 	printk("fbga_drv interrupt handled done\n");
 	return IRQ_HANDLED;
 }
@@ -320,6 +328,13 @@ static int fbga_drv_probe(struct platform_device *pdev)
         printk( "cannot map the mem\n");
         goto error_handle4;
     }
+uint64_t t;
+read_reg64(fb_drv, 0, &t);
+printk("read devm off 0:%ld\n", t);
+read_reg64(fb_drv, 1, &t);
+printk("read devm off 1:%ld\n", t);
+read_reg64(fb_drv, 8, &t);
+printk("read devm off 8:%ld\n", t);
 
 	rc =alloc_chrdev_region(&fb_drv->devno,0, 1,DEVICE_NAME);
 	if (rc < 0)
@@ -392,11 +407,14 @@ error_handle5:
 
 static int fbga_drv_remove(struct platform_device *pdev)
 {
+	printk("fbga_drv removing\n");
+
     if (!fb_drv) {
         printk("not init.\n");
         return 0;
     }
     if (fb_drv->irq > 0) {
+        printk("fbga_drv freeing irq\n");
         free_irq(fb_drv->irq, NULL);
     }
     class_destroy(fb_drv->fb_class);
@@ -404,6 +422,7 @@ static int fbga_drv_remove(struct platform_device *pdev)
 	unregister_chrdev_region(fb_drv->devno, 1);
     
 	device_destroy(fb_drv->fb_class,MKDEV(MAJOR(fb_drv->devno),0));
+    printk("fbga_drv delete char dev.\n");
 
     if (fb_drv->vaddr_data) iounmap(fb_drv->vaddr_data);
     if (fb_drv->vaddr_devm) iounmap(fb_drv->vaddr_devm);
