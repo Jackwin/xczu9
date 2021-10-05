@@ -19,7 +19,9 @@
 
 module reg_mgt 
 #(       
-    parameter ADDR_WIDTH = 32
+    parameter ADDR_WIDTH = 32,
+    parameter ADDR_MASK = 16'h00ff,
+    parameter ADDR_BASE = 16'h0000
 )
 (  
     // PS logics
@@ -86,37 +88,49 @@ module reg_mgt
     
     );
 
-    localparam  SOFT_R_REG      = 16'h0100;
-    localparam  TX_CFG_REG      = 16'h0008;
-    localparam  RX_CFG_REG      = 16'h0010;
+    localparam  TX_CFG_REG      = 16'h0008 + ADDR_BASE;
+    localparam  RX_CFG_REG      = 16'h0010 + ADDR_BASE;
 
-    localparam  TX_ADDR_REG     = 16'h0020;
-    localparam  TX_LENGTH_REG   = 16'h0028;
-    localparam  TX_PACKET_REG   = 16'h0030;
-    localparam  TX_STATUS_REG   = 16'h0038;
+    localparam  TX_ADDR_REG     = 16'h0020 + ADDR_BASE;
+    localparam  TX_LENGTH_REG   = 16'h0028 + ADDR_BASE;
+    localparam  TX_PACKET_REG   = 16'h0030 + ADDR_BASE;
+    localparam  TX_STATUS_REG   = 16'h0038 + ADDR_BASE;
 
-    localparam  RX_ADDR_REG     = 16'h0040;
-    localparam  RX_CTRL_REG     = 16'h0048;
-    localparam  RX_STATUS_REG   = 16'h0050;
+    localparam  RX_ADDR_REG     = 16'h0040 + ADDR_BASE;
+    localparam  RX_CTRL_REG     = 16'h0048 + ADDR_BASE;
+    localparam  RX_STATUS_REG   = 16'h0050 + ADDR_BASE;
 
-    localparam  IRQ_REG         = 16'h0060;
+    localparam  IRQ_REG         = 16'h0060 + ADDR_BASE;
+
+    localparam  SOFT_R_REG      = 16'h0100 + ADDR_BASE;
 
 // ----------------------------------------------------------------------
 // Sync logics
 // ----------------------------------------------------------------------
-reg                       ps_reg_wen_1r;
-reg [15:0]                ps_reg_waddr_1r;
-reg [63:0]                ps_reg_wdata_1r;
-reg                       ps_reg_ren_1r;
-reg [15:0]                ps_reg_raddr_1r;
-reg [63:0]                ps_reg_rdata;
+reg                     ps_reg_wen_1r;
+reg [15:0]              ps_reg_waddr_1r;
+reg [63:0]              ps_reg_wdata_1r;
+reg                     ps_reg_ren_1r;
+reg [15:0]              ps_reg_raddr_1r;
+reg [63:0]              ps_reg_rdata;
 
-reg                       usr_reg_wen;
-reg [15:0]                usr_reg_waddr;
-reg [63:0]                usr_reg_wdata;
-reg                       usr_reg_ren;
-reg [15:0]                usr_reg_raddr;
-reg [63:0]                usr_reg_rdata_1d;
+reg                     usr_reg_wen;
+reg [15:0]              usr_reg_waddr;
+reg [63:0]              usr_reg_wdata;
+reg                     usr_reg_ren;
+reg [15:0]              usr_reg_raddr;
+reg [63:0]              usr_reg_rdata_1d;
+
+wire                    reg_sel;
+reg                     reg_sel_1d;
+reg                     reg_sel_2d;
+
+wire                    reg_rd_sel;
+reg                     reg_rd_sel_1d;
+reg                     reg_rd_sel_2d;
+
+assign reg_sel = ((i_reg_waddr & ~ADDR_MASK) == ADDR_BASE) ? 1'b1 : 1'b0;
+assign reg_rd_sel = ((i_reg_raddr & ~ADDR_MASK) == ADDR_BASE) ? 1'b1 : 1'b0;
 
 always @(posedge clk) begin
     ps_reg_wen_1r <= i_reg_wen;
@@ -130,6 +144,12 @@ always @(posedge clk) begin
     usr_reg_wdata <= ps_reg_wdata_1r;
     usr_reg_ren <= ps_reg_ren_1r;
     usr_reg_raddr <= ps_reg_raddr_1r;
+
+    reg_sel_1d <= reg_sel;
+    reg_sel_2d <= reg_sel_1d;
+
+    reg_rd_sel_1d <= reg_rd_sel;
+    reg_rd_sel_2d <= reg_rd_sel_1d;
 
 end
 
@@ -159,11 +179,11 @@ assign o_reg_rdata = ps_reg_rdata;
         if(rst)
             reg_wen <= 0;
         else begin
-			if(usr_reg_wen) begin
+			if(usr_reg_wen & reg_sel_2d) begin
 				reg_waddr <= usr_reg_waddr;
 			    reg_wdata <= usr_reg_wdata;
 			end
-			reg_wen <= usr_reg_wen;
+			reg_wen <= usr_reg_wen & reg_sel_2d;
         end        
     end
 
@@ -205,7 +225,7 @@ assign o_reg_rdata = ps_reg_rdata;
     assign o_rx_fifo_rd = rx_ctrl_reg[0];
 
     always @(posedge clk) begin
-        if (usr_reg_ren)
+        if (usr_reg_ren & reg_rd_sel_2d) begin
             case(usr_reg_raddr)
                 RX_STATUS_REG: begin
                     reg_rdata[5:0] <= i_rx_status;
@@ -227,6 +247,9 @@ assign o_reg_rdata = ps_reg_rdata;
                     reg_rdata <= 'h0;
                 end
             endcase
+        end else begin
+            reg_rdata <= 'h0;
+        end
     end
 
 //////////////////////////////////////////////////////////////////////////
@@ -236,7 +259,7 @@ assign o_reg_rdata = ps_reg_rdata;
     reg [7:0] count = 8'd0; 
 
     always @ (posedge clk) begin
-        if (usr_reg_wen && usr_reg_waddr == SOFT_R_REG )
+        if (usr_reg_wen && usr_reg_waddr == SOFT_R_REG & reg_sel_2d)
             soft_rst_reg <= 1'b1;       
         else if (count==8'hff)
             soft_rst_reg <= 1'b0;
