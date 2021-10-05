@@ -58,6 +58,8 @@ module reg_mgt
     output reg                  o_tx_config_done,
     // inform cpu after the total packet transfer is finished
     input                       i_tx_interrupt, 
+    // tlk2711 pre-emphasis
+    output                      o_tx_pre,
 
     //RX port set
     //write data address to DDR from rx module
@@ -197,6 +199,7 @@ assign o_reg_rdata = ps_reg_rdata;
     assign o_tx_packet_tail = tx_packet_reg[15+32:32];
     assign o_tx_mode = tx_packet_reg[62:60];
     assign o_loopback_ena = tx_packet_reg[63];
+    assign o_tx_pre = tx_packet_reg[59];
 
     assign o_rx_base_addr = rx_base_addr_reg[ADDR_WIDTH-1:0];
     assign o_rx_fifo_rd = rx_ctrl_reg[0];

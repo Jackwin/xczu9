@@ -12,6 +12,7 @@ output          tlk2711b_prbsen,
 output          tlk2711b_enable,
 output          tlk2711b_lckrefn,
 output          tlk2711b_tklsb,
+output          tlk2711b_pre,
 
 input [15:0]    tlk2711b_rxd,
 input           tlk2711b_rklsb,
@@ -27,6 +28,7 @@ output          tlk2711a_prbsen,
 output          tlk2711a_enable,
 output          tlk2711a_lckrefn,
 output          tlk2711a_tklsb,
+output          tlk2711a_pre,
 
 input [15:0]    tlk2711a_rxd,
 input           tlk2711a_rklsb,
@@ -234,65 +236,6 @@ end
 assign phy1_resetn = &eth_rst_cnt;
 assign phy_resetn = &eth_rst_cnt;
 
-//----------------------- emmc ------------------------------------
-/*
-wire          emmc_buspow;
-wire          [2:0]emmc_busvolt;
-
-wire          emmc_cmd_i;
-wire          emmc_cmd_o;
-wire          emmc_cmd_t;
-
-wire          mdio_phy_mdio_i;
-wire          mdio_phy_mdio_o;
-wire          mdio_phy_mdio_t;
-
-IOBUF mdio_phy_mdio_iobuf
-    (.I(mdio_phy_mdio_o),
-    .IO(mdio_phy_mdio_io),
-    .O(mdio_phy_mdio_i),
-    .T(mdio_phy_mdio_t));
-  
-    
-IOBUF emmc_cmd_iobuf
-    (.I(emmc_cmd_o),
-    .IO(emmc_cmd_io),
-    .O(emmc_cmd_i),
-    .T(emmc_cmd_t));
-    
-wire [7:0]  emmc_data_i;
-wire [7:0]  emmc_data_o;
-wire [7:0]  emmc_data_t;
-
-emmc_iobuf emmc_iobuf_inst (
-    .emmc_data_i(emmc_data_o),
-    .emmc_data_io(emmc_data_io),
-    .emmc_data_o(emmc_data_i),
-    .emmc_data_t(emmc_data_t)
-);
-*/
-
-/*
-ila_emmc ila_emmc_i (
-	.clk(emmc_clk), // input wire clk
-	.probe0(emmc_rstn), // input wire [0:0]  probe0  
-	.probe1(emmc_rstn), // input wire [0:0]  probe1 
-	.probe2(emmc_cmd_o), // input wire [0:0]  probe2 
-	.probe3(emmc_cmd_i), // input wire [0:0]  probe3 
-	.probe4(emmc_cmd_t), // input wire [0:0]  probe4 
-	.probe5(emmc_data_o), // input wire [7:0]  probe5 
-	.probe6(emmc_data_i), // input wire [7:0]  probe6 
-	.probe7(emmc_data_t) // input wire [7:0]  probe7
-);
-*/
-/*
-ila_emmc ila_emmc_i (
-	.clk(clk_100), // input wire clk
-	.probe0(mdio_phy_mdc), // input wire [0:0]  probe0  
-	.probe1(phy_resetn) // input wire [0:0]  probe1 
-);
-*/
-
 // ------------------------ TLK2711-B --------------------------
 assign tlk2711b_gtx_clk = clk_100;
 assign tlk2711a_gtx_clk = clk_100;
@@ -444,6 +387,7 @@ tlk2711 tlk2711a_inst (
         .o_2711_lckrefn(tlk2711b_lckrefn),
         .o_2711_testen(tlk2711b_testen),
         .o_2711_prbsen(tlk2711b_prbsen),
+        .o_2711_pre(tlk2711b_pre),
         .o_2711_txd(tlk2711b_txd),
 
         .m_axi_arready(m_axi_arready),
@@ -748,10 +692,10 @@ always @(posedge clk_100) begin
 end
 
 vio_datamover vio_datamover_inst (
-  .clk(clk_100),                // input wire clk
-  .probe_out0(dm_start_vio),  // output wire [0 : 0] probe_out0
-  .probe_out1(dm_length_vio),  // output wire [8 : 0] probe_out1
-  .probe_out2(dm_start_addr_vio),  // output wire [31 : 0] probe_out2
+  .clk(clk_100),                
+  .probe_out0(dm_start_vio),  
+  .probe_out1(dm_length_vio),  
+  .probe_out2(dm_start_addr_vio), 
   .probe_out3(dm_rd_length_vio),
   .probe_out4(dm_start_rd_addr_vio)
 );

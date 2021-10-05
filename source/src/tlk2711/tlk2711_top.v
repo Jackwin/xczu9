@@ -61,6 +61,7 @@ module tlk2711_top
     output              o_2711_lckrefn,
     output              o_2711_testen,
     output              o_2711_prbsen,
+    output              o_2711_pre,
     output  [15:0]      o_2711_txd,
 
     //PS interface  
@@ -117,6 +118,7 @@ module tlk2711_top
     wire                    loopback_ena;
     wire                    tx_config_done; 
     wire                    tx_interrupt;
+    wire                    tx_pre;
 
     wire [ADDR_WIDTH-1:0]   rx_base_addr;
     wire                    rx_config_done;
@@ -182,6 +184,7 @@ module tlk2711_top
        .o_loopback_ena(loopback_ena),
        .o_tx_config_done(tx_config_done),  
        .i_tx_interrupt(tx_interrupt), 
+       .o_tx_pre(tx_pre),
        .o_rx_base_addr(rx_base_addr), 
        .o_rx_config_done(rx_config_done),
        .o_rx_fifo_rd(rx_fifo_rd),
@@ -305,6 +308,7 @@ module tlk2711_top
         .i_tx_packet_body(tx_packet_body), 
         .i_tx_packet_tail(tx_packet_tail),
         .i_tx_body_num(tx_body_num),
+        .i_tx_pre(tx_pre),
         .i_dma_rd_valid(dma_rd_valid),
         .i_dma_rd_last(dma_rd_last),
         .i_dma_rd_data(dma_rd_data),
@@ -318,6 +322,7 @@ module tlk2711_top
         .o_2711_lckrefn(o_2711_lckrefn),
         .o_2711_testen(o_2711_testen),
         .o_2711_prbsen(o_2711_prbsen),
+        .o_2711_pre(o_2711_pre),
         .o_2711_txd(o_2711_txd)
     );
 
