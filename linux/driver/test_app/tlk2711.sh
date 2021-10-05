@@ -10,10 +10,11 @@ loopback_test() {
 
   busybox devmem 0xb0000030 32 0x0
   # set Loop-back mode
-  busybox devmem 0xb0000034 32 0x10000000
+  busybox devmem 0xb0000034 32 0xa0000000
   # Start
  busybox devmem 0xb000000c 32 0x00000000
 }
+
 
 #-------------------------------------------------------------------------------
 #Setup K-code test
@@ -24,7 +25,7 @@ Kcode_test() {
 
   busybox devmem 0xb0000030 32 0x0
   # set K-code mode
-  busybox devmem 0xb0000034 32 0x20000000
+  busybox devmem 0xb0000034 32 0x10000000
   # Start
   busybox devmem 0xb000000c 32 0x00000000
 }
@@ -38,7 +39,7 @@ data_test() {
 
   busybox devmem 0xb0000030 32 0x0
   # set K-code mode
-  busybox devmem 0xb0000034 32 0x30000000
+  busybox devmem 0xb0000034 32 0x20000000
   # Start
   busybox devmem 0xb000000c 32 0x00000000
 }
