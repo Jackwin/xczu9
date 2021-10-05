@@ -13,8 +13,8 @@
 // Reference:  
 // Revision History:
 //   Rev 1.0 - First created, zhulin, 2021-06-27
-//   
-// Email: jewel122410@163.com
+//   Rev 1.1 - Add ADDR_MASK and ADDR_BASE, 2021-10-5
+// Email: 
 ////////////////////////////////////////////////////////////////////////////////
 
 module reg_mgt 

@@ -13,7 +13,7 @@
 // Revision History:
 //   Rev 1.0 - First created, zhulin, 2021-06-27
 //   
-// Email: jewel122410@163.com
+// Email: 
 ////////////////////////////////////////////////////////////////////////////////
 
 module  tlk2711_dma

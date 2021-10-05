@@ -14,7 +14,7 @@
 // Revision History:
 //   Rev 1.0 - First created, zhulin, 2021-07-03
 //   
-// Email: jewel122410@163.com
+// Email: 
 ////////////////////////////////////////////////////////////////////////////////
 
 module tlk2711_top 
@@ -26,7 +26,10 @@ module tlk2711_top
     parameter STREAM_RDATA_WIDTH = 64,
     parameter STREAM_WDATA_WIDTH = 64,
     parameter STREAM_WBYTE_WIDTH = 8,
-    parameter DLEN_WIDTH = 16  
+    parameter DLEN_WIDTH = 16,
+
+    parameter ADDR_MASK = 16'h00ff,
+    parameter ADDR_BASE = 16'h0000
 )
 (  
     input               ps_clk,
@@ -159,7 +162,9 @@ module tlk2711_top
     wire                                rx_fifo_rd;
 
    reg_mgt #(       
-       .ADDR_WIDTH(ADDR_WIDTH)
+       .ADDR_WIDTH(ADDR_WIDTH),
+       .ADDR_MASK(ADDR_MASK),
+       .ADDR_BASE(ADDR_BASE)
    ) reg_mgt (  
        .ps_clk(ps_clk),
        .ps_rst(ps_rst),
