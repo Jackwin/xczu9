@@ -41,43 +41,46 @@ module reg_mgt
   
     // TX port set
     //read data address from DDR to tx module
-    output reg [ADDR_WIDTH-1:0]   o_tx_base_addr, 
+    output [ADDR_WIDTH-1:0]     o_tx_base_addr, 
     //total file packet length in byte
-    output reg [31:0]             o_tx_total_packet, 
+    output [31:0]               o_tx_total_length, 
     //body length in byte, 870B here for fixed value
-    output reg [15:0]             o_tx_packet_body, 
+    output [15:0]               o_tx_packet_body, 
     //tail length in byte
-    output reg [15:0]             o_tx_packet_tail, 
+    output [15:0]               o_tx_packet_tail, 
     //body number, total_packet = packet_body*body_num + packet_tail
-    output reg [15:0]             o_tx_body_num, 
-    // 0--norm mode, 1--loopback mode, 2--kcode mode
-    output reg [3:0]              o_tx_mode,
+    output [15:0]               o_tx_body_num, 
+    // 0--norm mode, 1--kcode mode, 2--test data
+    output [2:0]                o_tx_mode,
+    // 1--loopback enable
+    output                      o_loopback_ena,
     // configured when all the above register is done and start the transfer 
-    output reg                    o_tx_config_done,
+    output reg                  o_tx_config_done,
     // inform cpu after the total packet transfer is finished
-    input                         i_tx_interrupt, 
+    input                       i_tx_interrupt, 
 
     //RX port set
     //write data address to DDR from rx module
-    output reg [ADDR_WIDTH-1:0]     o_rx_base_addr, 
-    output reg                      o_rx_config_done,
-    output reg                      o_rx_fifo_rd,
+    output [ADDR_WIDTH-1:0]     o_rx_base_addr, 
+    output                      o_rx_fifo_rd,
 
-    input                           i_rx_interrupt, //when asserted, the packet information is valid at the same time
-    input  [15:0]                   i_rx_frame_length,
-    input  [15:0]                   i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
+    output reg                  o_rx_config_done,
+
+    input                       i_rx_interrupt, //when asserted, the packet information is valid at the same time
+    input  [15:0]               i_rx_frame_length,
+    input  [15:0]               i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
     
-    input [5:0]                     i_rx_status,
-    input [9:0]                     i_tx_status,
-    input [7:0]                     i_rx_data_type,
-    input                           i_rx_file_end_flag,
-    input                           i_rx_checksum_flag,
+    input [5:0]                 i_rx_status,
+    input [9:0]                 i_tx_status,
+    input [7:0]                 i_rx_data_type,
+    input                       i_rx_file_end_flag,
+    input                       i_rx_checksum_flag,
 
-    input                           i_loss_interrupt,
-    input                           i_sync_loss,
-    input                           i_link_loss,
+    input                       i_loss_interrupt,
+    input                       i_sync_loss,
+    input                       i_link_loss,
 
-    output                         o_soft_rst
+    output                      o_soft_rst
     
     );
 
@@ -144,6 +147,11 @@ assign o_reg_rdata = ps_reg_rdata;
     reg [15:0]          reg_waddr;
     reg [63:0]          reg_rdata;
     reg [63:0]          rx_intr_status;
+    reg [63:0]          tx_base_addr_reg;
+    reg [63:0]          tx_length_reg;
+    reg [63:0]          tx_packet_reg;
+    reg [63:0]          rx_base_addr_reg;
+    reg [63:0]          rx_ctrl_reg;
 	
     always@(posedge clk)begin
         if(rst)
@@ -173,23 +181,25 @@ assign o_reg_rdata = ps_reg_rdata;
         if( reg_wen )
           case(reg_waddr)
             //tx
-            TX_ADDR_REG: o_tx_base_addr <= reg_wdata[ADDR_WIDTH-1:0];
-            TX_LENGTH_REG: o_tx_total_packet <= reg_wdata[31:0];
-            TX_PACKET_REG: begin                             
-                o_tx_packet_body  <= reg_wdata[15:0]; //configured as 870B here
-                o_tx_body_num     <= reg_wdata[16+15:16];
-                o_tx_packet_tail  <= reg_wdata[15+32:32];
-                o_tx_mode         <= reg_wdata[63:60];  
-            end                        
-            //rx
-            RX_ADDR_REG:
-                o_rx_base_addr  <= reg_wdata[ADDR_WIDTH-1:0];  
-            RX_CTRL_REG: begin
-                o_rx_fifo_rd <= reg_wdata[0];
-            end
+            TX_ADDR_REG: tx_base_addr_reg <= reg_wdata;
+            TX_LENGTH_REG: tx_length_reg <= i_reg_wdata;
+            TX_PACKET_REG: tx_packet_reg <= reg_wdata;
+            RX_ADDR_REG: rx_base_addr_reg <= reg_wdata;
+            RX_CTRL_REG: rx_ctrl_reg <= reg_wdata;
             default;
           endcase
     end
+
+    assign o_tx_base_addr = tx_base_addr_reg[ADDR_WIDTH-1:0];
+    assign o_tx_total_length = tx_length_reg[31:0];
+    assign o_tx_packet_body = tx_packet_reg[15:0];
+    assign o_tx_body_num = tx_packet_reg[16+15:16];
+    assign o_tx_packet_tail = tx_packet_reg[15+32:32];
+    assign o_tx_mode = tx_packet_reg[62:60];
+    assign o_loopback_ena = tx_packet_reg[63];
+
+    assign o_rx_base_addr = rx_base_addr_reg[ADDR_WIDTH-1:0];
+    assign o_rx_fifo_rd = rx_ctrl_reg[0];
 
     always @(posedge clk) begin
         if (usr_reg_ren)
@@ -204,9 +214,12 @@ assign o_reg_rdata = ps_reg_rdata;
                     reg_rdata[59:10] <= 'h0;
                     reg_rdata[63:60] <= 'h9;
                 end
-                IRQ_REG: begin
-                    reg_rdata <= rx_intr_status;
-                end
+                IRQ_REG: reg_rdata <= rx_intr_status;
+                TX_ADDR_REG: reg_rdata <= tx_base_addr_reg;
+                TX_LENGTH_REG: reg_rdata <= tx_length_reg;
+                TX_PACKET_REG: reg_rdata <= tx_packet_reg;
+                RX_ADDR_REG: reg_rdata <= rx_base_addr_reg;
+                RX_CTRL_REG: reg_rdata <= rx_ctrl_reg;
                 default: begin
                     reg_rdata <= 'h0;
                 end
@@ -264,7 +277,7 @@ ila_mgt ila_mgt_i (
     .probe2(usr_reg_waddr), 
     .probe3(usr_reg_ren),
     .probe4(o_reg_rdata),
-    .probe5(o_tx_total_packet),
+    .probe5(o_tx_total_length),
     .probe6(o_tx_packet_body),
     .probe7(o_tx_packet_tail),
     .probe8(o_tx_body_num),

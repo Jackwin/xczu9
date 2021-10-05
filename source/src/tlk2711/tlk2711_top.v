@@ -109,11 +109,12 @@ module tlk2711_top
 );
 
     wire [ADDR_WIDTH-1:0]   tx_base_addr;
-    wire [31:0]             tx_total_packet;
+    wire [31:0]             tx_total_length;
     wire [15:0]             tx_packet_body;
     wire [15:0]             tx_packet_tail;
     wire [15:0]             tx_body_num;
-    wire [3:0]              tx_mode;
+    wire [2:0]              tx_mode;
+    wire                    loopback_ena;
     wire                    tx_config_done; 
     wire                    tx_interrupt;
 
@@ -173,11 +174,12 @@ module tlk2711_top
        .clk(clk),
        .rst(rst),
        .o_tx_base_addr(tx_base_addr), 
-       .o_tx_total_packet(tx_total_packet), 
+       .o_tx_total_length(tx_total_length), 
        .o_tx_packet_body(tx_packet_body), 
        .o_tx_packet_tail(tx_packet_tail), 
        .o_tx_body_num(tx_body_num),  
        .o_tx_mode(tx_mode), 
+       .o_loopback_ena(loopback_ena),
        .o_tx_config_done(tx_config_done),  
        .i_tx_interrupt(tx_interrupt), 
        .o_rx_base_addr(rx_base_addr), 
@@ -298,6 +300,7 @@ module tlk2711_top
         .rst(rst),
         .i_soft_reset(soft_rst),
         .i_tx_mode(tx_mode),
+        .i_loopback_ena(loopback_ena),
         .i_tx_start(tx_config_done),
         .i_tx_packet_body(tx_packet_body), 
         .i_tx_packet_tail(tx_packet_tail),

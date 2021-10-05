@@ -26,7 +26,8 @@ module  tlk2711_tx_data
 
     input                   i_soft_reset,
     input                   i_stop_test,
-    input [3:0]             i_tx_mode,
+    input [2:0]             i_tx_mode,
+    input                   i_loopback_ena,
     input                   i_tx_start,
     input [15:0]            i_tx_packet_body, //body length in byte, 870B here for fixed value
     input [15:0]            i_tx_packet_tail, //tail length in byte
@@ -40,7 +41,7 @@ module  tlk2711_tx_data
     output reg              o_tx_interrupt,
 
     output [9:0]            o_tx_status,
-
+    // TODO Add pre-emphasis
     output                  o_2711_tkmsb,
     output                  o_2711_tklsb,
     output                  o_2711_enable,
@@ -52,10 +53,13 @@ module  tlk2711_tx_data
    
 );
 
-    localparam NORM_MODE = 4'd0;
-    localparam LOOPBACK_MODE = 4'd1; // Internal chip loopback test
-    localparam KCODE_MODE = 4'd2;
-    localparam TEST_MODE = 4'd3; // chip to chip test
+    localparam NORM_MODE = 3'd0;
+    // localparam LOOPBACK_MODE = 4'd1; // Internal chip loopback test
+    // localparam KCODE_MODE = 4'd2;
+    // localparam TEST_MODE = 4'd3; // chip to chip test
+
+    localparam KCODE_MODE = 3'd1;
+    localparam TEST_MODE = 3'd2; // chip to chip test
  
     //sync code
     localparam K28_5 = 8'hBC;
@@ -103,7 +107,7 @@ module  tlk2711_tx_data
     reg         tlk2711_tkmsb;
     reg         tlk2711_tklsb;
     reg         tlk2711_enable;
-    reg         tlk2711_loopen;
+    wire        tlk2711_loopen;
     reg         tlk2711_lckrefn;
     reg         tlk2711_testen;
     reg         tlk2711_prbsen;
@@ -209,7 +213,7 @@ module  tlk2711_tx_data
         if (rst)
         begin
             tlk2711_enable  <= 'b0;
-            tlk2711_loopen  <= 'b0;
+          //  tlk2711_loopen  <= 'b0;
             tlk2711_lckrefn <= 'b0;
             tlk2711_testen <= 'b0;
             tlk2711_prbsen <= 'b0;
@@ -220,25 +224,28 @@ module  tlk2711_tx_data
             else if (i_tx_start)                          
                 tx_mode <= i_tx_mode; 
             // TODO Add stop control signal to switch to IDLE
-            if (tx_mode == LOOPBACK_MODE) begin
-                tlk2711_loopen  <= 'b1;
-                tlk2711_lckrefn <= 'b1;
-                tlk2711_enable  <= 'b1;
-            end else if (tx_mode == KCODE_MODE) begin
-                tlk2711_loopen  <= 'b0;
+            // if (tx_mode == LOOPBACK_MODE) begin
+            //     tlk2711_loopen  <= 'b1;
+            //     tlk2711_lckrefn <= 'b1;
+            //     tlk2711_enable  <= 'b1;
+            //end else if (tx_mode == KCODE_MODE) begin
+            if (tx_mode == KCODE_MODE) begin
+                //tlk2711_loopen  <= 'b0;
                 tlk2711_lckrefn <= 'b1;
                 tlk2711_enable  <= 'b1;
             end else if (tx_mode == TEST_MODE) begin
-                tlk2711_loopen  <= 'b0;
+               // tlk2711_loopen  <= 'b0;
                 tlk2711_lckrefn <= 'b1;
                 tlk2711_enable  <= 'b1;
             end else begin
-                tlk2711_loopen  <= 'b0;
+               // tlk2711_loopen  <= 'b0;
                 tlk2711_lckrefn <= 'b1;
                 tlk2711_enable  <= 'b1;
             end
         end
     end
+
+    assign tlk2711_loopen = i_loopback_ena;
 
 
     reg [16:0] sync_cnt; //for 1ms in 100MHz clk, count 100000 cycles
@@ -323,7 +330,7 @@ module  tlk2711_tx_data
             test_data_cnt <= 'h0;
         end else begin
             // TODO: Add a power-up state to send the 1ms sync code
-            if (tx_mode == LOOPBACK_MODE || tx_mode == TEST_MODE) begin
+            if (tx_mode == TEST_MODE) begin
                 if (i_soft_reset) begin
                     state_cnt <= 'h0;
                     test_data_cnt <= 'h0;
@@ -506,7 +513,7 @@ module  tlk2711_tx_data
 
 tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
     .clk(clk),
-    .probe0(i_tx_mode),
+    .probe0({i_loopback_ena, i_tx_mode}),
     .probe1(i_soft_reset),
     .probe2(i_tx_start),
     .probe3(tx_state),
