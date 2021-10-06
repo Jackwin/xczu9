@@ -128,7 +128,7 @@ fpga_mgt_v1_0 fpga_mgt_v1_0_inst(
        .clk(clk),
        .rst(rst),
        .o_tx_base_addr(tx_base_addr), 
-       .o_tx_total_packet(tx_total_packet), 
+       .o_tx_total_length(tx_total_packet), 
        .o_tx_packet_body(tx_packet_body), 
        .o_tx_packet_tail(tx_packet_tail), 
        .o_tx_body_num(tx_body_num),  
@@ -174,7 +174,7 @@ initial begin
 
 	#100;
 	@(posedge clk);
-	s_axi_araddr = 32'h80;
+	s_axi_araddr = 32'h50;
 	s_axi_arvalid = 1'b1;
 	s_axi_bready = 1;
 
@@ -186,7 +186,7 @@ initial begin
 
 	#100;
 
-	reg_read('h0, reg_read_data);
+	reg_read('h54, reg_read_data);
 	reg_read('h4, reg_read_data);
 
 end

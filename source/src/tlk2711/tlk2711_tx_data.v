@@ -287,7 +287,7 @@ module  tlk2711_tx_data
 
     reg  tx_cfg_flag;
 
-    always @(clk) begin
+    always @(posedge clk) begin
         if (rst | i_soft_reset) begin
             tx_cfg_flag <= 1'b0;
         end else begin

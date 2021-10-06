@@ -1,6 +1,6 @@
 
-set_property PACKAGE_PIN T8  [get_ports sys_clk_50]
-set_property PACKAGE_PIN R10  [get_ports sys_rstn]
+set_property PACKAGE_PIN T8 [get_ports sys_clk_50]
+set_property PACKAGE_PIN R10 [get_ports sys_rstn]
 
 set_property IOSTANDARD LVCMOS18 [get_ports sys_clk_50]
 set_property IOSTANDARD LVCMOS18 [get_ports sys_rstn]
@@ -104,15 +104,16 @@ set_property IOSTANDARD LVCMOS18 [get_ports sys_rstn]
 
 
 ## ethernet phy1
-set_property PACKAGE_PIN K15  [get_ports phy1_resetn]
+set_property PACKAGE_PIN K15 [get_ports phy1_resetn]
 set_property IOSTANDARD LVCMOS18 [get_ports phy1_resetn]
 
 ### uart
-set_property PACKAGE_PIN D22  [get_ports uart_0_txd]
-set_property PACKAGE_PIN E22  [get_ports uart_0_rxd]
+set_property PACKAGE_PIN D22 [get_ports uart_0_txd]
+set_property PACKAGE_PIN E22 [get_ports uart_0_rxd]
 set_property IOSTANDARD LVCMOS33 [get_ports uart_0_txd]
 set_property IOSTANDARD LVCMOS33 [get_ports uart_0_rxd]
 
 ### usr led on the network board
-set_property PACKAGE_PIN G10  [get_ports usr_led]
+set_property PACKAGE_PIN G10 [get_ports usr_led]
 set_property IOSTANDARD LVCMOS25 [get_ports usr_led]
+

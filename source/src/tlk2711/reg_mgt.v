@@ -316,7 +316,12 @@ ila_mgt ila_mgt_i (
     .probe15(i_tx_interrupt),
     .probe16(o_tx_base_addr),
     .probe17(i_link_loss),
-    .probe18(i_sync_loss)
+    .probe18(i_sync_loss),
+    .probe19(reg_rd_sel_2d),
+    .probe20(reg_rdata),
+    .probe21(usr_reg_rdata_1d),
+    .probe22(reg_rd_sel_1d),
+    .probe23(reg_rd_sel)
 
 );
 
