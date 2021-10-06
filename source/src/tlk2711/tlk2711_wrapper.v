@@ -176,22 +176,20 @@ module tlk2711_wrapper
     output                          tlk2711a_m_axi_bready
 );
 
-
-
 wire [63:0]    a_reg_rdata;
 wire [63:0]    b_reg_rdata;
 
 assign o_reg_rdata = a_reg_rdata | b_reg_rdata;
 
 tlk2711_top #(    
-    .ADDR_WIDTH(DDR_ADDR_WIDTH),
-    .AXI_RDATA_WIDTH(HP0_DATA_WIDTH), //HP0_DATA_WIDTH
-    .AXI_WDATA_WIDTH(HP0_DATA_WIDTH), // HP0_DATA_WIDTH
-    .AXI_WBYTE_WIDTH(HP0_DATA_WIDTH/8),  // HP0_DATA_WIDTH/8
-    .STREAM_RDATA_WIDTH(STREAM_DATA_WIDTH), 
-    .STREAM_WDATA_WIDTH(STREAM_DATA_WIDTH),
-    .STREAM_WBYTE_WIDTH(STREAM_DATA_WIDTH/8),  
-    .DLEN_WIDTH(16),
+    .ADDR_WIDTH(ADDR_WIDTH),
+    .AXI_RDATA_WIDTH(AXI_RDATA_WIDTH), 
+    .AXI_WDATA_WIDTH(AXI_WDATA_WIDTH), 
+    .AXI_WBYTE_WIDTH(AXI_WDATA_WIDTH/8),  
+    .STREAM_RDATA_WIDTH(STREAM_RDATA_WIDTH), 
+    .STREAM_WDATA_WIDTH(STREAM_WDATA_WIDTH),
+    .STREAM_WBYTE_WIDTH(STREAM_WBYTE_WIDTH),  
+    .DLEN_WIDTH(DLEN_WIDTH),
     .ADDR_MASK(TLK2711B_ADDR_MASK),
     .ADDR_BASE(TLK2711B_ADDR_BASE)
 ) tlk2711b_top (
@@ -264,17 +262,17 @@ tlk2711_top #(
     .m_axi_bresp  (tlk2711b_m_axi_bresp  ),
     .m_axi_bvalid (tlk2711b_m_axi_bvalid ),
     .m_axi_bready (tlk2711b_m_axi_bready )
-    );
+);
 
 tlk2711_top #(    
-    .ADDR_WIDTH(DDR_ADDR_WIDTH),
-    .AXI_RDATA_WIDTH(HP0_DATA_WIDTH), //HP0_DATA_WIDTH
-    .AXI_WDATA_WIDTH(HP0_DATA_WIDTH), // HP0_DATA_WIDTH
-    .AXI_WBYTE_WIDTH(HP0_DATA_WIDTH/8),  // HP0_DATA_WIDTH/8
-    .STREAM_RDATA_WIDTH(STREAM_DATA_WIDTH), 
-    .STREAM_WDATA_WIDTH(STREAM_DATA_WIDTH),
-    .STREAM_WBYTE_WIDTH(STREAM_DATA_WIDTH/8),  
-    .DLEN_WIDTH(16),
+    .ADDR_WIDTH(ADDR_WIDTH),
+    .AXI_RDATA_WIDTH(AXI_RDATA_WIDTH), 
+    .AXI_WDATA_WIDTH(AXI_WDATA_WIDTH), 
+    .AXI_WBYTE_WIDTH(AXI_WDATA_WIDTH/8),  
+    .STREAM_RDATA_WIDTH(STREAM_RDATA_WIDTH), 
+    .STREAM_WDATA_WIDTH(STREAM_WDATA_WIDTH),
+    .STREAM_WBYTE_WIDTH(STREAM_WBYTE_WIDTH),  
+    .DLEN_WIDTH(DLEN_WIDTH),
     .ADDR_MASK(TLK2711A_ADDR_MASK),
     .ADDR_BASE(TLK2711A_ADDR_BASE)
 ) tlk2711a_top (
@@ -347,8 +345,6 @@ tlk2711_top #(
     .m_axi_bresp  (tlk2711a_m_axi_bresp  ),
     .m_axi_bvalid (tlk2711a_m_axi_bvalid ),
     .m_axi_bready (tlk2711a_m_axi_bready )
-    );
-
-
+);
 
 endmodule
