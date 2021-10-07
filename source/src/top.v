@@ -519,9 +519,9 @@ mpsoc mpsoc_inst (
     .s_axi_hp0_wstrb(m_axi_wstrb),
     .s_axi_hp0_wvalid(m_axi_wvalid),
 
-    .i_tlk2711_loss_irq(tlk2711_loss_irq),
-    .i_tlk2711_rx_irq(tlk2711_rx_irq),
-    .i_tlk2711_tx_irq(tlk2711_tx_irq),
+    .i_tlk2711b_loss_irq(tlk2711_loss_irq),
+    .i_tlk2711b_rx_irq(tlk2711_rx_irq),
+    .i_tlk2711b_tx_irq(tlk2711_tx_irq),
 
     // ---  Test DMA -----------------
 
