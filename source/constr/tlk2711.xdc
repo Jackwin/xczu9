@@ -132,3 +132,4 @@ set_property IOSTANDARD LVCMOS25 [get_ports tlk2711a_rx_clk]
 set_property IOSTANDARD LVCMOS25 [get_ports tlk2711a_testen]
 set_property IOSTANDARD LVCMOS25 [get_ports tlk2711a_rkmsb]
 
+

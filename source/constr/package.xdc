@@ -117,3 +117,4 @@ set_property IOSTANDARD LVCMOS33 [get_ports uart_0_rxd]
 set_property PACKAGE_PIN G10 [get_ports usr_led]
 set_property IOSTANDARD LVCMOS25 [get_ports usr_led]
 
+

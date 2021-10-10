@@ -102,7 +102,7 @@ module reg_mgt
 
     localparam  IRQ_REG         = 16'h0060 + ADDR_BASE;
 
-    localparam  SOFT_R_REG      = 16'h0100 + ADDR_BASE;
+    localparam  SOFT_R_REG      = 16'h0070 + ADDR_BASE;
 
 // ----------------------------------------------------------------------
 // Sync logics
@@ -204,7 +204,7 @@ assign o_reg_rdata = ps_reg_rdata;
           case(reg_waddr)
             //tx
             TX_ADDR_REG: tx_base_addr_reg <= reg_wdata;
-            TX_LENGTH_REG: tx_length_reg <= i_reg_wdata;
+            TX_LENGTH_REG: tx_length_reg <= reg_wdata;
             TX_PACKET_REG: tx_packet_reg <= reg_wdata;
             RX_ADDR_REG: rx_base_addr_reg <= reg_wdata;
             RX_CTRL_REG: rx_ctrl_reg <= reg_wdata;
