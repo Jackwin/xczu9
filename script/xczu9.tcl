@@ -138,7 +138,7 @@ if { $::argc > 0 } {
 set orig_proj_dir "[file normalize "$origin_dir/../vivado/xczu9"]"
 
 # Create project
-create_project ${_xil_proj_name_} ./${_xil_proj_name_} -part xczu9eg-ffvb1156-2-i
+create_project ${_xil_proj_name_} ./${_xil_proj_name_} -part xczu9eg-ffvb1156-2-i -f
 
 # Set the directory path for the new project
 set proj_dir [get_property directory [current_project]]
@@ -495,22 +495,16 @@ if { ![get_property "is_locked" $file_obj] } {
 # Set 'sources_1' fileset object
 set obj [get_filesets sources_1]
 # Import local files from the original project
-set files [list \
- [file normalize "${origin_dir}/../vivado/xczu9/xczu9.srcs/sources_1/ip/fpga_mgt_0/fpga_mgt_0.xci" ]\
-]
-set imported_files [import_files -fileset sources_1 $files]
+# set files [list \
+#  [file normalize "${origin_dir}/../vivado/xczu9/xczu9.srcs/sources_1/ip/fpga_mgt_0/fpga_mgt_0.xci" ]\
+# ]
+# set imported_files [import_files -fileset sources_1 $files]
 
 # Set 'sources_1' fileset file properties for remote files
 # None
 
 # Set 'sources_1' fileset file properties for local files
-set file "fpga_mgt_0/fpga_mgt_0.xci"
-set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
-set_property -name "generate_files_for_reference" -value "0" -objects $file_obj
-set_property -name "registered_with_manager" -value "1" -objects $file_obj
-if { ![get_property "is_locked" $file_obj] } {
-  set_property -name "synth_checkpoint_mode" -value "Singular" -objects $file_obj
-}
+#
 
 
 # Create 'constrs_1' fileset (if not found)
@@ -538,18 +532,18 @@ set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
 set_property -name "file_type" -value "XDC" -objects $file_obj
 
 # Add/Import constrs file and set constrs file properties
-set file "[file normalize "$origin_dir/../source/constr/debug.xdc"]"
-set file_added [add_files -norecurse -fileset $obj [list $file]]
-set file "$origin_dir/../source/constr/debug.xdc"
-set file [file normalize $file]
-set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
-set_property -name "file_type" -value "XDC" -objects $file_obj
+# set file "[file normalize "$origin_dir/../source/constr/debug.xdc"]"
+# set file_added [add_files -norecurse -fileset $obj [list $file]]
+# set file "$origin_dir/../source/constr/debug.xdc"
+# set file [file normalize $file]
+# set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
+# set_property -name "file_type" -value "XDC" -objects $file_obj
 
 # Set 'constrs_1' fileset properties
-set obj [get_filesets constrs_1]
-set_property -name "target_constrs_file" -value "[file normalize "$origin_dir/../source/constr/debug.xdc"]" -objects $obj
-set_property -name "target_part" -value "xczu9eg-ffvb1156-2-i" -objects $obj
-set_property -name "target_ucf" -value "[file normalize "$origin_dir/../source/constr/debug.xdc"]" -objects $obj
+# set obj [get_filesets constrs_1]
+# set_property -name "target_constrs_file" -value "[file normalize "$origin_dir/../source/constr/debug.xdc"]" -objects $obj
+# set_property -name "target_part" -value "xczu9eg-ffvb1156-2-i" -objects $obj
+# set_property -name "target_ucf" -value "[file normalize "$origin_dir/../source/constr/debug.xdc"]" -objects $obj
 
 # Create 'sim_1' fileset (if not found)
 if {[string equal [get_filesets -quiet sim_1] ""]} {
@@ -567,17 +561,17 @@ set files [list \
 add_files -norecurse -fileset $obj $files
 
 # Import local files from the original project
-set files [list \
- [file normalize "${origin_dir}/../vivado/xczu9/xczu9.sim/sim_1/behav/tlk2711_tb_behav.wcfg" ]\
- [file normalize "${origin_dir}/../vivado/xczu9/xczu9.sim/sim_1/fpga_mgt_tb_behav.wcfg" ]\
-]
+# set files [list \
+#  [file normalize "${origin_dir}/../vivado/xczu9/xczu9.sim/sim_1/behav/tlk2711_tb_behav.wcfg" ]\
+#  [file normalize "${origin_dir}/../vivado/xczu9/xczu9.sim/sim_1/fpga_mgt_tb_behav.wcfg" ]\
+# ]
 set imported_files [import_files -fileset sim_1 $files]
 
 # Set 'sim_1' fileset file properties for remote files
-set file "$origin_dir/../source/sim/fpga_mgt/fpga_mgt_tb.sv"
-set file [file normalize $file]
-set file_obj [get_files -of_objects [get_filesets sim_1] [list "*$file"]]
-set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
+# set file "$origin_dir/../source/sim/fpga_mgt/fpga_mgt_tb.sv"
+# set file [file normalize $file]
+# set file_obj [get_files -of_objects [get_filesets sim_1] [list "*$file"]]
+# set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
 
 
 # Set 'sim_1' fileset file properties for local files
