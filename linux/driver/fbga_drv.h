@@ -13,7 +13,7 @@
 #define MAX_CONFIG_RAM  0xFFF
 #define TIMEOUT_MS_DMATX    100
 
-#define DMA_REGOFF_RESET    0x0100
+#define DMA_REGOFF_RESET    0x0070
 #define DMA_REGOFF_TXEN     0x0008
 #define DMA_REGOFF_RXEN     0x0010
 
@@ -21,7 +21,9 @@
 #define DMA_REGOFF_TXLEN    0x0028
 
 #define DMA_REGOFF_TXPACK   0x0030  //trans package config: tail len and body len
-#define DMA_TXPACK_MODE_SHIFT   60  //mode shift 
+#define DMA_TXPACK_MODEC_SHIFT   63  //mode connection shift 
+#define DMA_TXPACK_MODEW_SHIFT   60  //mode work shift 
+#define DMA_TXPACK_MODEP_SHIFT   59  //mode pre-weight shift 
 #define DMA_TXPACK_TAILLEN_SHIFT    32  //tail len shift
 #define DMA_TXPACK_BODYNUM_SHIFT    15  //body num shift
 #define DMA_TXPACK_DATALEN_SHIFT    0  //valid data len shift
@@ -67,7 +69,7 @@ struct fbga_drv
     void __iomem *vaddr_bram;
     void __iomem *vaddr_data;
     void __iomem *vaddr_devm;
-    int irq;
+    int irq[2];
     struct completion cmp_dmatx;
     struct completion cmp_dmarx;
 };

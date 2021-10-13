@@ -27,7 +27,7 @@ struct op_desc {
         NONE
     }op_type;
     struct devm_data_t dd;
-    struct data_config_t dma_conf;
+    struct dev_conf_t dma_conf;
 };
 
 
@@ -124,45 +124,33 @@ int devm_op(struct dev_desc* devd, struct devm_data_t dd, int32_t type) {
     return 0;
 }
 
-int test_dma_rx(struct dev_desc* devd) {
+int test_dma_rx(struct dev_desc* devd, struct dev_conf_t *dc) {
     printf("dma rx begin...\n");
-    struct data_config_t dc;
-    dc.addr_off = 0;
-    int32_t dlen = ioctl(devd->fd, IOCMD_DMA_CONFIGRX, &dc);
+    dc->addr_off = 0;
+    int32_t dlen = ioctl(devd->fd, IOCMD_DMA_CONFIGRX, dc);
     if (dlen < 0) {
-        printf("dma rx faild, return:%d,stat:0x%x,\n", dlen, dc.status);
+        printf("dma rx faild, return:%d,stat:0x%x,\n", dlen, dc->status);
         return -1;
     }
-    printf("dma rx len: %d, status:0x%x\n", dlen, dc.status);
+    printf("dma rx len: %d, status:0x%x\n", dlen, dc->status);
     dlen = (dlen > 32) ? 32 : dlen;
     dump_mem(devd->map_data, dlen);
     return 0;
 }
 
-int test_dma_tx(struct dev_desc* devd) {
+int test_dma_tx(struct dev_desc* devd, struct dev_conf_t *dc) {
     printf("dma tx begin...\n");
-    struct data_config_t dc;
 	uint8_t val[16]={0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8,0x9,0xa,0xb,0xc,0xd,0xe,0xf,0x0};
     memcpy((uint8_t*)(devd->map_data), val, 16);
-    dc.addr_off = 0;
-    dc.data_len = 1000;
+    dc->addr_off = 0xa000000;
+    dc->data_len = 1800;
     printf("tx ioctl now\n");
-    if (0 != ioctl(devd->fd, IOCMD_DMA_CONFIGTX, &dc)) {
+    if (0 != ioctl(devd->fd, IOCMD_DMA_CONFIGTX, dc)) {
         perror("dma tx faild:");
         return -1;
     }
-    printf("dma tx done, len: %d", dc.data_len);
+    printf("dma tx done, len: %d", dc->data_len);
     return 0;
-}
-
-void usage() {
-    printf("use [cmd] <op1> <op2> ..., like below\n"
-            "\th or ?: print this help\n"
-            "\tdevm w [offset] [val]: write dev manager register at offset with val\n"
-            "\tdevm r [offset]: read dev manager register at offset\n"
-            "\tdma w: write dma test\n"
-            "\tdma r: read dma test\n"
-            "\tq: quit\n");
 }
 
 void cmd_split(const char* cmd, char cmds[][32]) {
@@ -185,6 +173,53 @@ void cmd_split(const char* cmd, char cmds[][32]) {
         i++;
     }
 }
+
+/* type: "l"--long, "ul"--unsigned long, "i"--int, 'ui'--unsigned int, 'd'--double */
+int32_t str2num(const char* strnum, const char* type, void* val){
+    if(!strnum || strlen(strnum)<1) {
+        return -1;
+    }
+    int base = 10;
+    if ((strnum[0] == '0') && ((strnum[1] == 'x') || (strnum[1] == 'X'))) {
+        base = 16;
+    }
+    if (0 == strcmp(type, "l")) {
+        *((long*)val) = strtol(strnum, NULL, base);
+    }
+    else if (0 == strcmp(type, "ul")) {
+        *((unsigned long*)val) = strtoul(strnum, NULL, base);
+    }
+    else if (0 == strcmp(type, "i")) {
+        long v = strtol(strnum, NULL, base);
+        *(int*)val = (int)v;
+    }
+    else if (0 == strcmp(type, "ui")) {
+        unsigned long v = strtoul(strnum, NULL, base);
+        *(unsigned int*)val = (unsigned int)v;
+    }
+    else if (0 == strcmp(type, "d")) {
+        *((double *)val) = strtod(strnum, NULL);
+    }
+    else {
+        return -2;
+    }
+    return 0;
+}
+
+void usage() {
+    printf("use [cmd] <op1> <op2> ..., like below\n"
+            "\th or ?: print this help\n"
+            "\tdevm w [offset] [val]: write dev manager register at offset with val\n"
+            "\t\tdevm r [offset]: read dev manager register at offset\n"
+            "\tdma w: write dma test\n"
+            "\t\tdma r: read dma test\n"
+            "\tset mc [flag]: connect mode: 0--open, 1--loopback\n"
+            "\t\tset mw [flag]: work mode: 0-normal, 1-K code, 2-data test\n"
+            "\t\tset mp [flag]: pre-weight: 0-5\%, 1-20\%\n"
+            "\t\tset cp [flag]: select chip 2711, 0-A, 1-B, 2-default()\n"
+            "\tq: quit\n");
+}
+
 void run() {
     char cmd[256];
     char cmds[5][32];
@@ -200,13 +235,13 @@ void run() {
             memset(&dd, 0, sizeof(dd));
             if (0 == strcmp(cmds[1], "w")){
                 printf("dev mgt writing...\n");
-                dd.reg_off = atol(cmds[2]);
-                dd.val = atol(cmds[3]);
+                str2num(cmds[2], "ul", &(dd.reg_off));
+                str2num(cmds[3], "ul", &(dd.val));
                 ioctl(g_dev_desc.fd, IOCMD_DEVM_SET, &dd);
             }
             else if (0 == strcmp(cmds[1], "r")){
                 printf("dev mgt reading...\n");
-                dd.reg_off = atol(cmds[2]);
+                str2num(cmds[2], "ul", &(dd.reg_off));
                 printf("reg off:%d, fd:%d\n", dd.reg_off, g_dev_desc.fd);
                 ret = ioctl(g_dev_desc.fd, IOCMD_DEVM_GET, &dd);
                 if (0 != ret) {
@@ -221,15 +256,34 @@ void run() {
         }
         else if (0 == strcmp(cmds[0], "dma")) {
             if (0 == strcmp(cmds[1], "w")){
-                test_dma_tx(&g_dev_desc);
+                test_dma_tx(&g_dev_desc, &(g_op_desc.dma_conf));
             }
             else if (0 == strcmp(cmds[1], "r")){
-                test_dma_rx(&g_dev_desc);
+                test_dma_rx(&g_dev_desc, &(g_op_desc.dma_conf));
             }
             else {
                 printf("cmd error\n");
             }
         }
+        else if (0 == strcmp(cmds[0], "set")) {
+            uint32_t val = 0;
+            str2num(cmds[2], "ui", &val);
+            if (0 == strcmp(cmds[1], "mc")){
+                g_op_desc.dma_conf.mode_conn = val;
+            }
+            else if (0 == strcmp(cmds[1], "mw")){
+                g_op_desc.dma_conf.mode_work = val;
+            }
+            else if (0 == strcmp(cmds[1], "mp")){
+                g_op_desc.dma_conf.mode_prew = val;
+            }
+            else if (0 == strcmp(cmds[1], "cp")){
+                g_op_desc.dma_conf.chip_sel = val;
+            }
+            else {
+                printf("cmd error\n");
+            }
+       }
         else if ((0 == strcmp(cmds[0], "?")) || (0 == strcmp(cmds[0], "h"))) {
             usage();
         }
@@ -245,6 +299,7 @@ void run() {
 int main(int argc, char **argv)
 {
     memset(&g_dev_desc, 0, sizeof(struct dev_desc));
+    memset(&g_op_desc, 0, sizeof(struct op_desc));
     g_dev_desc.map_len = 1024 * 1024;
     if (open_and_map(gc_strdevfile, &g_dev_desc) < 0) {
         printf("open_and_map failed\n");

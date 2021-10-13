@@ -14,15 +14,17 @@ struct devm_data_t {
 };
 
 /* structure for command below */
-struct data_config_t {
+struct dev_conf_t {
 //offset to addr_data
     uint32_t addr_off;  
     uint64_t data_len;
 //trans status
 #define TRANS_STAT_FILE_DONE    0x00000001
     uint32_t status;
-//data mode: 0--normal; 1--inside loop; 2--Kcode test; 3--data test
-    uint32_t data_mode;
+    uint8_t mode_conn;  //connection mode: 0-open, 1-loopback
+    uint8_t mode_work;  //work mode: 0-normal, 1-K code, 2-data test
+    uint8_t mode_prew;  //pre-weight: 0-5%, 1-20%
+    uint8_t chip_sel;   //select 2711: 0-B, 1-A, 2-default(B-tx,A-rx)
 };
 
 /* register operate command
@@ -41,8 +43,8 @@ struct data_config_t {
  */
 // #define IOCMD_DMA_CONFIGTX    0x400
 // #define IOCMD_DMA_CONFIGRX    0x401
-#define IOCMD_DMA_CONFIGTX      _IOW(IOCTL_FPGA_MAGIC, 01, struct data_config_t)
-#define IOCMD_DMA_CONFIGRX      _IOW(IOCTL_FPGA_MAGIC, 02, struct data_config_t)
+#define IOCMD_DMA_CONFIGTX      _IOW(IOCTL_FPGA_MAGIC, 01, struct dev_conf_t)
+#define IOCMD_DMA_CONFIGRX      _IOW(IOCTL_FPGA_MAGIC, 02, struct dev_conf_t)
 
 
 #endif

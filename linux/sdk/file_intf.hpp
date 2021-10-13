@@ -3,6 +3,7 @@
  */
 
 #include <string>
+#include <memory>
 
 namespace bsd {
 
@@ -65,7 +66,7 @@ public:
 private:
     FileIntf();
     ~FileIntf();
-    std::shared_ptr<FileIntfImpl> _pimpl;
+    std::shared_ptr<bsd::FileIntfImpl> _pimpl;
 };
 
 }//namespace bsd

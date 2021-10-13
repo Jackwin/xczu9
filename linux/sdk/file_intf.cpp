@@ -3,6 +3,9 @@
 #include <fstream>
 #include <fcntl.h>
 #include <dirent.h>
+#include <cstring>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
 
 #include "file_intf.hpp"
 #include "fbga_com.h"
@@ -66,7 +69,7 @@ public:
         struct data_config_t dma_conf;
         dma_conf.addr_off = 0;
         dma_conf.data_len = len;
-        if ((0 != fcntl(_devd.fd, IOCMD_DMA_CONFIGRX, &dma_conf))
+        if ((0 != ioctl(_devd.fd, IOCMD_DMA_CONFIGRX, &dma_conf))
             || (!(dma_conf.status & TRANS_STAT_FILE_DONE))) {
             dbg("dma tx faild\n");
             return RET_SEND_ERR;
@@ -87,7 +90,7 @@ public:
             return RET_PATH_READ_FAILED;
         }
         while((one_ent = readdir(dir)) != nullptr) {
-            if (0 == strcmp(one_ent->d_name, ".") || 0 == strcmp(one_ent->d_name, "..")) {
+            if (0 == std::strcmp(one_ent->d_name, ".") || 0 == std::strcmp(one_ent->d_name, "..")) {
                 continue;
             }
             if (RET_SUCCESS != send_file(one_ent->d_name)) {
@@ -111,12 +114,12 @@ public:
 
         struct data_config_t dc;
         dc.addr_off = 0;
-        uint32_t dlen = fcntl(_devd.fd, IOCMD_DMA_CONFIGRX, &dc);
+        uint32_t dlen = ioctl(_devd.fd, IOCMD_DMA_CONFIGRX, &dc);
         if (dlen < 0) {
             dbg("dma rx faild, return:%d,stat:0x%x,\n", dlen, dc.status);
             return RET_RECV_ERR;
         }
-        outfile.write(_devd.map_data, dlen);
+        outfile.write(static_cast<char*>(_devd.map_data), dlen);
 
         return RET_SUCCESS;
     }
@@ -136,7 +139,7 @@ public:
         
         char name[256];
         if (format.empty()) {
-            snprintf(name, 256, "data")
+            snprintf(name, 256, "data");
         }
         return RET_SUCCESS;
     }
@@ -176,7 +179,7 @@ FileIntf& FileIntf::get_instance() {
     return file_intf;
 }
 
-RET_VAL FileIntf::init(const std::string conf_json = "") {
+RET_VAL FileIntf::init(const std::string conf_json) {
     return _pimpl->init(conf_json);
 }
 RET_VAL FileIntf::send_file(const std::string file_path) {
@@ -188,7 +191,7 @@ RET_VAL FileIntf::send_path(const std::string path) {
 RET_VAL FileIntf::recv_file(const std::string file_path) {
     return _pimpl->recv_file(file_path);
 }
-RET_VAL FileIntf::recv_path(const std::string path, const std::string format = "") {
+RET_VAL FileIntf::recv_path(const std::string path, const std::string format) {
     return _pimpl->recv_path(path, format);
 }
 
