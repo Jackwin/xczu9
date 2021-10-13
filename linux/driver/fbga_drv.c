@@ -30,55 +30,91 @@
 static struct fasync_struct *fb_async = NULL;
 struct fbga_drv *fb_drv = NULL;
 
-
-
 void write_reg64(struct fbga_drv* pdrv, uint64_t off, uint64_t val) {
-    *(uint64_t*)(pdrv->vaddr_devm + off) = val;
+    // *(uint64_t*)(pdrv->vaddr_devm + off) = val;
+    // *(uint64_t*)(pdrv->vaddr_devm + off) = (val & 0x00000000ffffffff);
+    // *(uint64_t*)(pdrv->vaddr_devm + off + 4) = (val >> 32);
+    writel((val & 0x00000000ffffffff), pdrv->vaddr_devm + off);
+    writel((val >> 32), pdrv->vaddr_devm + off + 4);
 }
 void read_reg64(struct fbga_drv* pdrv, uint64_t off, uint64_t* val) {
-    *val = *(uint64_t*)(pdrv->vaddr_devm + off);
+    // uint64_t tpv = *(uint32_t*)(pdrv->vaddr_devm + off + 4);
+    // *val = *(uint32_t*)(pdrv->vaddr_devm + off);
+    // *val |= (tpv << 32);
+    *val = readl(pdrv->vaddr_devm + off);
+    uint64_t tpv = readl(pdrv->vaddr_devm + off + 4);
+    *val |= (tpv << 32);
 }
 
-/*config and start  dma tx, wati until irq or timeout*/ 
-static int _dma_config_tx(struct data_config_t *param) {
-    write_reg64(fb_drv, DMA_REGOFF_TXADDR, fb_drv->paddr_data + param->addr_off);
-    write_reg64(fb_drv, DMA_REGOFF_TXLEN, param->data_len);
+/*config and start dma tx, wati until irq or timeout. default chip 2711B*/ 
+static int _dma_config_tx(struct dev_conf_t *param) {
+    uint64_t addr = fb_drv->paddr_data + param->addr_off;
+    uint64_t chip_off = 0;
+    if (param->chip_sel == 1) {
+        chip_off = 0x100;
+    }
+    write_reg64(fb_drv, DMA_REGOFF_TXADDR + chip_off, addr);
+    write_reg64(fb_drv, DMA_REGOFF_TXLEN + chip_off, param->data_len);
     uint32_t body_len = 870;
-    uint32_t body_num = param->data_len / 870;
-    uint32_t tail_len = param->data_len % 870;
-    uint64_t pack_conf = (body_num << DMA_TXPACK_BODYNUM_SHIFT) &
-            (tail_len << DMA_TXPACK_TAILLEN_SHIFT) &
-            (param->data_mode << DMA_TXPACK_MODE_SHIFT);
-    write_reg64(fb_drv, DMA_REGOFF_TXPACK, pack_conf);
-    write_reg64(fb_drv, DMA_REGOFF_TXEN, 0);
+    uint64_t body_num = param->data_len / 870;
+    uint64_t tail_len = param->data_len % 870;
+    uint64_t pack_conf = ((body_num << DMA_TXPACK_BODYNUM_SHIFT)
+            | (tail_len << DMA_TXPACK_TAILLEN_SHIFT)
+            | (body_len));
+    if (param->mode_conn == 1) {
+        pack_conf |= (1 << DMA_TXPACK_MODEC_SHIFT);
+    }
+    if (param->mode_work < 3) {
+        pack_conf |= (param->mode_work << DMA_TXPACK_MODEW_SHIFT);
+    }
+    if (param->mode_prew == 1) {
+        pack_conf |= ( 1 << DMA_TXPACK_MODEP_SHIFT);
+    }
+    write_reg64(fb_drv, DMA_REGOFF_TXPACK + chip_off, pack_conf);
+    write_reg64(fb_drv, DMA_REGOFF_TXEN + chip_off, 0);
+    printk("begin dma tx: len:%d, addr:0x%lx, pack:0x%lx\n", param->data_len, addr, pack_conf);
 
 	unsigned long timeout = msecs_to_jiffies(TIMEOUT_MS_DMATX);
     timeout = wait_for_completion_timeout(&fb_drv->cmp_dmatx, timeout);
     if (0 == timeout) {
         printk("wait for dma tx timeout\n");
-        return -1;
+        return -ETIMEDOUT;
     }
     
     return 0;
 }
-static int _dma_config_rx(struct data_config_t *param) {
-    write_reg64(fb_drv, DMA_REGOFF_RXADDR, fb_drv->paddr_data + param->addr_off);
+
+/*config and start dma rx, wati until irq or timeout. default chip 2711A*/ 
+static int _dma_config_rx(struct dev_conf_t *param) {
+    uint64_t addr = fb_drv->paddr_data + param->addr_off;
+    uint64_t chip_off = 0;
+    if ((param->chip_sel == 1) || (param->chip_sel == 2)) {
+        chip_off = 0x100;
+    }
+    write_reg64(fb_drv, DMA_REGOFF_RXADDR + chip_off, addr);
+    write_reg64(fb_drv, DMA_REGOFF_RXEN + chip_off, 0);
+
 	unsigned long timeout = msecs_to_jiffies(TIMEOUT_MS_DMATX);
     timeout = wait_for_completion_timeout(&fb_drv->cmp_dmarx, timeout);
     if (0 == timeout) {
         printk("wait for dma rx timeout\n");
-        return -1;
+        return -ETIMEDOUT;
     }
 
-    uint64_t intsr = *(uint64_t *)(fb_drv->vaddr_devm + DMA_REGOFF_INTSR);
+    uint64_t intsr;
+    read_reg64(fb_drv, DMA_REGOFF_INTSR + chip_off, &intsr);
     uint64_t inttype = (intsr & ~DMA_INTSR_TYPE_MASK) >> DMA_INTSR_TYPE_SHIFT;
     if (3 == inttype) {
-        printk("link error, INTSR: %016x\n", intsr);
-        return -2;
+        printk("link error, INTSR: %016lx\n", intsr);
+        return -EPIPE;
     }
 
     uint32_t len = intsr & DMA_INTSR_RECVLEN_MASK;
-    return len; 
+    param->data_len = len;
+    if (intsr & DMA_INTSR_FILEND_MASK) {
+        param->status |= TRANS_STAT_FILE_DONE;
+    }
+    return 0; 
 }
 
 int fbga_drv_open(struct inode * inode, struct file *filp)
@@ -154,37 +190,38 @@ static int fbga_fasync (int fd, struct file *filp, int on)
 
 static long fbga_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
+    printk("fbga_ioctl\n");
+
     void __user *argp = (void __user*)arg;
     struct devm_data_t devmd;
-    struct data_config_t param;
-    int32_t reg;
+    struct dev_conf_t param;
+    uint64_t reg = 0;
+    int ret = 0;
     switch(cmd)
     {
         case IOCMD_DEVM_GET:
+            printk("dev mgt: get reg val.\n");
             copy_from_user((char*)(&devmd), argp, sizeof(devmd));
-            reg = fb_drv->vaddr_devm + devmd.reg_off;
-            devmd.val = ioread32(reg);
-            copy_to_user((char*)(&devmd), argp, sizeof(devmd));
+printk("IOCMD_DEVM_GET:1, off:%ld\n", devmd.reg_off);
+            read_reg64(fb_drv, devmd.reg_off, &(devmd.val));
+printk("IOCMD_DEVM_GET:2, val:%lx\n", devmd.val);
+            copy_to_user(argp, (char*)(&devmd), sizeof(devmd));
             break;
         case IOCMD_DEVM_SET:
+            printk("dev mgt: set reg val.\n");
             copy_from_user((char*)(&devmd), argp, sizeof(devmd));
-            reg = fb_drv->vaddr_devm + devmd.reg_off;
-            iowrite32(devmd.val, reg);
+            write_reg64(fb_drv, devmd.reg_off, devmd.val);
             break;
         case IOCMD_DMA_CONFIGTX:
+            printk("dma tx.\n");
             copy_from_user((char*)(&param), argp, sizeof(param));
-            _dma_config_tx(&param);
-            break;
+            return _dma_config_tx(&param);
         case IOCMD_DMA_CONFIGRX:
+            printk("dma rx.\n");
             copy_from_user((char*)(&param), argp, sizeof(param));
-            int32_t len = _dma_config_rx(&param);
-            if (len >= 0) {
-                param.data_len = len;
-                copy_to_user(argp, (char*)(&param), sizeof(param));
-            }
-            else {
-                return len;
-            }
+            ret = _dma_config_rx(&param);
+            copy_to_user(argp, (char*)(&param), sizeof(param));
+            return ret;
             break;
         default :
             return -EINVAL;
@@ -193,8 +230,8 @@ static long fbga_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 }
 
 void data_vma_open(struct vm_area_struct *vma)
-{
-    printk(KERN_NOTICE "Simple VMA open, virt %lx, phys %lx\n",
+{   
+    printk(KERN_NOTICE "Simple VMA open, virt %lx, off %lx\n",
                             vma->vm_start, vma->vm_pgoff << PAGE_SHIFT);
     struct memory_data *md = (struct memory_data*)(vma->vm_private_data);
     atomic_inc(&(md->refcnt));
@@ -223,8 +260,10 @@ static struct vm_operations_struct data_remap_vm_ops = {
 int fbga_mmap(struct file *file, struct vm_area_struct *vma) {
     struct inode *inode = file_inode(file);
     struct fbga_drv *fdev = container_of(inode->i_cdev, struct fbga_drv, fb_cdev);
+    uint32_t size = vma->vm_end - vma->vm_start;
+    printk("device mmap now: size: %d, phyaddr:%p\n", size, fdev->paddr_data);
 
-    if (remap_pfn_range(vma, vma->vm_start, (uint64_t)(fdev->paddr_data) >> PAGE_SHIFT, vma->vm_end - vma->vm_start, vma->vm_page_prot)) {
+    if (remap_pfn_range(vma, vma->vm_start, (uint64_t)(fdev->paddr_data) >> PAGE_SHIFT, size, vma->vm_page_prot)) {
         printk("remap paddr failed\n");
         return -EAGAIN;
     }
@@ -251,27 +290,36 @@ static const struct file_operations fbga_drv_fops=
 
 static irqreturn_t fbga_drv_irq(int irq, void *lp)
 {
-	printk("fbga_drv interrupt triggered\n");
+	printk("fbga_drv interrupt triggered, irq:%d\n", irq);
 
-    uint64_t intsr;
-    read_reg64(fb_drv, DMA_REGOFF_INTSR, &intsr);
-    printk("INTSR:%016x\n", intsr);
-    uint64_t inttype = (intsr & ~DMA_INTSR_TYPE_MASK) >> DMA_INTSR_TYPE_SHIFT;
+    uint64_t chip_off = 0;
+    if (irq == 48) {    //A-48
+        chip_off = 0x100;
+    }
+    uint64_t intsr = 0;
+    read_reg64(fb_drv, DMA_REGOFF_INTSR + chip_off, &intsr);
+    printk("INTSR:%016lx\n", intsr);
+    uint64_t inttype = (intsr & DMA_INTSR_TYPE_MASK) >> DMA_INTSR_TYPE_SHIFT;
     if (1 == inttype) {
+        printk("tx complete\n");
         complete(&fb_drv->cmp_dmatx);
     }
     else if (2 == inttype || 3 == inttype) {
+        printk("rx complete\n");
         complete(&fb_drv->cmp_dmarx);
     }
     else {
         printk("irq status error, type:%d\n", inttype);
         uint64_t rxsr;
-        read_reg64(fb_drv, DMA_REGOFF_RXSR, &rxsr);
-        printk("RXSR:%016x\n", rxsr);
+        read_reg64(fb_drv, DMA_REGOFF_RXSR + chip_off, &rxsr);
+        printk("RXSR:%016lx\n", rxsr);
     }
-    kill_fasync(&fb_async, SIGIO, POLL_IN);
+/*
+*/
+    if (fb_async) {
+        kill_fasync(&fb_async, SIGIO, POLL_IN);
+    }
 	printk("fbga_drv interrupt handled done\n");
-
 	return IRQ_HANDLED;
 }
 
@@ -284,6 +332,7 @@ static int fbga_drv_probe(struct platform_device *pdev)
 	int rc = 0;
 
 	dev_info(dev, "Device Tree Probing\n");
+	// dev_dbg(dev, "dbg:Device Tree Probing\n");
 	fb_drv = kmalloc(sizeof(struct fbga_drv), GFP_KERNEL);
 	if (fb_drv == NULL) {
 		printk( "unable to allocate device structure\n");
@@ -294,13 +343,13 @@ static int fbga_drv_probe(struct platform_device *pdev)
     /* Get reserved memory region from Device-tree */
     np = of_parse_phandle(dev->of_node, "memory-region", 0);
     if (!np) {
-        printk( "No %s specified\n", "memory-region");
+        dev_err(dev, "No %s specified\n", "memory-region");
         goto error_handle5;
     }
   
     rc = of_address_to_resource(np, 0, &r_mem);
     if (rc) {
-        printk( "No memory address assigned to the region\n");
+        dev_err(dev, "No memory address assigned to the region\n");
         goto error_handle5;
     }
     fb_drv->paddr_data = (void*)r_mem.start;
@@ -308,13 +357,13 @@ static int fbga_drv_probe(struct platform_device *pdev)
     dev_info(dev, "Allocated reserved memory, vaddr: 0x%p, paddr: 0x%p\n", fb_drv->vaddr_data, fb_drv->paddr_data);
     if(!fb_drv->vaddr_data) 
     {
-        printk( "cannot map the mem\n");
+        dev_err(dev, "cannot map the mem\n");
         return -EINVAL;
     }
 
     rc = of_address_to_resource(np, 1, &r_mem);
     if (rc) {
-        printk( "No memory address assigned to the region\n");
+        dev_err(dev, "No memory address assigned to the region\n");
         goto error_handle4;
     }
     fb_drv->paddr_devm = (void*)r_mem.start;
@@ -322,7 +371,7 @@ static int fbga_drv_probe(struct platform_device *pdev)
     dev_info(dev, "Allocated reserved memory, vaddr: 0x%p, paddr: 0x%p\n", fb_drv->vaddr_devm, fb_drv->paddr_devm);
     if(!fb_drv->vaddr_devm) 
     {
-        printk( "cannot map the mem\n");
+        dev_err(dev, "cannot map the mem\n");
         goto error_handle4;
     }
 
@@ -355,22 +404,25 @@ static int fbga_drv_probe(struct platform_device *pdev)
     init_completion(&fb_drv->cmp_dmatx);
     init_completion(&fb_drv->cmp_dmarx);
 
-    fb_drv->irq = platform_get_irq(pdev,0);
-    if (fb_drv->irq <= 0) {
-        printk("platform get irq failed\n");
-        rc = fb_drv->irq;
-        goto error_handle1;
-    }
-    rc = request_threaded_irq(fb_drv->irq, NULL,
-            fbga_drv_irq,
-            IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-            DEVICE_NAME, NULL);
-    if (rc) {
-        printk(KERN_ALERT "irq_probe irq error=%d\n", rc);
-        goto error_handle1;
-    }
-    else {
-        printk("\nirq = %d\n", fb_drv->irq);
+    int i = 0;
+    for (i = 0; i < 2; i++) {
+        fb_drv->irq[i] = platform_get_irq(pdev,i);
+        if (fb_drv->irq[i] <= 0) {
+            dev_err(dev, "platform get irq %d failed\n", i);
+            rc = fb_drv->irq[i];
+            goto error_handle1;
+        }
+        rc = request_threaded_irq(fb_drv->irq[i], NULL,
+                fbga_drv_irq,
+                IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+                DEVICE_NAME, NULL);
+        if (rc) {
+            dev_err(dev, "request_threaded_irq error=%d\n", rc);
+            goto error_handle1;
+        }
+        else {
+            dev_info(dev, "irq = %d\n", fb_drv->irq[i]);
+        }
     }
 
     fb_drv->pdev = pdev;
@@ -379,7 +431,12 @@ static int fbga_drv_probe(struct platform_device *pdev)
     return 0;
 
 error_handle0:
-    free_irq(fb_drv->irq,NULL);
+    for (i = 0; i < 2; i++) {
+        if (fb_drv->irq[i] > 0) {
+            free_irq(fb_drv->irq[i],NULL);
+            fb_drv->irq[i] = 0;
+        }
+    }
 error_handle1:
     class_destroy(fb_drv->fb_class);
 error_handle2:
@@ -397,18 +454,26 @@ error_handle5:
 
 static int fbga_drv_remove(struct platform_device *pdev)
 {
+	printk("fbga_drv removing\n");
+
     if (!fb_drv) {
-        printk("not init.\n");
+        dev_err(&pdev->dev, "not init.\n");
         return 0;
     }
-    if (fb_drv->irq > 0) {
-        free_irq(fb_drv->irq, NULL);
+    int i = 0;
+    for (i = 0; i < 2; i++) {
+        if (fb_drv->irq[i] > 0) {
+            free_irq(fb_drv->irq[i],NULL);
+            fb_drv->irq[i] = 0;
+        }
     }
+
+	device_destroy(fb_drv->fb_class,MKDEV(MAJOR(fb_drv->devno),0));
     class_destroy(fb_drv->fb_class);
     cdev_del(&fb_drv->fb_cdev);
 	unregister_chrdev_region(fb_drv->devno, 1);
     
-	device_destroy(fb_drv->fb_class,MKDEV(MAJOR(fb_drv->devno),0));
+    dev_info(&pdev->dev, "fbga_drv delete char dev.\n");
 
     if (fb_drv->vaddr_data) iounmap(fb_drv->vaddr_data);
     if (fb_drv->vaddr_devm) iounmap(fb_drv->vaddr_devm);

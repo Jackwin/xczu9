@@ -39,7 +39,8 @@ endif
 #KERNEL_SRC = /home/users/qinlei/work/7035/sys_proj/7035/build/tmp/work/plnx_zynq7-xilinx-linux-gnueabi/linux-xlnx/4.14-xilinx-v2018.3+gitAUTOINC+eeab73d120-r0/linux-plnx_zynq7-standard-build
 #KERNEL_SRC = /home/users/qinlei/work/pt_183_proj/zu5_prj/build/tmp/work/plnx_zynqmp-xilinx-linux/linux-xlnx/4.14-xilinx-v2018.3+gitAUTOINC+eeab73d120-r0/linux-plnx_zynqmp-standard-build
 #KERNEL_SRC = /home/users/peta/workspaces/peta.191/zu5-191/build/tmp/work/plnx_zynqmp-xilinx-linux/linux-xlnx/4.19-xilinx-v2019.1+gitAUTOINC+9811303824-r0/linux-plnx_zynqmp-standard-build
-KERNEL_SRC = /home/users/qinlei/work/pt_191_proj/zu5_2/zu5-191/build/tmp/work/plnx_zynqmp-xilinx-linux/linux-xlnx/4.19-xilinx-v2019.1+git999-r0/linux-xlnx-4.19-xilinx-v2019.1+git999
+#KERNEL_SRC = /home/users/qinlei/work/pt_191_proj/zu5_2/zu5-191/build/tmp/work/plnx_zynqmp-xilinx-linux/linux-xlnx/4.19-xilinx-v2019.1+git999-r0/linux-xlnx-4.19-xilinx-v2019.1+git999
+KERNEL_SRC = /home/users/qinlei/work/ms/zu9_proj/peta_proj/build/tmp/work/plnx_zynqmp-xilinx-linux/linux-xlnx/4.14-xilinx-v2018.3+gitAUTOINC+eeab73d120-r0/linux-plnx_zynqmp-standard-build/
 
 all:
 	$(MAKE) -C $(KERNEL_SRC) M=$(SRC)

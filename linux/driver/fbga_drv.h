@@ -13,45 +13,48 @@
 #define MAX_CONFIG_RAM  0xFFF
 #define TIMEOUT_MS_DMATX    100
 
-#define DMA_REGOFF_RESET    0x0
+#define DMA_REGOFF_RESET    0x0070
+#define DMA_REGOFF_TXEN     0x0008
+#define DMA_REGOFF_RXEN     0x0010
 
-#define DMA_REGOFF_TXEN     0x0100
+#define DMA_REGOFF_TXADDR   0x0020
+#define DMA_REGOFF_TXLEN    0x0028
 
-#define DMA_REGOFF_TXADDR   0x0108
-
-#define DMA_REGOFF_TXLEN    0x0110
-
-#define DMA_REGOFF_TXPACK   0x0118  //trans package config: tail len and body len
-#define DMA_TXPACK_MODE_SHIFT   60  //mode shift 
+#define DMA_REGOFF_TXPACK   0x0030  //trans package config: tail len and body len
+#define DMA_TXPACK_MODEC_SHIFT   63  //mode connection shift 
+#define DMA_TXPACK_MODEW_SHIFT   60  //mode work shift 
+#define DMA_TXPACK_MODEP_SHIFT   59  //mode pre-weight shift 
 #define DMA_TXPACK_TAILLEN_SHIFT    32  //tail len shift
 #define DMA_TXPACK_BODYNUM_SHIFT    15  //body num shift
 #define DMA_TXPACK_DATALEN_SHIFT    0  //valid data len shift
 
-#define DMA_REGOFF_TXSR   0x0120  //trans status
-#define DMA_TXSR_FIFOEMP_MASK  BIT(9)
-#define DMA_TXSR_FIFOFULL_MASK  BIT(8)
-#define DMA_TXSR_SM_MASK    GENMASK(7,4)    //status machine
-#define DMA_TXSR_MODE_MASK  GENMASK(3,0)    //
+#define DMA_REGOFF_TXSR   0x0038  //trans status
+#define DMA_TXSR_FIFOEMP_MASK  BIT_ULL(9)
+#define DMA_TXSR_FIFOFULL_MASK  BIT_ULL(8)
+#define DMA_TXSR_SM_MASK    GENMASK_ULL(7,4)    //status machine
+#define DMA_TXSR_MODE_MASK  GENMASK_ULL(3,0)    //
 
-#define DMA_REGOFF_RXADDR   0x0208
+#define DMA_REGOFF_RXADDR   0x0040
 
-#define DMA_REGOFF_RXCTRL   0x0210
-#define DMA_RXCTRL_FIFOEN_MASK  BIT(0)
+#define DMA_REGOFF_RXCTRL   0x0048
+#define DMA_RXCTRL_FIFOEN_MASK  BIT_ULL(0)
 
-#define DMA_REGOFF_RXSR 0x0210
-#define DMA_RXSR_FIFOEMP_MASK  BIT(5)
-#define DMA_RXSR_FIFOFULL_MASK  BIT(4)
-#define DMA_RXSR_MODE_MASK  GENMASK(3,0)
+#define DMA_REGOFF_RXSR 0x0050
+#define DMA_RXSR_FIFOEMP_MASK  BIT_ULL(5)
+#define DMA_RXSR_FIFOFULL_MASK  BIT_ULL(4)
+#define DMA_RXSR_MODE_MASK  GENMASK_ULL(3,0)
 
-#define DMA_REGOFF_INTSR    0x0110
-#define DMA_INTSR_TYPE_MASK GENMASK(63,60)
+#define DMA_REGOFF_INTSR    0x0060
+#define DMA_INTSR_TYPE_MASK GENMASK_ULL(63,60)
 #define DMA_INTSR_TYPE_SHIFT    60
-#define DMA_INTSR_CKSUM_MASK    BIT(32)
-#define DMA_INTSR_RECVROW_MASK  GENMASK(32,16)
+#define DMA_INTSR_MODE_MASK GENMASK_ULL(41,34)
+#define DMA_INTSR_FILEND_MASK   BIT_ULL(33)
+#define DMA_INTSR_CKSUM_MASK    BIT_ULL(32)
+#define DMA_INTSR_RECVROW_MASK  GENMASK_ULL(31,16)
 #define DMA_INTSR_RECVROW_SHIFT 16
-#define DMA_INTSR_RECVLEN_MASK  GENMASK(16,0)
-#define DMA_INTSR_SYNCERR_MASK  BIT(1)
-#define DMA_INTSR_LINKBRK_MASK  BIT(0)
+#define DMA_INTSR_RECVLEN_MASK  GENMASK_ULL(15,0)
+#define DMA_INTSR_SYNCERR_MASK  BIT_ULL_ULL(1)
+#define DMA_INTSR_LINKBRK_MASK  BIT_ULL(0)
 
 
 struct fbga_drv
@@ -66,7 +69,7 @@ struct fbga_drv
     void __iomem *vaddr_bram;
     void __iomem *vaddr_data;
     void __iomem *vaddr_devm;
-    int irq;
+    int irq[2];
     struct completion cmp_dmatx;
     struct completion cmp_dmarx;
 };
