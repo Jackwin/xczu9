@@ -114,6 +114,11 @@ module  tlk2711_rx_link
     reg [ADDR_WIDTH-1:0]    wr_addr = 'd0;
     reg [15:0]              tlk2711_rxd;
     reg                     checksum_error;
+    reg [15:0]              frame_length;
+
+    assign o_rx_interrupt = one_frame_done & i_wr_finish;
+    assign o_rx_frame_num = line_number;
+    assign o_rx_frame_length = data_length;
 
     assign o_rx_data_type = data_mode;
     assign o_rx_file_end_flag = data_end_flag[0];
@@ -251,6 +256,7 @@ module  tlk2711_rx_link
             wr_addr      <= 'd0;
             o_wr_cmd_req <= 'b0;
             wr_bbt       <= 'd0;
+            frame_length <= 'h0;
         end else begin
             if (cs == DATA_LENGTH_s) begin
                 // Recv data length is 882B, 10752B, 4608B. When write data to 
@@ -260,6 +266,7 @@ module  tlk2711_rx_link
                 wr_bbt[DLEN_WIDTH-1:3] <= i_2711_rxd[15:3] + |i_2711_rxd[2:0]; 
                 wr_bbt[2:0]  <= 'd0;
                 o_wr_cmd_req <= 1'b1;
+                frame_length <= i_2711_rxd;
             end else if (i_wr_cmd_ack) begin
                 o_wr_cmd_req <= 1'b0;
             end
@@ -338,10 +345,6 @@ module  tlk2711_rx_link
         end
     end
 
-    assign o_rx_interrupt = one_frame_done & i_wr_finish;
-    assign o_rx_frame_num = line_number;
-    assign o_rx_frame_length = data_length;
-
     assign fifo_rden = o_dma_wr_valid | i_rx_fifo_rd;
     assign o_dma_wr_data = fifo_dout;
     assign fifo_din = tlk2711_rxd;
@@ -415,7 +418,7 @@ module  tlk2711_rx_link
     wire        recv_data_flag;
     assign recv_data_flag = cs == DATA_TYPE_s | cs == LINE_INFOR_s | 
                             cs == DATA_LENGTH_s | cs == RECV_DATA_s |
-                            cs == CHECK_DATA_s | cs == FRAME_END1_s;
+                            cs == CHECK_DATA_s;
 
     // When sync loss happens, the host issues the soft reset
     always@(posedge clk) begin
@@ -424,6 +427,7 @@ module  tlk2711_rx_link
             sync_loss_timer <= 'h0;
             sync_loss_flag <= 1'b0;
         end else begin
+            // TODO Add k-code determination
             if ((i_2711_rkmsb | i_2711_rklsb) & recv_data_flag & ~sync_loss_flag) begin
                 sync_loss <= 1'b1;
             end else begin
@@ -447,9 +451,25 @@ module  tlk2711_rx_link
     assign o_sync_loss = sync_loss;
 
     // Output the status to the host
+    // data_mode, data_end_flag
     assign o_rx_status = {fifo_empty, fifo_full, cs};
 
 // TODO debug rx
+
+reg [15:0]  rd_cnt;
+always@(posedge clk) begin
+    if (rst | i_soft_rst) begin
+        rd_cnt <= 'h0;
+    end else begin
+        if (o_dma_wr_valid) begin
+            rd_cnt <= rd_cnt + 2;
+            if (rd_cnt == frame_length - 2)
+                rd_cnt <= 'h0;
+        end
+    end
+end
+
+
 
  ila_tlk2711_rx ila_tlk2711_rx_i(
     .clk(clk),
@@ -472,8 +492,23 @@ module  tlk2711_rx_link
     .probe16(cs),
     .probe17(sync_loss_timer),
     .probe18(sync_loss_flag),
-    .probe19(sync_loss)
-    
+    .probe19(sync_loss),
+    .probe20(recv_data_flag),
+    .probe21(frame_end),
+    .probe22(checksum),
+    .probe23(checksum_error),
+    .probe24(one_frame_done),
+    .probe25(i_wr_finish),
+    .probe26(wr_addr),
+    .probe27(o_wr_cmd_req),
+    .probe28(i_rx_start),
+    .probe29(o_dma_wr_valid),
+    .probe30(fifo_empty),
+    .probe31(fifo_full),
+    .probe32(fifo_rden),
+    .probe33(i_dma_wr_ready),
+    .probe34(rd_cnt),
+    .probe35(o_dma_wr_data)
 );
 
 endmodule 

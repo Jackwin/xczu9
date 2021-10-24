@@ -502,6 +502,7 @@ module  tlk2711_tx_data
     assign o_tx_status = {fifo_empty, fifo_full, tx_state, tx_mode};
 
 // TODO  debug the port
+// tail_frame frame_cnt
 
 tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
     .clk(clk),
@@ -529,7 +530,9 @@ tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
     .probe21(i_dma_rd_data),
     .probe22(o_dma_rd_ready),
     .probe23(o_tx_interrupt),
-    .probe24(checksum)
+    .probe24(checksum),
+    .probe25(frame_cnt),
+    .probe26(tail_frame)
 );
 
 

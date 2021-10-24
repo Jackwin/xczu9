@@ -104,6 +104,21 @@ module reg_mgt
 
     localparam  SOFT_R_REG      = 16'h0070 + ADDR_BASE;
 
+    // localparam  TX_ADDR_REG     = 16'h0010 + ADDR_BASE;
+    // localparam  TX_LENGTH_REG   = 16'h0018 + ADDR_BASE;
+    // localparam  TX_PACKET_REG   = 16'h0020 + ADDR_BASE;
+    // localparam  TX_STATUS_REG   = 16'h0028 + ADDR_BASE;
+    // localparam  TX_CFG_REG      = 16'h0030 + ADDR_BASE;
+
+    // localparam  RX_ADDR_REG     = 16'h0040 + ADDR_BASE;
+    // localparam  RX_CTRL_REG     = 16'h0048 + ADDR_BASE;
+    // localparam  RX_STATUS_REG   = 16'h0050 + ADDR_BASE;
+    // localparam  RX_CFG_REG      = 16'h0058 + ADDR_BASE;
+
+    // localparam  IRQ_REG         = 16'h0060 + ADDR_BASE;
+
+    // localparam  SOFT_R_REG      = 16'h0080 + ADDR_BASE;
+
 // ----------------------------------------------------------------------
 // Sync logics
 // ----------------------------------------------------------------------
@@ -188,7 +203,8 @@ assign o_reg_rdata = ps_reg_rdata;
     end
 
     always@(posedge clk) begin
-        if( reg_wen && ( reg_waddr == TX_CFG_REG )) // for tx config done
+        // for tx config done
+        if( reg_wen && ( reg_waddr == TX_CFG_REG ) ) //&& (reg_wdata[3:0] == 4'h5a)
             o_tx_config_done <=  1'b1;
         else 
             o_tx_config_done <= 1'b0;
@@ -321,7 +337,8 @@ ila_mgt ila_mgt_i (
     .probe20(reg_rdata),
     .probe21(usr_reg_rdata_1d),
     .probe22(reg_rd_sel_1d),
-    .probe23(reg_rd_sel)
+    .probe23(reg_rd_sel),
+    .probe24(i_rx_interrupt)
 
 );
 
