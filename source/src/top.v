@@ -471,6 +471,11 @@ mpsoc mpsoc_inst (
     .uart_0_txd(uart_0_txd)
 );
 
-
+ila_2711_rx ila_2711_rx_inst (
+	.clk(tlk2711b_rx_clk), // input wire clk
+	.probe0(tlk2711b_rklsb), // input wire [0:0]  probe0  
+	.probe1(tlk2711b_rkmsb), // input wire [0:0]  probe1 
+	.probe2(tlk2711b_rxd) // input wire [15:0]  probe2
+);
 
 endmodule
