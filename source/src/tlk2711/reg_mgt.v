@@ -69,6 +69,8 @@ module reg_mgt
     output                      o_rx_fifo_rd,
 
     output reg                  o_rx_config_done,
+    output                      o_link_loss_detect_ena,
+    output                      o_sync_loss_detect_ena,
 
     input                       i_rx_interrupt, //when asserted, the packet information is valid at the same time
     input  [15:0]               i_rx_frame_length,
@@ -143,6 +145,11 @@ reg                     reg_sel_2d;
 wire                    reg_rd_sel;
 reg                     reg_rd_sel_1d;
 reg                     reg_rd_sel_2d;
+
+wire [7:0]              auto_intr_times;
+wire [27:0]             auto_intr_gap; // unit of 10ns
+reg                     auto_intr;
+wire                    auto_intr_start;
 
 assign reg_sel = ((i_reg_waddr & ~ADDR_MASK) == ADDR_BASE) ? 1'b1 : 1'b0;
 assign reg_rd_sel = ((i_reg_raddr & ~ADDR_MASK) == ADDR_BASE) ? 1'b1 : 1'b0;
@@ -239,6 +246,11 @@ assign o_reg_rdata = ps_reg_rdata;
 
     assign o_rx_base_addr = rx_base_addr_reg[ADDR_WIDTH-1:0];
     assign o_rx_fifo_rd = rx_ctrl_reg[0];
+    assign o_link_loss_detect_ena = rx_ctrl_reg[1];
+    assign o_sync_loss_detect_ena = rx_ctrl_reg[2];
+    assign auto_intr_start = rx_ctrl_reg[3];
+    assign auto_intr_times = rx_ctrl_reg[11:4];
+    assign auto_intr_gap = rx_ctrl_reg[39:12];
 
     always @(posedge clk) begin
         if (usr_reg_ren & reg_rd_sel_2d) begin
@@ -309,7 +321,7 @@ assign o_reg_rdata = ps_reg_rdata;
     end
 
     assign o_tx_irq = i_tx_interrupt;
-    assign o_rx_irq = i_rx_interrupt;
+    assign o_rx_irq = i_rx_interrupt | auto_intr;
     assign o_loss_irq = i_loss_interrupt;
 
 ila_mgt ila_mgt_i (

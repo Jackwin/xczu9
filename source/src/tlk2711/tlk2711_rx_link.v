@@ -38,6 +38,9 @@ module  tlk2711_rx_link
     input                               i_rx_start,
     input  [ADDR_WIDTH-1:0]             i_rx_base_addr,
 
+    input                               i_link_loss_detect_ena,
+    input                               i_sync_loos_detect_ena,
+
     // To read the remained data in FIFO when link/sync loss happens
     input                               i_rx_fifo_rd,
 
@@ -390,22 +393,28 @@ module  tlk2711_rx_link
             link_loss <= 1'b0;
             link_loss_timer <= 'h0;
         end else begin
-            if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == 16'hFFFF) & ~link_loss_flag) begin
-                link_loss <= 1'b1;
+            if (i_link_loss_detect_ena) begin
+                if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == 16'hFFFF) & ~link_loss_flag) begin
+                    link_loss <= 1'b1;
+                end else begin
+                    link_loss <= 1'b0;
+                end
+
+                if (link_loss) begin
+                    link_loss_flag <= 1'b1;
+                end else if (link_loss_timer == 24'd10000000) begin
+                    link_loss_flag <= 1'b0;
+                end
+
+                if (link_loss_flag) begin
+                    link_loss_timer <= link_loss_timer + 1'd1;
+                end else begin
+                    link_loss_timer <= 'h0;
+                end
             end else begin
                 link_loss <= 1'b0;
-            end
-
-            if (link_loss) begin
-                link_loss_flag <= 1'b1;
-            end else if (link_loss_timer == 24'd10000000) begin
-                link_loss_flag <= 1'b0;
-            end
-
-            if (link_loss_flag) begin
-                link_loss_timer <= link_loss_timer + 1'd1;
-            end else begin
                 link_loss_timer <= 'h0;
+                link_loss_flag <= 'h0;
             end
         end
     end
@@ -428,22 +437,28 @@ module  tlk2711_rx_link
             sync_loss_flag <= 1'b0;
         end else begin
             // TODO Add k-code determination
-            if ((i_2711_rkmsb | i_2711_rklsb) & recv_data_flag & ~sync_loss_flag) begin
-                sync_loss <= 1'b1;
+            if (i_sync_loos_detect_ena) begin
+                if ((i_2711_rkmsb | i_2711_rklsb) & recv_data_flag & ~sync_loss_flag) begin
+                    sync_loss <= 1'b1;
+                end else begin
+                    sync_loss <= 1'b0;
+                end
+
+                if (sync_loss) begin
+                    sync_loss_flag <= 1'b1;
+                end else if (sync_loss_timer == 24'd10000000) begin
+                    sync_loss_flag <= 1'b0;
+                end
+                    
+                if (sync_loss_flag) begin
+                    sync_loss_timer <= sync_loss_timer + 1'b1;
+                end else begin
+                    sync_loss_timer <= 'h0;
+                end
             end else begin
                 sync_loss <= 1'b0;
-            end
-
-            if (sync_loss) begin
-                sync_loss_flag <= 1'b1;
-            end else if (sync_loss_timer == 24'd10000000) begin
-                sync_loss_flag <= 1'b0;
-            end
-                
-            if (sync_loss_flag) begin
-                sync_loss_timer <= sync_loss_timer + 1'b1;
-            end else begin
                 sync_loss_timer <= 'h0;
+                sync_loss_flag <= 1'b0;
             end
         end
     end

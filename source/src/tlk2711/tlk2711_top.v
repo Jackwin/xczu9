@@ -160,6 +160,8 @@ module tlk2711_top
     wire [5:0]                          rx_status;
     wire [9:0]                          tx_status;
     wire                                rx_fifo_rd;
+    wire                                link_loss_detect_ena;
+    wire                                sync_loss_detect_ena;
 
    reg_mgt #(       
        .ADDR_WIDTH(ADDR_WIDTH),
@@ -193,6 +195,8 @@ module tlk2711_top
        .o_rx_base_addr(rx_base_addr), 
        .o_rx_config_done(rx_config_done),
        .o_rx_fifo_rd(rx_fifo_rd),
+       .o_link_loss_detect_ena(link_loss_detect_ena),
+       .o_sync_loss_detect_ena(sync_loss_detect_ena),
 
        .i_rx_interrupt(rx_interrupt), 
        .i_rx_frame_length(rx_frame_length),
@@ -345,6 +349,8 @@ module tlk2711_top
         .o_wr_cmd_data(wr_cmd_data), 
         .i_rx_start(rx_config_done),
         .i_rx_base_addr(rx_base_addr),
+        .i_link_loss_detect_ena(link_loss_detect_ena),
+        .i_sync_loss_detect_ena(sync_loss_detect_ena),
         .i_rx_fifo_rd(rx_fifo_rd),
         .i_dma_wr_ready(dma_wr_ready),
         .i_wr_finish(wr_finish),
