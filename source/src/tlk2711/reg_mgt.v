@@ -150,6 +150,7 @@ wire [7:0]              auto_intr_times;
 wire [27:0]             auto_intr_gap; // unit of 10ns
 reg                     auto_intr;
 wire                    auto_intr_start;
+wire [7:0]              auto_intr_width;
 
 assign reg_sel = ((i_reg_waddr & ~ADDR_MASK) == ADDR_BASE) ? 1'b1 : 1'b0;
 assign reg_rd_sel = ((i_reg_raddr & ~ADDR_MASK) == ADDR_BASE) ? 1'b1 : 1'b0;
@@ -251,6 +252,7 @@ assign o_reg_rdata = ps_reg_rdata;
     assign auto_intr_start = rx_ctrl_reg[3];
     assign auto_intr_times = rx_ctrl_reg[11:4];
     assign auto_intr_gap = rx_ctrl_reg[39:12];
+    assign auto_intr_width = rx_ctrl_reg[47:40];
 
     always @(posedge clk) begin
         if (usr_reg_ren & reg_rd_sel_2d) begin
@@ -284,7 +286,7 @@ assign o_reg_rdata = ps_reg_rdata;
 //  soft_rst
 //////////////////////////////////////////////////////////////////////////
     reg soft_rst_reg = 1'b0;
-    reg [7:0] count = 8'd0; 
+    reg [7:0] count = 8'd0;
 
     always @ (posedge clk) begin
         if (usr_reg_wen && usr_reg_waddr == SOFT_R_REG & reg_sel_2d)
@@ -303,6 +305,65 @@ assign o_reg_rdata = ps_reg_rdata;
     assign o_soft_rst = soft_rst_reg;
 
 //////////////////////////////////////////////////////////////////////////
+//  Gen the interrupt automatically
+//////////////////////////////////////////////////////////////////////////
+reg     auto_intr_gen;
+reg     auto_intr_start_r;
+reg     auto_intr_counter;
+reg     auto_intr_signal;
+reg     auto_intr_signal_r;
+reg     auto_intr_signal_count;
+
+always @(posedge clk) begin
+    auto_intr_start_r <= auto_intr_start;
+end
+
+always @(posedge clk) begin
+    auto_intr_signal_r <= auto_intr_signal;
+end
+
+always @(posedge clk) begin
+    if (rst) begin
+        auto_intr_gen <= 1'b0;
+        auto_intr_counter <= 'h0;
+        auto_intr_signal <= 1'b0;
+    end else begin
+        if (auto_intr_start_r = 1'b0 & auto_intr_start) begin
+            auto_intr_gen <= 1'b1;
+        end else if (auto_intr_signal_count == auto_intr_times - 1) begin
+            auto_intr_gen <= 1'b0;
+        end
+
+        if (auto_intr_gen) begin
+            auto_intr_counter <= auto_intr_counter + 1'b1;
+            if (auto_intr_counter == auto_intr_gap -1) begin
+                auto_intr_signal <= 1'b1;
+            end else if (auto_intr_counter == auto_intr_gap + auto_intr_width -1) begin
+                auto_intr_signal <= 1'b0;
+                auto_intr_counter <= 'h0;
+            end
+        end else begin
+            auto_intr_signal <= 1'b0;
+            auto_intr_counter <= 'h0;
+        end
+    end
+end
+
+// Count the number of intr
+always @(posedge clk) begin
+    if (rst) begin
+        auto_intr_signal_count <= 'h0;
+    end else begin
+        if (auto_intr_signal_r & ~auto_intr_signal) begin
+            auto_intr_signal_count <= auto_intr_signal_count + 1'b1;
+            if (auto_intr_signal_count == auto_intr_times - 1) begin
+                auto_intr_signal_count <= 'h0;
+            end
+        end
+    end
+end
+
+//////////////////////////////////////////////////////////////////////////
 //  TX and RX interrupt report
 //////////////////////////////////////////////////////////////////////////
     // TODO  Suppor more regs read
@@ -314,14 +375,17 @@ assign o_reg_rdata = ps_reg_rdata;
                 rx_intr_status <= {4'd2, 18'h0,i_rx_data_type, i_rx_file_end_flag,
                                     i_rx_checksum_flag, i_rx_frame_num, i_rx_frame_length};
             else if (i_tx_interrupt)
-                 rx_intr_status <= {4'd1, 28'd0, 16'h0000, 16'h5aa5};
+                rx_intr_status <= {4'd1, 28'd0, 16'h0000, 16'h5aa5};
             else if (i_loss_interrupt) 
                 rx_intr_status <= {4'd3, 32'h0, 20'h0, i_rx_status, i_sync_loss, i_link_loss};
+            else if(auto_intr_signal) begin
+                rx_intr_status <= {4'd4, 28'd0, 16'h0000, 16'hffff};
+            end
         end
     end
 
     assign o_tx_irq = i_tx_interrupt;
-    assign o_rx_irq = i_rx_interrupt | auto_intr;
+    assign o_rx_irq = i_rx_interrupt | auto_intr_signal;
     assign o_loss_irq = i_loss_interrupt;
 
 ila_mgt ila_mgt_i (
