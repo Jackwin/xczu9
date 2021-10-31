@@ -105,23 +105,23 @@ module  tlk2711_tx_cmd
     end
 
 ila_tx_cmd ila_tx_cmd_inst(
-.clk(clk),
+    .clk(clk),
 
-.probe0(i_rd_cmd_ack),
-.probe1(o_rd_cmd_req),
-.probe2(o_rd_cmd_data),
-.probe3(i_dma_rd_last),
-.probe4(tx_start),
-.probe5(i_tx_base_addr),
-.probe6(i_tx_packet_body),
-.probe7(i_tx_packet_tail),
-.probe8(i_tx_body_num),
-.probe9(tx_frame_cnt),
-.probe10(rd_cmd_req),
-.probe11(packet_body_align8),
-.probe12(packet_tail_align8),
-.probe13(rd_addr),
-.probe14(rd_bbt)
+    .probe0(i_rd_cmd_ack),
+    .probe1(o_rd_cmd_req),
+    .probe2(o_rd_cmd_data),
+    .probe3(i_dma_rd_last),
+    .probe4(tx_start),
+    .probe5(i_tx_base_addr),
+    .probe6(i_tx_packet_body),
+    .probe7(i_tx_packet_tail),
+    .probe8(i_tx_body_num),
+    .probe9(tx_frame_cnt),
+    .probe10(rd_cmd_req),
+    .probe11(packet_body_align8),
+    .probe12(packet_tail_align8),
+    .probe13(rd_addr),
+    .probe14(rd_bbt)
 );
 
  

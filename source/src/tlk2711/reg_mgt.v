@@ -307,12 +307,12 @@ assign o_reg_rdata = ps_reg_rdata;
 //////////////////////////////////////////////////////////////////////////
 //  Gen the interrupt automatically
 //////////////////////////////////////////////////////////////////////////
-reg     auto_intr_gen;
-reg     auto_intr_start_r;
-reg     auto_intr_counter;
-reg     auto_intr_signal;
-reg     auto_intr_signal_r;
-reg     auto_intr_signal_count;
+reg         auto_intr_gen;
+reg         auto_intr_start_r;
+reg [28:0]  auto_intr_counter;
+reg         auto_intr_signal;
+reg         auto_intr_signal_r;
+reg [7:0]   auto_intr_signal_count;
 
 always @(posedge clk) begin
     auto_intr_start_r <= auto_intr_start;
@@ -328,9 +328,10 @@ always @(posedge clk) begin
         auto_intr_counter <= 'h0;
         auto_intr_signal <= 1'b0;
     end else begin
-        if (auto_intr_start_r = 1'b0 & auto_intr_start) begin
+        if (auto_intr_start_r == 1'b0 & auto_intr_start) begin
             auto_intr_gen <= 1'b1;
-        end else if (auto_intr_signal_count == auto_intr_times - 1) begin
+        end else if (auto_intr_signal_count == auto_intr_times - 1 
+            & (auto_intr_signal_r & ~auto_intr_signal)) begin
             auto_intr_gen <= 1'b0;
         end
 
@@ -356,9 +357,11 @@ always @(posedge clk) begin
     end else begin
         if (auto_intr_signal_r & ~auto_intr_signal) begin
             auto_intr_signal_count <= auto_intr_signal_count + 1'b1;
-            if (auto_intr_signal_count == auto_intr_times - 1) begin
-                auto_intr_signal_count <= 'h0;
-            end
+            // if (auto_intr_signal_count == auto_intr_times - 1) begin
+            //     auto_intr_signal_count <= 'h0;
+            // end
+        end else if (auto_intr_start_r == 1'b0 & auto_intr_start) begin
+            auto_intr_signal_count <= 'h0;
         end
     end
 end
@@ -379,7 +382,7 @@ end
             else if (i_loss_interrupt) 
                 rx_intr_status <= {4'd3, 32'h0, 20'h0, i_rx_status, i_sync_loss, i_link_loss};
             else if(auto_intr_signal) begin
-                rx_intr_status <= {4'd4, 28'd0, 16'h0000, 16'hffff};
+                rx_intr_status <= {4'd4, 28'd0, 8'h0, auto_intr_signal_count, 16'hffff};
             end
         end
     end
@@ -414,7 +417,18 @@ ila_mgt ila_mgt_i (
     .probe21(usr_reg_rdata_1d),
     .probe22(reg_rd_sel_1d),
     .probe23(reg_rd_sel),
-    .probe24(i_rx_interrupt)
+    .probe24(i_rx_interrupt),
+    .probe25(o_link_loss_detect_ena),
+    .probe26(o_sync_loss_detect_ena),
+    .probe27(auto_intr_start),
+    .probe28(auto_intr_times),
+    .probe29(auto_intr_gap),
+    .probe30(auto_intr_width),
+    .probe31(auto_intr_gen),
+    .probe32(auto_intr_signal),
+    .probe33(auto_intr_counter),
+    .probe34(auto_intr_signal_count)
+
 
 );
 

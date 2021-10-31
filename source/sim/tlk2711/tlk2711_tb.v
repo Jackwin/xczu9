@@ -139,6 +139,7 @@ module tlk2711_tb(
 			i_reg_wdata[63:32] <= tx_body_num;
 			i_reg_wdata[31:0]  <= tx_mode;
 		end
+		/*
 		'd15:
 		begin //tx start
 			i_reg_wen <= 'd1;
@@ -149,6 +150,24 @@ module tlk2711_tb(
 			i_reg_wen <= 'd1;
 			i_reg_waddr <= 16'h0200;
 		end
+		*/
+		
+		// test auto intr
+		'd15:
+		begin //tx start
+			i_reg_wen <= 'd1;
+			i_reg_waddr <= 16'h0048;
+			i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x00004000
+			i_reg_wdata[31:0]  <= {20'd100, 8'h3, 4'h6}; //0x00064036
+		end
+	  'd16:
+		begin //rx start 
+			i_reg_waddr <= 16'h0048;
+			i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x00004000
+			i_reg_wdata[31:0]  <= {20'd100, 8'h3, 4'he};//0x0006403e
+		end
+		// test auto intr
+
 		default:
 		begin
 			i_reg_wen <= 'd0;

@@ -39,7 +39,7 @@ module  tlk2711_rx_link
     input  [ADDR_WIDTH-1:0]             i_rx_base_addr,
 
     input                               i_link_loss_detect_ena,
-    input                               i_sync_loos_detect_ena,
+    input                               i_sync_loss_detect_ena,
 
     // To read the remained data in FIFO when link/sync loss happens
     input                               i_rx_fifo_rd,
@@ -437,7 +437,7 @@ module  tlk2711_rx_link
             sync_loss_flag <= 1'b0;
         end else begin
             // TODO Add k-code determination
-            if (i_sync_loos_detect_ena) begin
+            if (i_sync_loss_detect_ena) begin
                 if ((i_2711_rkmsb | i_2711_rklsb) & recv_data_flag & ~sync_loss_flag) begin
                     sync_loss <= 1'b1;
                 end else begin
@@ -483,8 +483,6 @@ always@(posedge clk) begin
         end
     end
 end
-
-
 
  ila_tlk2711_rx ila_tlk2711_rx_i(
     .clk(clk),
