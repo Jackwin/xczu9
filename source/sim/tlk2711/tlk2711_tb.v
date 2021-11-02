@@ -157,16 +157,17 @@ module tlk2711_tb(
 		begin //tx start
 			i_reg_wen <= 'd1;
 			i_reg_waddr <= 16'h0048;
-			i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x00004000
-			i_reg_wdata[31:0]  <= {20'd100, 8'h3, 4'h6}; //0x00064036
+			i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x0000400002710036
+			i_reg_wdata[31:0]  <= {20'd10000, 8'h3, 4'h6}; //0x02710036
 		end
 	  'd16:
 		begin //rx start 
 			i_reg_waddr <= 16'h0048;
-			i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x00004000
-			i_reg_wdata[31:0]  <= {20'd100, 8'h3, 4'he};//0x0006403e
+			i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x000040000271003e
+			i_reg_wdata[31:0]  <= {20'd10000, 8'h3, 4'he};//0x0271003e  0x0000400002710038
 		end
 		// test auto intr
+		//0x00004000001f4086 0x00004000001f4088
 
 		default:
 		begin
