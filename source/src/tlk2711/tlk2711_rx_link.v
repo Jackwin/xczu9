@@ -52,10 +52,11 @@ module  tlk2711_rx_link
 
     output                              o_rx_interrupt,
     output [15:0]                       o_rx_frame_length, 
-    output [15:0]                       o_rx_frame_num,
-    output [7:0]                        o_rx_data_type,
+    output [23:0]                       o_rx_frame_num,
+    output [3:0]                        o_rx_data_type,
     output                              o_rx_file_end_flag,
     output                              o_rx_checksum_flag,
+    output [1:0]                        o_rx_channel_id,
 
     input                               i_2711_rkmsb,
     input                               i_2711_rklsb,
@@ -104,9 +105,13 @@ module  tlk2711_rx_link
 
     // Store the frame inform
 
-    reg [7:0]               data_mode;
-    reg [7:0]               data_end_flag;
-    reg [15:0]              line_number;
+    // reg [7:0]               data_type;
+    // reg [7:0]               file_end_flag;
+    reg [1:0]               file_end_flag;
+    reg [1:0]               channel_id;
+    reg [3:0]               data_type;
+
+    reg [23:0]              line_number;
     reg [15:0]              data_length;
     reg [1:0]               to_align64;
     reg [15:0]              checksum;
@@ -123,8 +128,8 @@ module  tlk2711_rx_link
     assign o_rx_frame_num = line_number;
     assign o_rx_frame_length = data_length;
 
-    assign o_rx_data_type = data_mode;
-    assign o_rx_file_end_flag = data_end_flag[0];
+    assign o_rx_data_type = data_type;
+    assign o_rx_file_end_flag = file_end_flag[0];
     assign o_rx_checksum_flag = checksum_error;
 
     assign o_wr_cmd_data = {wr_addr, wr_bbt};
@@ -214,14 +219,16 @@ module  tlk2711_rx_link
 
     always @(posedge clk) begin
         if (rst | i_soft_rst) begin
-            data_mode <= 0;
-            data_end_flag <= 'h0;
+            data_type <= 0;
+            file_end_flag <= 'h0;
             line_number <='h0;
             data_length <= 'h0;
             to_align64 <= 'h0;
         end else begin
-            if (cs == DATA_TYPE_s) {data_mode, data_end_flag} <= i_2711_rxd;
-            if (cs == LINE_INFOR_s) line_number <= i_2711_rxd;
+           // if (cs == DATA_TYPE_s) {data_type, file_end_flag} <= i_2711_rxd;
+            if (cs == DATA_TYPE_s) 
+                {file_end_flag, channel_id, data_type, line_number[23:16]} <= i_2711_rxd;
+            if (cs == LINE_INFOR_s) line_number[15:0] <= i_2711_rxd;
             if (cs == DATA_LENGTH_s) begin
                 // The received data length is even.
                 data_length <= i_2711_rxd;
@@ -466,7 +473,7 @@ module  tlk2711_rx_link
     assign o_sync_loss = sync_loss;
 
     // Output the status to the host
-    // data_mode, data_end_flag
+    // data_type, file_end_flag
     assign o_rx_status = {fifo_empty, fifo_full, cs};
 
 // TODO debug rx

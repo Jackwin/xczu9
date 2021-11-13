@@ -129,15 +129,16 @@ module tlk2711_top
     wire [15:0]             rx_frame_length;
     wire [15:0]             rx_packet_body; 
     wire [15:0]             rx_packet_tail;
-    wire [15:0]             rx_frame_num;
+    wire [23:0]             rx_frame_num;
 
     wire                    loss_interrupt;
     wire                    sync_loss;
     wire                    link_loss;
     wire                    soft_rst;
-    wire [7:0]              rx_data_type;
+    wire [3:0]              rx_data_type;
     wire                    rx_file_end_flag;
     wire                    rx_checksum_flag;
+    wire [1:0]              rx_channel_id;
 
     wire [DLEN_WIDTH+ADDR_WIDTH-1:0]    rd_cmd_data;
     wire                                rd_cmd_req;

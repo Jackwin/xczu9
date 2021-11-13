@@ -62,6 +62,8 @@ module reg_mgt
     input                       i_tx_interrupt, 
     // tlk2711 pre-emphasis
     output                      o_tx_pre,
+    // the number of receied lines to trig the interrupt
+    output [15:0]               o_line_num_per_intr,
 
     //RX port set
     //write data address to DDR from rx module
@@ -74,13 +76,14 @@ module reg_mgt
 
     input                       i_rx_interrupt, //when asserted, the packet information is valid at the same time
     input  [15:0]               i_rx_frame_length,
-    input  [15:0]               i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
+    input  [23:0]               i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
     
     input [5:0]                 i_rx_status,
     input [9:0]                 i_tx_status,
-    input [7:0]                 i_rx_data_type,
+    input [3:0]                 i_rx_data_type,
     input                       i_rx_file_end_flag,
     input                       i_rx_checksum_flag,
+    input [1:0]                 i_rx_channel_id,
 
     input                       i_loss_interrupt,
     input                       i_sync_loss,
@@ -101,6 +104,7 @@ module reg_mgt
     localparam  RX_ADDR_REG     = 16'h0040 + ADDR_BASE;
     localparam  RX_CTRL_REG     = 16'h0048 + ADDR_BASE;
     localparam  RX_STATUS_REG   = 16'h0050 + ADDR_BASE;
+    localparam  RX_CTRL_REG2    = 16'h0058 + ADDR_BASE;
 
     localparam  IRQ_REG         = 16'h0060 + ADDR_BASE;
 
@@ -197,6 +201,7 @@ assign o_reg_rdata = ps_reg_rdata;
     reg [63:0]          tx_packet_reg;
     reg [63:0]          rx_base_addr_reg;
     reg [63:0]          rx_ctrl_reg;
+    reg [63:0]          rx_ctrl_reg2;
 	
     always@(posedge clk)begin
         if(rst)
@@ -232,6 +237,7 @@ assign o_reg_rdata = ps_reg_rdata;
             TX_PACKET_REG: tx_packet_reg <= reg_wdata;
             RX_ADDR_REG: rx_base_addr_reg <= reg_wdata;
             RX_CTRL_REG: rx_ctrl_reg <= reg_wdata;
+            RX_CTRL_REG2: rx_ctrl_reg2 <= reg_wdata;
             default;
           endcase
     end
@@ -253,6 +259,8 @@ assign o_reg_rdata = ps_reg_rdata;
     assign auto_intr_times = rx_ctrl_reg[11:4];
     assign auto_intr_gap = rx_ctrl_reg[39:12];
     assign auto_intr_width = rx_ctrl_reg[47:40];
+
+    assign o_line_num_per_intr = rx_ctrl_reg2[15:0];
 
     always @(posedge clk) begin
         if (usr_reg_ren & reg_rd_sel_2d) begin
@@ -375,8 +383,11 @@ end
             rx_intr_status <= 'h0;
         end else begin
             if (i_rx_interrupt)
-                rx_intr_status <= {4'd2, 18'h0,i_rx_data_type, i_rx_file_end_flag,
-                                    i_rx_checksum_flag, i_rx_frame_num, i_rx_frame_length};
+                // rx_intr_status <= {4'd2, 18'h0,i_rx_data_type, i_rx_file_end_flag,
+                //                     i_rx_checksum_flag, i_rx_frame_num, i_rx_frame_length};
+                rx_intr_status <= {4'd2, 12'h0, i_rx_frame_length, i_rx_data_type, 
+                                    i_rx_channel_id,i_rx_file_end_flag, 
+                                    i_rx_checksum_flag, i_rx_frame_num};
             else if (i_tx_interrupt)
                 rx_intr_status <= {4'd1, 28'd0, 16'h0000, 16'h5aa5};
             else if (i_loss_interrupt) 
