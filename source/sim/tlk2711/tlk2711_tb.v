@@ -12,6 +12,7 @@ module tlk2711_tb(
 	integer              tx_total_packet = 'd1800; // total packet bytes
 	integer              tx_packet_body = 'd870; 
 	integer              tx_packet_tail = 'd60;
+	integer  			 frame_length = 'd870;
 	integer              tx_body_num = 'd2;
 	integer              tx_mode = 'd0; //0--norm mode, 1--loopback mode, 2--kcode mode
 	  
@@ -77,8 +78,7 @@ module tlk2711_tb(
 	
 	reg clk,rst;
 
-	initial  
-	begin  
+	initial begin  
 		clk = 1'b0;  
 		rst = 1'b1;
 		#100 
@@ -86,8 +86,7 @@ module tlk2711_tb(
 		rst = 1'b0;		
 	end 
 	
-	always  
-	begin  
+	always begin  
 		#10 clk = ~clk;  // 100M	
 	end
 	
@@ -97,80 +96,88 @@ module tlk2711_tb(
 	wire [63:0]    	i_reg_rdata;
 	reg  [10:0]    	start_cnt = 'd0;
 	wire [63:0] 	o_reg_rdata;
+
+	localparam TX_BASE_REG_ADDR = 16'h0020;
+	localparam TX_PACKET_REG_ADDR = 16'h0030;
+	localparam TX_TX_STATUS_REG_ADDR= 16'h0038;
+
+	localparam RX_ADDR_REG_ADDR = 16'h0040;
+	localparam RX_CTRL_REG_ADDR = 16'h0048;
+	localparam RX_STATUS_REG_ADDR = 16'h0050;
+	localparam RX_CTRL_REG2_ADDR = 16'h0058;
 	
-	always@(posedge clk)                             
-	begin
-		if(!rst)
-		begin
+	always@(posedge clk) begin
+		if(!rst) begin
 			if(start_cnt < 'd20)
 				start_cnt <= start_cnt + 'd1;
 		end
 
 		case(start_cnt)
-		'd10:
-		begin
+		'd10:begin
 			i_reg_wen <= 'd1;
-			i_reg_waddr <= 16'h0108;
+			i_reg_waddr <= TX_BASE_REG_ADDR;
 			i_reg_wdata <= tx_base_addr;
 		end
-		'd11:
-		begin
+		'd11:begin
 			i_reg_wen <= 'd1;
-			i_reg_waddr <= 16'h0208;
+			i_reg_waddr <= RX_ADDR_REG_ADDR;
 			i_reg_wdata <= rx_base_addr;
 		end
-		'd12:
-		begin
+		'd12:begin
 			i_reg_wen   <= 'd1;
-			i_reg_waddr <= 16'h0110;
-			i_reg_wdata <= tx_total_packet;
+			i_reg_waddr <= TX_BASE_REG_ADDR;
+			i_reg_wdata[15:0] = frame_length;
+
+			i_reg_wdata[39:16] = tx_body_num;
+			i_reg_wdata[55:40] = tx_packet_tail;
+
+			i_reg_wdata[59] <= 1'b1;
+			i_reg_wdata[62:60] <= tx_mode;
+			i_reg_wdata[63] <= 1'b1;;
+
 		end
-		'd13:
-		begin
-			i_reg_wen <= 'd1;
-			i_reg_waddr <= 16'h0118;
-			i_reg_wdata[63:32] <= tx_packet_tail;
-			i_reg_wdata[31:0]  <= tx_packet_body;
-		end
-		'd14:
-		begin
-			i_reg_wen <= 'd1;
-			i_reg_waddr <= 16'h0120;
-			i_reg_wdata[63:32] <= tx_body_num;
-			i_reg_wdata[31:0]  <= tx_mode;
-		end
-		/*
-		'd15:
-		begin //tx start
+		// 'd13:
+		// begin
+		// 	i_reg_wen <= 'd1;
+		// 	i_reg_waddr <= 16'h0118;
+		// 	i_reg_wdata[63:32] <= tx_packet_tail;
+		// 	i_reg_wdata[31:0]  <= tx_packet_body;
+		// end
+		// 'd14:
+		// begin
+		// 	i_reg_wen <= 'd1;
+		// 	i_reg_waddr <= 16'h0120;
+		// 	i_reg_wdata[63:32] <= tx_body_num;
+		// 	i_reg_wdata[31:0]  <= tx_mode;
+		// end
+		
+		'd13:begin //tx start
 			i_reg_wen <= 'd1;
 			i_reg_waddr <= 16'h0100;
 		end
-	  'd16:
-		begin //rx start 
+	  	'd14:begin //rx start 
 			i_reg_wen <= 'd1;
 			i_reg_waddr <= 16'h0200;
 		end
-		*/
 		
 		// test auto intr
-		'd15:
-		begin //tx start
-			i_reg_wen <= 'd1;
-			i_reg_waddr <= 16'h0048;
-			i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x0000400002710036
-			i_reg_wdata[31:0]  <= {20'd10000, 8'h3, 4'h6}; //0x02710036
-		end
-	  'd16:
-		begin //rx start 
-			i_reg_waddr <= 16'h0048;
-			i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x000040000271003e
-			i_reg_wdata[31:0]  <= {20'd10000, 8'h3, 4'he};//0x0271003e  0x0000400002710038
-		end
+	// 	'd15:
+	// 	begin //tx start
+	// 		i_reg_wen <= 'd1;
+	// 		i_reg_waddr <= 16'h0048;
+	// 		i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x0000400002710036
+	// 		i_reg_wdata[31:0]  <= {20'd10000, 8'h3, 4'h6}; //0x02710036
+	// 	end
+	//   'd16:
+	// 	begin //rx start 
+	// 		i_reg_waddr <= 16'h0048;
+	// 		i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x000040000271003e
+	// 		i_reg_wdata[31:0]  <= {20'd10000, 8'h3, 4'he};//0x0271003e  0x0000400002710038
+	// 	end
 		// test auto intr
 		//0x00004000001f4086 0x00004000001f4088
 
-		default:
-		begin
+		default: begin
 			i_reg_wen <= 'd0;
 		end
 		endcase	

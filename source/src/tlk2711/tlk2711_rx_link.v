@@ -37,6 +37,7 @@ module  tlk2711_rx_link
 
     input                               i_rx_start,
     input  [ADDR_WIDTH-1:0]             i_rx_base_addr,
+    input  [23:0]                       i_rx_line_num_per_intr,
 
     input                               i_link_loss_detect_ena,
     input                               i_sync_loss_detect_ena,
@@ -115,6 +116,7 @@ module  tlk2711_rx_link
     reg [15:0]              data_length;
     reg [1:0]               to_align64;
     reg [15:0]              checksum;
+    reg [23:0]              line_cnt;
    
     reg [15:0]              rx_frame_cnt = 'd0;
     reg [DLEN_WIDTH-1:0]    valid_byte = 'd0;
@@ -124,7 +126,8 @@ module  tlk2711_rx_link
     reg                     checksum_error;
     reg [15:0]              frame_length;
 
-    assign o_rx_interrupt = one_frame_done & i_wr_finish;
+    assign o_rx_interrupt = one_frame_done & i_wr_finish & 
+                            line_cnt == i_rx_line_num_per_intr;
     assign o_rx_frame_num = line_number;
     assign o_rx_frame_length = data_length;
 
@@ -137,6 +140,20 @@ module  tlk2711_rx_link
     reg frame_end, frame_valid;
     // TODO modify the bit length to adapt to the 5120 pixels
     reg [15:0] frame_data_cnt, valid_data_num, trans_data_num;
+
+    // calculate the number of input lines
+
+    always @(posedge clk) begin
+        if (rst | i_soft_rst) begin
+            line_cnt <= 'h0;
+        end else begin
+            if (cs == LINE_INFOR_s) begin
+                line_cnt <= line_cnt + 1'd1;
+            end else if (o_rx_interrupt) begin
+                line_cnt <= 0;
+            end
+        end
+    end
 
     // Rx state
 
@@ -157,25 +174,40 @@ module  tlk2711_rx_link
             end
         end
         SYNC_s: begin
+            $display("%t rx state at SYNC_s", $time);
             if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K28_2, K27_7})) begin
                 ns <= FRAME_HEAD_s;
             end
         end
         FRAME_HEAD_s: begin
+            $display("%t rx state at FRAME_HEAD_s", $time);
             if ({tlk2711_rxd, i_2711_rxd} == FRAME_HEAD_FLAG) begin
                 ns <= DATA_TYPE_s;
             end
         end
-        DATA_TYPE_s: ns <= LINE_INFOR_s;
-        LINE_INFOR_s: ns <= DATA_LENGTH_s;
-        DATA_LENGTH_s: ns <= RECV_DATA_s;
+        DATA_TYPE_s: begin
+            $display("%t rx state at DATA_TYPE_s", $time);
+            ns <= LINE_INFOR_s;
+        end
+        LINE_INFOR_s: begin
+            $display("%t rx state at LINE_INFOR_s", $time);
+            ns <= DATA_LENGTH_s;
+        end
+        DATA_LENGTH_s: begin
+            $display("%t rx state at DATA_LENGTH_s", $time);
+            ns <= RECV_DATA_s;
+        end
         RECV_DATA_s: begin
+            $display("%t rx state at RECV_DATA_s", $time);
             // data length must be larger than or equal to 2
             if (frame_data_cnt == data_length[15:1] - 1) begin
                 ns <= CHECK_DATA_s;
             end
         end
-        CHECK_DATA_s: ns <= FRAME_END1_s;
+        CHECK_DATA_s: begin
+            $display("%t rx state at CHECK_DATA_s", $time);
+            ns <= FRAME_END1_s;
+        end
         FRAME_END1_s:  begin
             ns <= FRAME_END2_s;
         end

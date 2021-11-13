@@ -116,7 +116,7 @@ module tlk2711_top
     wire [31:0]             tx_total_length;
     wire [15:0]             tx_packet_body;
     wire [15:0]             tx_packet_tail;
-    wire [15:0]             tx_body_num;
+    wire [23:0]             tx_body_num;
     wire [2:0]              tx_mode;
     wire                    loopback_ena;
     wire                    tx_config_done; 

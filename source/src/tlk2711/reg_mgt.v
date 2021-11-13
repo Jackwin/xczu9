@@ -51,7 +51,7 @@ module reg_mgt
     //tail length in byte
     output [15:0]               o_tx_packet_tail, 
     //body number, total_packet = packet_body*body_num + packet_tail
-    output [15:0]               o_tx_body_num, 
+    output [23:0]               o_tx_body_num, 
     // 0--norm mode, 1--kcode mode, 2--test data
     output [2:0]                o_tx_mode,
     // 1--loopback enable
@@ -63,7 +63,7 @@ module reg_mgt
     // tlk2711 pre-emphasis
     output                      o_tx_pre,
     // the number of receied lines to trig the interrupt
-    output [15:0]               o_line_num_per_intr,
+    output [23:0]               o_line_num_per_intr,
 
     //RX port set
     //write data address to DDR from rx module
@@ -234,10 +234,21 @@ assign o_reg_rdata = ps_reg_rdata;
             //tx
             TX_ADDR_REG: tx_base_addr_reg <= reg_wdata;
             TX_LENGTH_REG: tx_length_reg <= reg_wdata;
-            TX_PACKET_REG: tx_packet_reg <= reg_wdata;
+            TX_PACKET_REG: begin
+                tx_packet_reg <= reg_wdata;
+                $display("%t TX_PACKET_REG: frame_length is %d", $time, reg_wdata[15:0]);
+                $display("%t TX_PACKET_REG: body_num is %d", $time, reg_wdata[39:16]);
+                $display("%t TX_PACKET_REG: tail_length is %d", $time, reg_wdata[55:40]);
+                $display("%t TX_PACKET_REG: pre-set is %d", $time, reg_wdata[59]);
+                $display("%t TX_PACKET_REG: mode is %d", $time, reg_wdata[62:60]);
+                $display("%t TX_PACKET_REG: loop-back is %d", $time, reg_wdata[63]);
+            end 
             RX_ADDR_REG: rx_base_addr_reg <= reg_wdata;
             RX_CTRL_REG: rx_ctrl_reg <= reg_wdata;
-            RX_CTRL_REG2: rx_ctrl_reg2 <= reg_wdata;
+            RX_CTRL_REG2: begin
+                rx_ctrl_reg2 <= reg_wdata;
+                $display("%t RX_CTRL_REG2: line_num_per_intr is %d", $time, reg_wdata[23:0]);
+            end
             default;
           endcase
     end
@@ -245,12 +256,12 @@ assign o_reg_rdata = ps_reg_rdata;
     assign o_tx_base_addr = tx_base_addr_reg[ADDR_WIDTH-1:0];
     assign o_tx_total_length = tx_length_reg[31:0];
     assign o_tx_packet_body = tx_packet_reg[15:0];
-    assign o_tx_body_num = tx_packet_reg[16+15:16];
-    assign o_tx_packet_tail = tx_packet_reg[15+32:32];
+    assign o_tx_body_num = tx_packet_reg[8+16+15:16];
+    assign o_tx_packet_tail = tx_packet_reg[15+40:40];
+    assign o_tx_pre = tx_packet_reg[59];
     assign o_tx_mode = tx_packet_reg[62:60];
     assign o_loopback_ena = tx_packet_reg[63];
-    assign o_tx_pre = tx_packet_reg[59];
-
+    
     assign o_rx_base_addr = rx_base_addr_reg[ADDR_WIDTH-1:0];
     assign o_rx_fifo_rd = rx_ctrl_reg[0];
     assign o_link_loss_detect_ena = rx_ctrl_reg[1];
@@ -260,7 +271,7 @@ assign o_reg_rdata = ps_reg_rdata;
     assign auto_intr_gap = rx_ctrl_reg[39:12];
     assign auto_intr_width = rx_ctrl_reg[47:40];
 
-    assign o_line_num_per_intr = rx_ctrl_reg2[15:0];
+    assign o_line_num_per_intr = rx_ctrl_reg2[23:0];
 
     always @(posedge clk) begin
         if (usr_reg_ren & reg_rd_sel_2d) begin

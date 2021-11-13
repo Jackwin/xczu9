@@ -32,7 +32,7 @@ module  tlk2711_tx_data
     input                   i_tx_start,
     input [15:0]            i_tx_packet_body, //body length in byte, 870B here for fixed value
     input [15:0]            i_tx_packet_tail, //tail length in byte
-    input [15:0]            i_tx_body_num,
+    input [23:0]            i_tx_body_num,
     
     //dma data interface 
     input                   i_dma_rd_valid,
@@ -62,6 +62,7 @@ module  tlk2711_tx_data
 
     localparam KCODE_MODE = 3'd1;
     localparam TEST_MODE = 3'd2; // chip to chip test
+    localparam SPECIFiC_MODE = 3'd3;
  
     //sync code
     localparam K28_5 = 8'hBC;
@@ -91,20 +92,20 @@ module  tlk2711_tx_data
 	
 	parameter BODY_LENGTH = 16'd870;
 
-    reg       [3:0]           tx_state;
-    localparam                tx_pwr_sync= 4'd0;
-    localparam                tx_idle = 4'd1;
-    localparam                tx_begin = 4'd2;
-    localparam                tx_sync = 4'd3;
-    localparam                tx_start_frame = 4'd4;
-    localparam                tx_frame_head = 4'd5;
-    localparam                tx_file_sign = 4'd6;
-    localparam                tx_frame_num = 4'd7;
-    localparam                tx_vld_dlen = 4'd8;
-    localparam                tx_vld_data = 4'd9;
-    localparam                tx_frame_tail = 4'd10;
-    localparam                tx_end_frame = 4'd11;
-    localparam                tx_backward = 4'd12;
+    reg [3:0]   tx_state;
+    localparam  tx_pwr_sync= 4'd0;
+    localparam  tx_idle = 4'd1;
+    localparam  tx_begin = 4'd2;
+    localparam  tx_sync = 4'd3;
+    localparam  tx_start_frame = 4'd4;
+    localparam  tx_frame_head = 4'd5;
+    localparam  tx_file_sign = 4'd6;
+    localparam  tx_frame_num = 4'd7;
+    localparam  tx_vld_dlen = 4'd8;
+    localparam  tx_vld_data = 4'd9;
+    localparam  tx_frame_tail = 4'd10;
+    localparam  tx_end_frame = 4'd11;
+    localparam  tx_backward = 4'd12;
 
     reg         tlk2711_tkmsb;
     reg         tlk2711_tklsb;
@@ -124,6 +125,8 @@ module  tlk2711_tx_data
     wire        fifo_full, fifo_wren, fifo_rden;
     wire [15:0] fifo_rdata;
     wire        fifo_empty;
+
+    reg         channel_id;
 
     assign o_2711_tkmsb = tlk2711_tkmsb_1r;
     assign o_2711_tklsb = tlk2711_tklsb_1r;
@@ -168,7 +171,7 @@ module  tlk2711_tx_data
         .empty(fifo_empty)
     );
 
-    reg [15:0] frame_cnt = 'd0;
+    reg [23:0] frame_cnt = 'd0;
     reg [15:0] valid_dlen = 'd0; 
     reg [15:0] verif_dcnt = 'd0;
 
@@ -320,6 +323,7 @@ module  tlk2711_tx_data
             o_tx_interrupt <= 'b0;
             state_cnt <= 'h0;
             test_data_cnt <= 'h0;
+            channel_id <= 'h0;
         end else begin
             // TODO: Add a power-up state to send the 1ms sync code
             if (tx_mode == TEST_MODE) begin
@@ -427,7 +431,29 @@ module  tlk2711_tx_data
                     tx_file_sign:begin
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
-                        tlk2711_txd   <= (frame_cnt == i_tx_body_num) ? {TX_IND, FILE_END} : {TX_IND, 8'b0};
+                        if (tx_mode == NORM_MODE) begin
+                            tlk2711_txd   <= (frame_cnt == i_tx_body_num) ? {TX_IND, FILE_END} : {TX_IND, 8'b0};
+                            $display("%g tx mode is NOMR_MODE, state at tx_file_sign", $time);
+
+                        end else if (tx_mode == SPECIFiC_MODE) begin
+                            //file ending flag
+                            tlk2711_txd[15] <= 'h0;
+                            tlk2711_txd[14] <= (frame_cnt == i_tx_body_num) ? {TX_IND, FILE_END} : {TX_IND, 8'b0};
+                            tlk2711_txd[13] <= 'h0;
+                            tlk2711_txd[12] <= channel_id;
+                            $display("%g tx mode is SPECIFiC_MODE; channel_id %d", $time, channel_id);
+                            channel_id <= ~channel_id;
+                            // Sweeping mode
+                            tlk2711_txd[11:8] <= 'h1;
+                            tlk2711_txd[7:0] <= frame_cnt[23:16];
+
+                            if (frame_cnt == i_tx_body_num) begin
+                                $display("%g tx mode is SPECIFiC_MODE; FILE END", $time);
+                            end else begin
+                                $display("%g tx mode is SPECIFiC_MODE; NOT FILE END", $time);
+                            end
+                            
+                        end
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else
@@ -436,7 +462,8 @@ module  tlk2711_tx_data
                     tx_frame_num:begin
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
-                        tlk2711_txd   <= frame_cnt;
+                        $display("%g tx state at tx_frame_num", $time);
+                        tlk2711_txd   <= frame_cnt[15:0];
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else
@@ -446,6 +473,7 @@ module  tlk2711_tx_data
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                         tlk2711_txd   <= valid_dlen;
+                        $display("%g tx state at tx_vld_dlen", $time);
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else
@@ -455,6 +483,7 @@ module  tlk2711_tx_data
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                         tlk2711_txd   <= fifo_rdata;
+                        $display("%g tx state at tx_vld_data", $time);
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else if (vld_data_cnt == (i_tx_packet_body[15:1] - 1))
@@ -464,6 +493,7 @@ module  tlk2711_tx_data
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                        // tlk2711_txd   <= verif_dcnt;
+                       $display("%g tx state at tx_frame_tail", $time);
                         tlk2711_txd <= checksum;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
