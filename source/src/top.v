@@ -61,6 +61,7 @@ output          usr_led
 
 );
 
+parameter DEBUG_ENA = "TRUE";
 parameter DDR_ADDR_WIDTH = 40;
 parameter HP0_DATA_WIDTH = 128;
 parameter STREAM_DATA_WIDTH = 64;
@@ -218,7 +219,8 @@ assign phy_resetn = &eth_rst_cnt;
 assign tlk2711b_gtx_clk = clk_100;
 assign tlk2711a_gtx_clk = clk_100;
 
-tlk2711_wrapper #(    
+tlk2711_wrapper #(  
+    .DEBUG_ENA(DEBUG_ENA),  
     .ADDR_WIDTH(DDR_ADDR_WIDTH),
     .AXI_RDATA_WIDTH(HP0_DATA_WIDTH), //HP0_DATA_WIDTH
     .AXI_WDATA_WIDTH(HP0_DATA_WIDTH), // HP0_DATA_WIDTH

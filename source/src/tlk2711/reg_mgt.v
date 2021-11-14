@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 module reg_mgt 
-#(       
+#(  
+    parameter DEBUG_ENA = "TRUE",     
     parameter ADDR_WIDTH = 32,
     parameter ADDR_MASK = 16'h00ff,
     parameter ADDR_BASE = 16'h0000
@@ -236,12 +237,12 @@ assign o_reg_rdata = ps_reg_rdata;
             TX_LENGTH_REG: tx_length_reg <= reg_wdata;
             TX_PACKET_REG: begin
                 tx_packet_reg <= reg_wdata;
-                $display("%t TX_PACKET_REG: frame_length is %d", $time, reg_wdata[15:0]);
-                $display("%t TX_PACKET_REG: body_num is %d", $time, reg_wdata[39:16]);
-                $display("%t TX_PACKET_REG: tail_length is %d", $time, reg_wdata[55:40]);
-                $display("%t TX_PACKET_REG: pre-set is %d", $time, reg_wdata[59]);
-                $display("%t TX_PACKET_REG: mode is %d", $time, reg_wdata[62:60]);
-                $display("%t TX_PACKET_REG: loop-back is %d", $time, reg_wdata[63]);
+                $display("%t (reg_mgt.v)TX_PACKET_REG: frame_length is %d", $time, reg_wdata[15:0]);
+                $display("%t (reg_mgt.v)TX_PACKET_REG: body_num is %d", $time, reg_wdata[39:16]);
+                $display("%t (reg_mgt.v)TX_PACKET_REG: tail_length is %d", $time, reg_wdata[55:40]);
+                $display("%t (reg_mgt.v)TX_PACKET_REG: pre-set is %d", $time, reg_wdata[59]);
+                $display("%t (reg_mgt.v)TX_PACKET_REG: mode is %d", $time, reg_wdata[62:60]);
+                $display("%t (reg_mgt.v)TX_PACKET_REG: loop-back is %d", $time, reg_wdata[63]);
             end 
             RX_ADDR_REG: rx_base_addr_reg <= reg_wdata;
             RX_CTRL_REG: rx_ctrl_reg <= reg_wdata;
@@ -412,8 +413,8 @@ end
     assign o_tx_irq = i_tx_interrupt;
     assign o_rx_irq = i_rx_interrupt | auto_intr_signal;
     assign o_loss_irq = i_loss_interrupt;
-
-ila_mgt ila_mgt_i (
+if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
+    ila_mgt ila_mgt_i (
     .clk(clk),
     .probe0(usr_reg_wen),
     .probe1(usr_reg_wdata),
@@ -453,6 +454,9 @@ ila_mgt ila_mgt_i (
 
 
 );
+    
+
+
 
     
 endmodule

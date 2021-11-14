@@ -18,6 +18,7 @@
 
 module  tlk2711_rx_link
 #(
+    parameter DEBUG_ENA = "TRUE", 
     parameter ADDR_WIDTH = 32,
     parameter DLEN_WIDTH = 16,
 	parameter DATA_WIDTH = 64,
@@ -174,38 +175,39 @@ module  tlk2711_rx_link
             end
         end
         SYNC_s: begin
-            $display("%t rx state at SYNC_s", $time);
+            $display("%t (rx_link.v)rx state at SYNC_s", $time);
             if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K28_2, K27_7})) begin
                 ns <= FRAME_HEAD_s;
             end
         end
         FRAME_HEAD_s: begin
-            $display("%t rx state at FRAME_HEAD_s", $time);
+            $display("%t (rx_link.v)rx state at FRAME_HEAD_s", $time);
             if ({tlk2711_rxd, i_2711_rxd} == FRAME_HEAD_FLAG) begin
                 ns <= DATA_TYPE_s;
             end
         end
         DATA_TYPE_s: begin
-            $display("%t rx state at DATA_TYPE_s", $time);
+            $display("%t (rx_link.v)rx state at DATA_TYPE_s", $time);
             ns <= LINE_INFOR_s;
         end
         LINE_INFOR_s: begin
-            $display("%t rx state at LINE_INFOR_s", $time);
+            $display("%t (rx_link.v)rx state at LINE_INFOR_s", $time);
             ns <= DATA_LENGTH_s;
         end
         DATA_LENGTH_s: begin
-            $display("%t rx state at DATA_LENGTH_s", $time);
+            $display("%t (rx_link.v)rx state at DATA_LENGTH_s", $time);
             ns <= RECV_DATA_s;
         end
         RECV_DATA_s: begin
-            $display("%t rx state at RECV_DATA_s", $time);
+            
             // data length must be larger than or equal to 2
             if (frame_data_cnt == data_length[15:1] - 1) begin
                 ns <= CHECK_DATA_s;
+                $display("%t (rx_link.v)rx state at RECV_DATA_s DONE", $time);
             end
         end
         CHECK_DATA_s: begin
-            $display("%t rx state at CHECK_DATA_s", $time);
+            $display("%t (rx_link.v)rx state at CHECK_DATA_s", $time);
             ns <= FRAME_END1_s;
         end
         FRAME_END1_s:  begin
@@ -522,46 +524,46 @@ always@(posedge clk) begin
         end
     end
 end
-
- ila_tlk2711_rx ila_tlk2711_rx_i(
-    .clk(clk),
-    .probe0(i_2711_rkmsb),
-    .probe1(i_2711_rklsb),
-    .probe2(i_2711_rxd),
-    .probe3(o_loss_interrupt),
-    .probe4(i_rx_start),
-    .probe5(i_rx_base_addr),
-    .probe6(link_loss),
-    .probe7(frame_data_cnt),
-    .probe8(rx_frame_cnt),
-    .probe9(i_wr_cmd_ack),
-    .probe10(o_rx_interrupt),
-    .probe11(link_loss_timer),
-    .probe12(link_loss_flag),
-    .probe13(link_loss),
-    .probe14(fifo_wren),
-    .probe15(wr_bbt),
-    .probe16(cs),
-    .probe17(sync_loss_timer),
-    .probe18(sync_loss_flag),
-    .probe19(sync_loss),
-    .probe20(recv_data_flag),
-    .probe21(frame_end),
-    .probe22(checksum),
-    .probe23(checksum_error),
-    .probe24(one_frame_done),
-    .probe25(i_wr_finish),
-    .probe26(wr_addr),
-    .probe27(o_wr_cmd_req),
-    .probe28(i_rx_start),
-    .probe29(o_dma_wr_valid),
-    .probe30(fifo_empty),
-    .probe31(fifo_full),
-    .probe32(fifo_rden),
-    .probe33(i_dma_wr_ready),
-    .probe34(rd_cnt),
-    .probe35(o_dma_wr_data)
-);
+if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
+    ila_tlk2711_rx ila_tlk2711_rx_i(
+        .clk(clk),
+        .probe0(i_2711_rkmsb),
+        .probe1(i_2711_rklsb),
+        .probe2(i_2711_rxd),
+        .probe3(o_loss_interrupt),
+        .probe4(i_rx_start),
+        .probe5(i_rx_base_addr),
+        .probe6(link_loss),
+        .probe7(frame_data_cnt),
+        .probe8(rx_frame_cnt),
+        .probe9(i_wr_cmd_ack),
+        .probe10(o_rx_interrupt),
+        .probe11(link_loss_timer),
+        .probe12(link_loss_flag),
+        .probe13(link_loss),
+        .probe14(fifo_wren),
+        .probe15(wr_bbt),
+        .probe16(cs),
+        .probe17(sync_loss_timer),
+        .probe18(sync_loss_flag),
+        .probe19(sync_loss),
+        .probe20(recv_data_flag),
+        .probe21(frame_end),
+        .probe22(checksum),
+        .probe23(checksum_error),
+        .probe24(one_frame_done),
+        .probe25(i_wr_finish),
+        .probe26(wr_addr),
+        .probe27(o_wr_cmd_req),
+        .probe28(i_rx_start),
+        .probe29(o_dma_wr_valid),
+        .probe30(fifo_empty),
+        .probe31(fifo_full),
+        .probe32(fifo_rden),
+        .probe33(i_dma_wr_ready),
+        .probe34(rd_cnt),
+        .probe35(o_dma_wr_data)
+    );
 
 endmodule 
          

@@ -18,7 +18,8 @@
 
 module  tlk2711_tx_data
 #(
-	parameter DATA_WIDTH = 64 
+	parameter DEBUG_ENA = "TRUE", 
+    parameter DATA_WIDTH = 64 
 )
 (
     input                   clk,
@@ -433,7 +434,7 @@ module  tlk2711_tx_data
                         tlk2711_tklsb <= 'b0;
                         if (tx_mode == NORM_MODE) begin
                             tlk2711_txd   <= (frame_cnt == i_tx_body_num) ? {TX_IND, FILE_END} : {TX_IND, 8'b0};
-                            $display("%g tx mode is NOMR_MODE, state at tx_file_sign", $time);
+                            $display("%g (tx_data.v)tx mode is NOMR_MODE, state at tx_file_sign", $time);
 
                         end else if (tx_mode == SPECIFiC_MODE) begin
                             //file ending flag
@@ -441,16 +442,16 @@ module  tlk2711_tx_data
                             tlk2711_txd[14] <= (frame_cnt == i_tx_body_num) ? {TX_IND, FILE_END} : {TX_IND, 8'b0};
                             tlk2711_txd[13] <= 'h0;
                             tlk2711_txd[12] <= channel_id;
-                            $display("%g tx mode is SPECIFiC_MODE; channel_id %d", $time, channel_id);
+                            $display("%g (tx_data.v)tx mode is SPECIFiC_MODE; channel_id %d", $time, channel_id);
                             channel_id <= ~channel_id;
                             // Sweeping mode
                             tlk2711_txd[11:8] <= 'h1;
                             tlk2711_txd[7:0] <= frame_cnt[23:16];
 
                             if (frame_cnt == i_tx_body_num) begin
-                                $display("%g tx mode is SPECIFiC_MODE; FILE END", $time);
+                                $display("%g (tx_data.v)tx mode is SPECIFiC_MODE; FILE END", $time);
                             end else begin
-                                $display("%g tx mode is SPECIFiC_MODE; NOT FILE END", $time);
+                                $display("%g (tx_data.v)tx mode is SPECIFiC_MODE; NOT FILE END", $time);
                             end
                             
                         end
@@ -462,7 +463,7 @@ module  tlk2711_tx_data
                     tx_frame_num:begin
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
-                        $display("%g tx state at tx_frame_num", $time);
+                        $display("%g (tx_data.v)tx state at tx_frame_num", $time);
                         tlk2711_txd   <= frame_cnt[15:0];
                         if (i_soft_reset)
                             tx_state <= tx_idle;
@@ -473,7 +474,7 @@ module  tlk2711_tx_data
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                         tlk2711_txd   <= valid_dlen;
-                        $display("%g tx state at tx_vld_dlen", $time);
+                        $display("%g (tx_data.v)tx state at tx_vld_dlen", $time);
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else
@@ -483,17 +484,19 @@ module  tlk2711_tx_data
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                         tlk2711_txd   <= fifo_rdata;
-                        $display("%g tx state at tx_vld_data", $time);
+                        
                         if (i_soft_reset)
                             tx_state <= tx_idle;
-                        else if (vld_data_cnt == (i_tx_packet_body[15:1] - 1))
+                        else if (vld_data_cnt == (i_tx_packet_body[15:1] - 1)) begin
                             tx_state <= tx_frame_tail;
+                            $display("%g (tx_data.v)tx state at tx_vld_data DONE", $time);
+                        end
                     end        
                     tx_frame_tail:begin
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                        // tlk2711_txd   <= verif_dcnt;
-                       $display("%g tx state at tx_frame_tail", $time);
+                       $display("%g (tx_data.v)tx state at tx_frame_tail", $time);
                         tlk2711_txd <= checksum;
                         if (i_soft_reset)
                             tx_state <= tx_idle;
@@ -533,37 +536,37 @@ module  tlk2711_tx_data
 
 // TODO  debug the port
 // tail_frame frame_cnt
-
-tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
-    .clk(clk),
-    .probe0({i_loopback_ena, i_tx_mode}),
-    .probe1(i_soft_reset),
-    .probe2(i_tx_start),
-    .probe3(tx_state),
-    .probe4(state_cnt),
-    .probe5(test_data_cnt),
-    .probe6(tlk2711_txd),
-    .probe7(tlk2711_tkmsb),
-    .probe8(tlk2711_tklsb),
-    .probe9(o_tx_interrupt),
-    .probe10(sync_cnt),
-    .probe11(head_cnt),
-    .probe12(vld_data_cnt),
-    .probe13(backward_cnt),
-    .probe14(tlk2711_enable),
-    .probe15(tlk2711_loopen),
-    .probe16(i_tx_packet_body),
-    .probe17(i_tx_packet_tail),
-    .probe18(i_tx_body_num),
-    .probe19(i_dma_rd_valid),
-    .probe20(i_dma_rd_last),
-    .probe21(i_dma_rd_data),
-    .probe22(o_dma_rd_ready),
-    .probe23(o_tx_interrupt),
-    .probe24(checksum),
-    .probe25(frame_cnt),
-    .probe26(tail_frame)
-);
+if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
+    tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
+        .clk(clk),
+        .probe0({i_loopback_ena, i_tx_mode}),
+        .probe1(i_soft_reset),
+        .probe2(i_tx_start),
+        .probe3(tx_state),
+        .probe4(state_cnt),
+        .probe5(test_data_cnt),
+        .probe6(tlk2711_txd),
+        .probe7(tlk2711_tkmsb),
+        .probe8(tlk2711_tklsb),
+        .probe9(o_tx_interrupt),
+        .probe10(sync_cnt),
+        .probe11(head_cnt),
+        .probe12(vld_data_cnt),
+        .probe13(backward_cnt),
+        .probe14(tlk2711_enable),
+        .probe15(tlk2711_loopen),
+        .probe16(i_tx_packet_body),
+        .probe17(i_tx_packet_tail),
+        .probe18(i_tx_body_num),
+        .probe19(i_dma_rd_valid),
+        .probe20(i_dma_rd_last),
+        .probe21(i_dma_rd_data),
+        .probe22(o_dma_rd_ready),
+        .probe23(o_tx_interrupt),
+        .probe24(checksum),
+        .probe25(frame_cnt),
+        .probe26(tail_frame)
+    );
 
 
 endmodule

@@ -19,6 +19,7 @@
 
 module tlk2711_top 
 #(       
+    parameter DEBUG_ENA = "TRUE",
     parameter ADDR_WIDTH = 48,
     parameter AXI_RDATA_WIDTH = 64,
     parameter AXI_WDATA_WIDTH = 64,
@@ -130,6 +131,7 @@ module tlk2711_top
     wire [15:0]             rx_packet_body; 
     wire [15:0]             rx_packet_tail;
     wire [23:0]             rx_frame_num;
+    wire [23:0]             line_num_per_intr;
 
     wire                    loss_interrupt;
     wire                    sync_loss;
@@ -164,7 +166,8 @@ module tlk2711_top
     wire                                link_loss_detect_ena;
     wire                                sync_loss_detect_ena;
 
-   reg_mgt #(       
+   reg_mgt #(
+       .DEBUG_ENA(DEBUG_ENA),
        .ADDR_WIDTH(ADDR_WIDTH),
        .ADDR_MASK(ADDR_MASK),
        .ADDR_BASE(ADDR_BASE)
@@ -193,6 +196,7 @@ module tlk2711_top
        .o_tx_config_done(tx_config_done),  
        .i_tx_interrupt(tx_interrupt), 
        .o_tx_pre(tx_pre),
+       .o_line_num_per_intr(line_num_per_intr),
        .o_rx_base_addr(rx_base_addr), 
        .o_rx_config_done(rx_config_done),
        .o_rx_fifo_rd(rx_fifo_rd),
@@ -289,6 +293,7 @@ module tlk2711_top
     // end
 
     tlk2711_tx_cmd #(
+        .DEBUG_ENA(DEBUG_ENA),
         .ADDR_WIDTH(ADDR_WIDTH),
         .DLEN_WIDTH(DLEN_WIDTH) 
     ) tlk2711_tx_cmd (
@@ -307,6 +312,7 @@ module tlk2711_top
     );
 
     tlk2711_tx_data #(
+        .DEBUG_ENA(DEBUG_ENA),
         .DATA_WIDTH(STREAM_RDATA_WIDTH)
     ) tlk2711_tx_data (
         .clk(clk),
@@ -337,6 +343,7 @@ module tlk2711_top
     );
 
     tlk2711_rx_link #(
+        .DEBUG_ENA(DEBUG_ENA),
         .ADDR_WIDTH(ADDR_WIDTH),
         .DLEN_WIDTH(DLEN_WIDTH), 
         .DATA_WIDTH(STREAM_WDATA_WIDTH),
@@ -350,6 +357,7 @@ module tlk2711_top
         .o_wr_cmd_data(wr_cmd_data), 
         .i_rx_start(rx_config_done),
         .i_rx_base_addr(rx_base_addr),
+        .i_rx_line_num_per_intr(line_num_per_intr),
         .i_link_loss_detect_ena(link_loss_detect_ena),
         .i_sync_loss_detect_ena(sync_loss_detect_ena),
         .i_rx_fifo_rd(rx_fifo_rd),

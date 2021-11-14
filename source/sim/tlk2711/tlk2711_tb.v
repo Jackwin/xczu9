@@ -15,16 +15,19 @@ module tlk2711_tb(
 	integer  			 frame_length = 'd870;
 	integer              tx_body_num = 'd2;
 	integer              tx_mode = 'd0; //0--norm mode, 1--loopback mode, 2--kcode mode
+
+	integer 			rx_line_num_per_intr = 'd1;
 	  
-	reg [15:0]  TX_IRQ_REG       = 16'h0100;
+	reg [15:0]  TX_IRQ_REG       = 16'h0060;
     reg [15:0]  RX_IRQ_REG       = 16'h0200;
     reg [15:0]  LOSS_IRQ_REG      = 16'h0300;
 
-	reg [15:0]  IRQ_REG       = 16'h0100;
+	reg [15:0]  IRQ_REG       = 16'h0060;
 
 	parameter DDR_ADDR_WIDTH = 40;
 	parameter HP0_DATA_WIDTH = 128;
-	parameter STREAM_DATA_WIDTH = 64;	
+	parameter STREAM_DATA_WIDTH = 64;
+	localparam DEBUG_ENA = "FALSE";	
 
  
     wire             o_tx_irq;
@@ -97,10 +100,12 @@ module tlk2711_tb(
 	reg  [10:0]    	start_cnt = 'd0;
 	wire [63:0] 	o_reg_rdata;
 
+	localparam TX_ENA_REG_ADDR = 16'h0008;
 	localparam TX_BASE_REG_ADDR = 16'h0020;
 	localparam TX_PACKET_REG_ADDR = 16'h0030;
 	localparam TX_TX_STATUS_REG_ADDR= 16'h0038;
-
+	
+	localparam RX_ENA_REG_ADDR = 16'h0010;
 	localparam RX_ADDR_REG_ADDR = 16'h0040;
 	localparam RX_CTRL_REG_ADDR = 16'h0048;
 	localparam RX_STATUS_REG_ADDR = 16'h0050;
@@ -125,7 +130,7 @@ module tlk2711_tb(
 		end
 		'd12:begin
 			i_reg_wen   <= 'd1;
-			i_reg_waddr <= TX_BASE_REG_ADDR;
+			i_reg_waddr <= TX_PACKET_REG_ADDR;
 			i_reg_wdata[15:0] = frame_length;
 
 			i_reg_wdata[39:16] = tx_body_num;
@@ -134,6 +139,13 @@ module tlk2711_tb(
 			i_reg_wdata[59] <= 1'b1;
 			i_reg_wdata[62:60] <= tx_mode;
 			i_reg_wdata[63] <= 1'b1;;
+
+		end
+		'd13: begin
+			i_reg_wen   <= 'd1;
+			i_reg_waddr <= RX_CTRL_REG2_ADDR;
+			i_reg_wdata[23:0] <= rx_line_num_per_intr;
+			i_reg_wdata[63:24] <= 'h0;
 
 		end
 		// 'd13:
@@ -151,13 +163,13 @@ module tlk2711_tb(
 		// 	i_reg_wdata[31:0]  <= tx_mode;
 		// end
 		
-		'd13:begin //tx start
+		'd14:begin //tx start
 			i_reg_wen <= 'd1;
-			i_reg_waddr <= 16'h0100;
+			i_reg_waddr <= TX_ENA_REG_ADDR;
 		end
-	  	'd14:begin //rx start 
+	  	'd15:begin //rx start 
 			i_reg_wen <= 'd1;
-			i_reg_waddr <= 16'h0200;
+			i_reg_waddr <= RX_ENA_REG_ADDR;
 		end
 		
 		// test auto intr
@@ -242,6 +254,27 @@ endtask
 	// 		end
 	// 	end
   	// end
+
+
+	// Count rx interrupt
+	reg [7:0] 	rx_irq_cnt;
+	reg rx_intr_r1;
+
+	always @(posedge clk) begin
+		rx_intr_r1 <= o_rx_irq;
+	end
+
+	always @(posedge clk) begin
+		if (rst) begin
+			rx_irq_cnt <= 'h0;
+		end else begin
+			if (~rx_intr_r1 & o_rx_irq) begin
+				rx_irq_cnt <= rx_irq_cnt + 1'd1;
+				$display("%t (top.v) rx interrupt cnt is %d.", $time, rx_irq_cnt);
+			end
+		end
+	end
+
 	reg [64:0] 	reg_rd_data;
 	initial begin
 		i_reg_ren = 0;
@@ -288,8 +321,28 @@ endtask
     assign i_2711_rkmsb = o_2711_tkmsb;
     assign i_2711_rklsb = o_2711_tklsb;
     assign i_2711_rxd   = o_2711_txd;
+
+
+	// Write DMA data to a file
+	// integer i;
+	// reg [127:0] memory [0:127]; // 128 bit memory with 128 entries
+
+	// initial begin
+    // 	for (i=0; i<16; i++) begin
+    //     	memory[i] = i;
+    // end
+    // 	//$writememb("memory_binary.txt", memory);
+    // 	$writememh("memory_hex.txt", memory);
+	// end	
+
+	always @(posedge clk) begin
+		if (m_axi_wvalid) begin
+			$writememh("memory_hex.txt", m_axi_wdata);
+		end
+	end
     
-    tlk2711_top #(    
+    tlk2711_top #(
+		.DEBUG_ENA(DEBUG_ENA),
     	.ADDR_WIDTH(DDR_ADDR_WIDTH),
 	    .AXI_RDATA_WIDTH(HP0_DATA_WIDTH), //HP0_DATA_WIDTH
 	    .AXI_WDATA_WIDTH(HP0_DATA_WIDTH), // HP0_DATA_WIDTH

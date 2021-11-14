@@ -18,6 +18,7 @@
 
 module  tlk2711_tx_cmd
 #(
+    parameter DEBUG_ENA = "TRUE", 
     parameter ADDR_WIDTH = 32,
     parameter DLEN_WIDTH = 16
 )
@@ -86,9 +87,9 @@ module  tlk2711_tx_cmd
                 o_rd_cmd_req <= 'b1;
                 // TODO check the log in the sim
                 if (tx_start) begin
-                    $display("%t: tx body length is %d", $time, i_tx_packet_body);
-                    $display("%t: tx tail len is %d", $time, i_tx_packet_tail);
-                    $display("%t: tx body number is %d", $time, i_tx_body_num);
+                    $display("%t: (tx_cmd.v)tx body length is %d", $time, i_tx_packet_body);
+                    $display("%t: (tx_cmd.v)tx tail len is %d", $time, i_tx_packet_tail);
+                    $display("%t: (tx_cmd.v)tx body number is %d", $time, i_tx_body_num);
                 end
             end
             else if (i_rd_cmd_ack)  
@@ -103,26 +104,26 @@ module  tlk2711_tx_cmd
             rd_bbt <= tx_frame_cnt == i_tx_body_num ? packet_tail_align8 : packet_body_align8;
         end
     end
+if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
+    ila_tx_cmd ila_tx_cmd_inst(
+        .clk(clk),
 
-ila_tx_cmd ila_tx_cmd_inst(
-    .clk(clk),
-
-    .probe0(i_rd_cmd_ack),
-    .probe1(o_rd_cmd_req),
-    .probe2(o_rd_cmd_data),
-    .probe3(i_dma_rd_last),
-    .probe4(tx_start),
-    .probe5(i_tx_base_addr),
-    .probe6(i_tx_packet_body),
-    .probe7(i_tx_packet_tail),
-    .probe8(i_tx_body_num),
-    .probe9(tx_frame_cnt),
-    .probe10(rd_cmd_req),
-    .probe11(packet_body_align8),
-    .probe12(packet_tail_align8),
-    .probe13(rd_addr),
-    .probe14(rd_bbt)
-);
+        .probe0(i_rd_cmd_ack),
+        .probe1(o_rd_cmd_req),
+        .probe2(o_rd_cmd_data),
+        .probe3(i_dma_rd_last),
+        .probe4(tx_start),
+        .probe5(i_tx_base_addr),
+        .probe6(i_tx_packet_body),
+        .probe7(i_tx_packet_tail),
+        .probe8(i_tx_body_num),
+        .probe9(tx_frame_cnt),
+        .probe10(rd_cmd_req),
+        .probe11(packet_body_align8),
+        .probe12(packet_tail_align8),
+        .probe13(rd_addr),
+        .probe14(rd_bbt)
+    );
 
  
 endmodule 
