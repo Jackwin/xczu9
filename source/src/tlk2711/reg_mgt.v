@@ -389,30 +389,60 @@ end
 //////////////////////////////////////////////////////////////////////////
 //  TX and RX interrupt report
 //////////////////////////////////////////////////////////////////////////
-    // TODO  Suppor more regs read
-    always @ (posedge clk ) begin
-        if (rst) begin
-            rx_intr_status <= 'h0;
-        end else begin
-            if (i_rx_interrupt)
-                // rx_intr_status <= {4'd2, 18'h0,i_rx_data_type, i_rx_file_end_flag,
-                //                     i_rx_checksum_flag, i_rx_frame_num, i_rx_frame_length};
-                rx_intr_status <= {4'd2, 12'h0, i_rx_frame_length, i_rx_data_type, 
-                                    i_rx_channel_id,i_rx_file_end_flag, 
-                                    i_rx_checksum_flag, i_rx_frame_num};
-            else if (i_tx_interrupt)
-                rx_intr_status <= {4'd1, 28'd0, 16'h0000, 16'h5aa5};
-            else if (i_loss_interrupt) 
-                rx_intr_status <= {4'd3, 32'h0, 20'h0, i_rx_status, i_sync_loss, i_link_loss};
-            else if(auto_intr_signal) begin
-                rx_intr_status <= {4'd4, 28'd0, 8'h0, auto_intr_signal_count, 16'hffff};
-            end
+
+reg [15:0]  tx_intr_cnt;
+reg [11:0]  rx_intr_cnt;
+reg         tx_intr_r1;
+reg         tx_intr_r2;
+reg         rx_intr_r1;
+reg         rx_intr_r2;
+
+always @(posedge clk) begin
+    tx_intr_r1 <= i_tx_interrupt;
+    tx_intr_r2 <= tx_intr_r1;
+
+    rx_intr_r1 <= i_rx_interrupt;
+    rx_intr_r2 <= rx_intr_r1;
+end
+
+always @(posedge clk) begin
+    if (rst | soft_rst_reg) begin
+        tx_intr_cnt <= 'h0;
+        rx_intr_cnt <= 'h0;
+    end else begin
+        if (~tx_intr_r1 & i_tx_interrupt) begin
+            tx_intr_cnt <= tx_intr_cnt + 1'd1;
+        end
+
+        if (~rx_intr_r1 & i_rx_interrupt) begin
+            rx_intr_cnt <= rx_intr_cnt + 1'd1;
         end
     end
+end
+// TODO  Suppor more regs read
+always @ (posedge clk ) begin
+    if (rst) begin
+        rx_intr_status <= 'h0;
+    end else begin
+        if (rx_intr_r2)
+            // rx_intr_status <= {4'd2, 18'h0,i_rx_data_type, i_rx_file_end_flag,
+            //                     i_rx_checksum_flag, i_rx_frame_num, i_rx_frame_length};
+            rx_intr_status <= {4'd2, rx_intr_cnt, i_rx_frame_length, i_rx_data_type, 
+                                i_rx_channel_id,i_rx_file_end_flag, 
+                                i_rx_checksum_flag, i_rx_frame_num};
+        else if (tx_intr_r2)
+            rx_intr_status <= {4'd1, 28'd0, tx_intr_cnt, 16'h5aa5};
+        else if (i_loss_interrupt) 
+            rx_intr_status <= {4'd3, 32'h0, 20'h0, i_rx_status, i_sync_loss, i_link_loss};
+        else if(auto_intr_signal) begin
+            rx_intr_status <= {4'd4, 28'd0, 8'h0, auto_intr_signal_count, 16'hffff};
+        end
+    end
+end
 
-    assign o_tx_irq = i_tx_interrupt;
-    assign o_rx_irq = i_rx_interrupt | auto_intr_signal;
-    assign o_loss_irq = i_loss_interrupt;
+assign o_tx_irq = i_tx_interrupt;
+assign o_rx_irq = i_rx_interrupt | auto_intr_signal;
+assign o_loss_irq = i_loss_interrupt;
 if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
     ila_mgt ila_mgt_i (
     .clk(clk),

@@ -8,15 +8,22 @@ module tlk2711_tb(
     );
 	reg  [47:0]         tx_base_addr = 'h000000;
 	reg  [47:0]         rx_base_addr = 'h000100;
+
+	localparam frame_length = 'd870;
 	
-	integer             tx_total_packet = 'd1800; // total packet bytes
+	//integer  			frame_length = 'd870;
+	integer             tx_total_packet = 'd870 * 6; // total packet bytes
 	integer             tx_packet_body = 'd870; 
-	integer             tx_packet_tail = 'd60;
-	integer  			frame_length = 'd870;
-	integer             tx_body_num = 'd2;
+	integer             tx_packet_tail = 'd870;
+	integer 			tx_body_num = 5;
+	
+	// integer             tx_body_num = (tx_total_packet % frame_length == 0) ?
+	// 					(tx_total_packet / frame_length - 1): 
+	// 					(tx_total_packet / frame_length);
+
 	integer             tx_mode = 'd0; //0--norm mode, 1--loopback mode, 2--kcode mode
 
-	integer 			rx_line_num_per_intr = 'd1;
+	integer 			rx_line_num_per_intr = 'd3;
 	  
 	reg [15:0]  TX_IRQ_REG       = 16'h0060;
     reg [15:0]  RX_IRQ_REG       = 16'h0200;
@@ -131,7 +138,7 @@ module tlk2711_tb(
 		'd12:begin
 			i_reg_wen   <= 'd1;
 			i_reg_waddr <= TX_PACKET_REG_ADDR;
-			i_reg_wdata[15:0] <= frame_length;
+			i_reg_wdata[15:0] <= tx_packet_body;
 
 			i_reg_wdata[39:16] <= tx_body_num;
 			i_reg_wdata[55:40] <= tx_packet_tail;
