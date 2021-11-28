@@ -259,20 +259,28 @@ assign o_line_num_per_intr = rx_ctrl_reg2[23:0];
 //  IRQ control configuration
 /////////////////////////////////////////////////////////////////////////
 
-reg [63:0]          irq_ctrl_reg;
+reg [63:0]          irq_ctrl_reg = 64'h0;
+
+reg [15:0]          tx_intr_width;
+reg [15:0]          rx_intr_width;
+reg [15:0]          link_intr_width;
 
 always @(*) begin
-    case(irq_ctrl_reg)
-    4'd1: o_tx_intr_width = irq_ctrl_reg[15:0];
-    4'd2: o_rx_intr_width = irq_ctrl_reg[15:0];
-    4'd3: o_link_intr_width = irq_ctrl_reg[15:0];
+    case(irq_ctrl_reg[63:60])
+    4'd1: tx_intr_width = irq_ctrl_reg[15:0];
+    4'd2: rx_intr_width = irq_ctrl_reg[15:0];
+    4'd3: link_intr_width = irq_ctrl_reg[15:0];
     default: begin
-        o_tx_intr_width = 16'd1;
-        o_rx_intr_width = 16'd1;
-        o_link_intr_width = 16'd1;
+        tx_intr_width = 16'd1;
+        rx_intr_width = 16'd1;
+        link_intr_width = 16'd1;
     end
     endcase
 end
+
+assign o_tx_intr_width = tx_intr_width;
+assign o_rx_intr_width = rx_intr_width;
+assign o_link_intr_width = link_intr_width;
 
 always@(posedge clk) begin
     if( reg_wen ) begin

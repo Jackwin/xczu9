@@ -41,7 +41,7 @@ module  tlk2711_tx_data
     input                   i_dma_rd_last,
     input [DATA_WIDTH-1:0]  i_dma_rd_data,
     output                  o_dma_rd_ready,
-    output reg              o_tx_interrupt,
+    output                  o_tx_interrupt,
 
     output [9:0]            o_tx_status,
     // TODO Add pre-emphasis
@@ -324,7 +324,6 @@ module  tlk2711_tx_data
             tlk2711_tklsb <= 'b0;
             tlk2711_txd   <= 'd0;
             tail_frame   <= 'b0;
-            o_tx_interrupt <= 'b0;
             state_cnt <= 'h0;
             test_data_cnt <= 'h0;
             channel_id <= 'h0;
@@ -528,12 +527,10 @@ module  tlk2711_tx_data
                     end
                     tx_interrupt: begin
                         if (tx_intr_width_cnt == (i_tx_intr_width - 1'd1)) begin
-                            o_tx_interrupt <= 1'b0;
                             tx_intr_width_cnt <= 16'h0;
                             tx_state <= tx_idle;
                         end else begin
                             tx_intr_width_cnt <= tx_intr_width_cnt + 1'd1;
-                            o_tx_interrupt <= 1'b1;
                         end
                     end
                     default;
@@ -549,6 +546,7 @@ module  tlk2711_tx_data
         end
     end
 
+    assign o_tx_interrupt = tx_state == tx_interrupt;
     assign o_tx_status = {fifo_empty, fifo_full, tx_state, tx_mode};
 
 // TODO  debug the port

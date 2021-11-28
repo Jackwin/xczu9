@@ -9,21 +9,19 @@ module tlk2711_tb(
 	reg  [47:0]         tx_base_addr = 'h000000;
 	reg  [47:0]         rx_base_addr = 'h000100;
 
-	localparam frame_length = 'd870;
-	
-	//integer  			frame_length = 'd870;
-	integer             tx_total_packet = 'd870 * 6; // total packet bytes
-	integer             tx_packet_body = 'd870; 
-	integer             tx_packet_tail = 'd870;
-	integer 			tx_body_num = 5;
-	
-	// integer             tx_body_num = (tx_total_packet % frame_length == 0) ?
-	// 					(tx_total_packet / frame_length - 1): 
-	// 					(tx_total_packet / frame_length);
+	localparam FRAME_LENGTH = 870;
+	localparam FRAME_NUM = 6;
+	localparam LINE_NUM_PER_INTR = 3;
 
+	//integer  			frame_length = 'd870;
+	integer             tx_total_packet = FRAME_LENGTH * FRAME_NUM; // total packet bytes
+	reg[15:0]           tx_packet_body = 'd870; 
+	reg[15:0]           tx_packet_tail = 'd870;
+	reg[23:0] 			tx_body_num = 5;
+	
 	integer             tx_mode = 'd0; //0--norm mode, 1--loopback mode, 2--kcode mode
 
-	integer 			rx_line_num_per_intr = 'd3;
+	reg[23:0] 			rx_line_num_per_intr = LINE_NUM_PER_INTR;
 	  
 	reg [15:0]  TX_IRQ_REG       = 16'h0060;
     reg [15:0]  RX_IRQ_REG       = 16'h0200;
@@ -117,97 +115,30 @@ module tlk2711_tb(
 	localparam RX_CTRL_REG_ADDR = 16'h0048;
 	localparam RX_STATUS_REG_ADDR = 16'h0050;
 	localparam RX_CTRL_REG2_ADDR = 16'h0058;
+	localparam IRQ_CTRL_REG_ADDR = 16'h0068;
 	
-	always@(posedge clk) begin
-		if(!rst) begin
-			if(start_cnt < 'd20)
-				start_cnt <= start_cnt + 'd1;
-		end
 
-		case(start_cnt)
-		'd10:begin
-			i_reg_wen <= 'd1;
-			i_reg_waddr <= TX_BASE_REG_ADDR;
-			i_reg_wdata <= tx_base_addr;
-		end
-		'd11:begin
-			i_reg_wen <= 'd1;
-			i_reg_waddr <= RX_BASE_REG_ADDR;
-			i_reg_wdata <= rx_base_addr;
-		end
-		'd12:begin
-			i_reg_wen   <= 'd1;
-			i_reg_waddr <= TX_PACKET_REG_ADDR;
-			i_reg_wdata[15:0] <= tx_packet_body;
+initial begin
+	repeat(50) @(posedge clk);
+	write_reg(TX_BASE_REG_ADDR, tx_base_addr);
 
-			i_reg_wdata[39:16] <= tx_body_num;
-			i_reg_wdata[55:40] <= tx_packet_tail;
+	write_reg(RX_BASE_REG_ADDR, rx_base_addr);
 
-			i_reg_wdata[59] <= 1'b1;
-			i_reg_wdata[62:60] <= tx_mode;
-			i_reg_wdata[63] <= 1'b1;;
+	write_reg(TX_PACKET_REG_ADDR, {1'b1, tx_mode, 1'b1, 3'h0, tx_packet_tail, 
+									  tx_body_num, tx_packet_body});
+	write_reg(RX_CTRL_REG2_ADDR, {'h0, rx_line_num_per_intr});
 
-		end
-		'd13: begin
-			i_reg_wen   <= 'd1;
-			i_reg_waddr <= RX_CTRL_REG2_ADDR;
-			i_reg_wdata[23:0] <= rx_line_num_per_intr;
-			i_reg_wdata[63:24] <= 'h0;
+	write_reg(RX_CTRL_REG_ADDR, 64'h0);
 
-		end
-		'd14: begin
-			i_reg_wen   <= 'd1;
-			i_reg_waddr <= RX_CTRL_REG_ADDR;
-			i_reg_wdata <= 'h0;
-			
-
-		end
-		// 'd13:
-		// begin
-		// 	i_reg_wen <= 'd1;
-		// 	i_reg_waddr <= 16'h0118;
-		// 	i_reg_wdata[63:32] <= tx_packet_tail;
-		// 	i_reg_wdata[31:0]  <= tx_packet_body;
-		// end
-		// 'd14:
-		// begin
-		// 	i_reg_wen <= 'd1;
-		// 	i_reg_waddr <= 16'h0120;
-		// 	i_reg_wdata[63:32] <= tx_body_num;
-		// 	i_reg_wdata[31:0]  <= tx_mode;
-		// end
+	write_reg(IRQ_CTRL_REG_ADDR, 64'h1000_0000_0000_0010);
 		
-		'd15:begin //tx start
-			i_reg_wen <= 'd1;
-			i_reg_waddr <= TX_ENA_REG_ADDR;
-		end
-	  	'd16:begin //rx start 
-			i_reg_wen <= 'd1;
-			i_reg_waddr <= RX_ENA_REG_ADDR;
-		end
-		
-		// test auto intr
-	// 	'd15:
-	// 	begin //tx start
-	// 		i_reg_wen <= 'd1;
-	// 		i_reg_waddr <= 16'h0048;
-	// 		i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x0000400002710036
-	// 		i_reg_wdata[31:0]  <= {20'd10000, 8'h3, 4'h6}; //0x02710036
-	// 	end
-	//   'd16:
-	// 	begin //rx start 
-	// 		i_reg_waddr <= 16'h0048;
-	// 		i_reg_wdata[63:32] <= {16'd0, 8'd64, 8'd0}; //0x000040000271003e
-	// 		i_reg_wdata[31:0]  <= {20'd10000, 8'h3, 4'he};//0x0271003e  0x0000400002710038
-	// 	end
-		// test auto intr
-		//0x00004000001f4086 0x00004000001f4088
+	write_reg(IRQ_CTRL_REG_ADDR, 64'h2000_0000_0000_0010);
 
-		default: begin
-			i_reg_wen <= 'd0;
-		end
-		endcase	
-	end
+	write_reg(TX_ENA_REG_ADDR, 64'h0);
+
+	write_reg(RX_ENA_REG_ADDR, 64'h0);	
+
+end
 
 task task_reg_read;
 	input [15:0]  	i_addr;
@@ -227,6 +158,20 @@ task task_reg_read;
 
 		$display("%g The read data   :%h", $time, o_rd_data);
 	end
+endtask
+
+ task write_reg;
+    input [15:0] waddr;
+    input [63:0] wdata;
+    begin
+        @(posedge clk);
+        i_reg_wen   = 1'b1;
+        i_reg_waddr = waddr;
+        i_reg_wdata = wdata;
+        @(posedge clk);
+        i_reg_wen   = 1'b0;
+        $display("write reg: offset %x  %x\n",waddr,wdata);
+    end
 endtask
 
 
@@ -289,6 +234,14 @@ endtask
 		end
 	end
 
+	always @(posedge clk) begin
+		wait(rx_irq_cnt == (FRAME_NUM / LINE_NUM_PER_INTR -1));
+		wait(o_tx_irq);
+		repeat(200) @(posedge clk);
+		$display("%t (top.v) sim DONE.", $time);
+		$stop;
+	end
+
 	reg [64:0] 	reg_rd_data;
 	initial begin
 		i_reg_ren = 0;
@@ -304,8 +257,7 @@ endtask
 	assign  m_axi_rlast = m_axi_rvalid & m_axi_rready & (num_video[3:0] == 1);
 	assign  m_axi_rvalid = m_axi_rready & (num_video != 'd0);
 	
-	always@(posedge clk)
-	begin
+	always @(posedge clk) begin
 		if (m_axi_arvalid & m_axi_arready)
 		    num_video <= num_video + m_axi_arlen + 1;
 		else if (m_axi_rready & m_axi_rvalid)
@@ -316,16 +268,14 @@ endtask
 		
 	end
 	
-	always@(posedge clk)
-	begin		  
+	always @(posedge clk) begin		  
 		  if (m_axi_rlast) 
 		       m_axi_arready <= 1'b1;   
 		  else if (m_axi_arvalid)
 		      m_axi_arready <= 1'b0;
 	end
 	
-	always@(posedge clk)
-    begin
+	always@(posedge clk) begin
     	if (m_axi_wvalid & m_axi_wready & m_axi_wlast)
           m_axi_bvalid <= 1'b1;
       else if (m_axi_bready)
