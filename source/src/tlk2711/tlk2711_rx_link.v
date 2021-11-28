@@ -39,6 +39,7 @@ module  tlk2711_rx_link
     input                               i_rx_start,
     input  [ADDR_WIDTH-1:0]             i_rx_base_addr,
     input  [23:0]                       i_rx_line_num_per_intr,
+    input  [15:0]                       i_rx_intr_width,
 
     input                               i_link_loss_detect_ena,
     input                               i_sync_loss_detect_ena,
@@ -107,8 +108,6 @@ module  tlk2711_rx_link
 
     // Store the frame inform
 
-    // reg [7:0]               data_type;
-    // reg [7:0]               file_end_flag;
     reg [1:0]               file_end_flag;
     reg [1:0]               channel_id;
     reg [3:0]               data_type;
@@ -118,6 +117,10 @@ module  tlk2711_rx_link
     reg [1:0]               to_align64;
     reg [15:0]              checksum;
     reg [23:0]              line_cnt;
+    reg [15:0]              rx_intr_width_cnt;
+    reg [15:0]              link_intr_width_cnt;
+    wire                    rx_intr_gen;
+    reg                     rx_intr_width_cnt_ena;
    
     reg [15:0]              rx_frame_cnt = 'd0;
     reg [DLEN_WIDTH-1:0]    valid_byte = 'd0;
@@ -127,8 +130,12 @@ module  tlk2711_rx_link
     reg                     checksum_error;
     reg [15:0]              frame_length;
 
-    assign o_rx_interrupt = one_frame_done & i_wr_finish & 
+    // assign o_rx_interrupt = one_frame_done & i_wr_finish & 
+    //                         line_cnt == i_rx_line_num_per_intr;
+
+    assign rx_intr_gen = one_frame_done & i_wr_finish & 
                             line_cnt == i_rx_line_num_per_intr;
+
     assign o_rx_frame_num = line_number;
     assign o_rx_frame_length = data_length;
 
@@ -142,6 +149,29 @@ module  tlk2711_rx_link
     // TODO modify the bit length to adapt to the 5120 pixels
     reg [15:0] frame_data_cnt, valid_data_num, trans_data_num;
 
+    // Generate the specified width interrupt
+    
+    always @(posedge clk) begin
+        if (rst | i_soft_rst) begin
+            rx_intr_width_cnt <= 16'h0;
+            rx_intr_width_cnt_ena <= 'h0;
+        end else begin
+            if (rx_intr_gen) begin
+                rx_intr_width_cnt_ena <= 1'b1;
+            end
+
+            if (rx_intr_width_cnt_ena) begin
+                if (rx_intr_width_cnt == (i_rx_intr_width - 1'd1)) begin
+                    rx_intr_width_cnt <= 1'b0;
+                    rx_intr_width_cnt_ena <= 1'b0;
+                end else begin
+                    rx_intr_width_cnt <= rx_intr_width_cnt + 1'd1;
+                end
+            end
+        end
+    end
+
+    assign o_rx_interrupt = rx_intr_width_cnt_ena;
     // calculate the number of input lines
 
     always @(posedge clk) begin

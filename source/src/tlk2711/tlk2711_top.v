@@ -133,6 +133,10 @@ module tlk2711_top
     wire [23:0]             rx_frame_num;
     wire [23:0]             line_num_per_intr;
 
+    wire [15:0]             tx_intr_width;
+    wire [15:0]             rx_intr_width;
+    wire [15:0]             link_intr_width;
+
     wire                    loss_interrupt;
     wire                    sync_loss;
     wire                    link_loss;
@@ -183,6 +187,9 @@ module tlk2711_top
        .o_tx_irq(o_tx_irq),
        .o_rx_irq(o_rx_irq),
        .o_loss_irq(o_loss_irq),
+       .o_tx_intr_width(tx_intr_width),
+       .o_rx_intr_width(rx_intr_width),
+       .o_link_intr_width(link_intr_width),
 
        .clk(clk),
        .rst(rst),
@@ -324,6 +331,7 @@ module tlk2711_top
         .i_tx_packet_body(tx_packet_body), 
         .i_tx_packet_tail(tx_packet_tail),
         .i_tx_body_num(tx_body_num),
+        .i_tx_intr_width(tx_intr_width),
         .i_tx_pre(tx_pre),
         .i_dma_rd_valid(dma_rd_valid),
         .i_dma_rd_last(dma_rd_last),
@@ -358,6 +366,7 @@ module tlk2711_top
         .i_rx_start(rx_config_done),
         .i_rx_base_addr(rx_base_addr),
         .i_rx_line_num_per_intr(line_num_per_intr),
+        .i_rx_intr_width(rx_intr_width),
         .i_link_loss_detect_ena(link_loss_detect_ena),
         .i_sync_loss_detect_ena(sync_loss_detect_ena),
         .i_rx_fifo_rd(rx_fifo_rd),

@@ -66,6 +66,11 @@ module reg_mgt
     // the number of receied lines to trig the interrupt
     output [23:0]               o_line_num_per_intr,
 
+    // tx interrupt pulse width
+    output [15:0]               o_tx_intr_width,
+    output [15:0]               o_rx_intr_width,
+    output [15:0]               o_link_intr_width,
+
     //RX port set
     //write data address to DDR from rx module
     output [ADDR_WIDTH-1:0]     o_rx_base_addr, 
@@ -108,6 +113,7 @@ module reg_mgt
     localparam  RX_CTRL_REG2    = 16'h0058 + ADDR_BASE;
 
     localparam  IRQ_REG         = 16'h0060 + ADDR_BASE;
+    localparam  IRQ_CTRL_REG    = 16'h0068 + ADDR_BASE;
 
     localparam  SOFT_R_REG      = 16'h0070 + ADDR_BASE;
 
@@ -192,137 +198,161 @@ assign o_reg_rdata = ps_reg_rdata;
 //  TX and RX register configuration
 //////////////////////////////////////////////////////////////////////////
 
-    reg                 reg_wen;
-    reg [63:0]          reg_wdata;
-    reg [15:0]          reg_waddr;
-    reg [63:0]          reg_rdata;
-    reg [63:0]          rx_intr_status;
-    reg [63:0]          tx_base_addr_reg;
-    reg [63:0]          tx_length_reg;
-    reg [63:0]          tx_packet_reg;
-    reg [63:0]          rx_base_addr_reg;
-    reg [63:0]          rx_ctrl_reg;
-    reg [63:0]          rx_ctrl_reg2;
-	
-    always@(posedge clk)begin
-        if(rst)
-            reg_wen <= 0;
-        else begin
-			if(usr_reg_wen & reg_sel_2d) begin
-				reg_waddr <= usr_reg_waddr;
-			    reg_wdata <= usr_reg_wdata;
-			end
-			reg_wen <= usr_reg_wen & reg_sel_2d;
-        end        
-    end
+reg                 reg_wen;
+reg [63:0]          reg_wdata;
+reg [15:0]          reg_waddr;
+reg [63:0]          reg_rdata;
+reg [63:0]          rx_intr_status;
+reg [63:0]          tx_base_addr_reg;
+reg [63:0]          tx_length_reg;
+reg [63:0]          tx_packet_reg;
+reg [63:0]          rx_base_addr_reg;
+reg [63:0]          rx_ctrl_reg;
+reg [63:0]          rx_ctrl_reg2;
 
-    always@(posedge clk) begin
-        // for tx config done
-        if( reg_wen && ( reg_waddr == TX_CFG_REG ) ) //&& (reg_wdata[3:0] == 4'h5a)
-            o_tx_config_done <=  1'b1;
-        else 
-            o_tx_config_done <= 1'b0;
-
-        if( reg_wen && ( reg_waddr == RX_CFG_REG )) // for rx config done
-            o_rx_config_done <=  1'b1;
-        else 
-            o_rx_config_done <= 1'b0;
-    end
-
-    always@(posedge clk) begin
-        if( reg_wen )
-          case(reg_waddr)
-            //tx
-            TX_ADDR_REG: tx_base_addr_reg <= reg_wdata;
-            TX_LENGTH_REG: tx_length_reg <= reg_wdata;
-            TX_PACKET_REG: begin
-                tx_packet_reg <= reg_wdata;
-                $display("%t (reg_mgt.v)TX_PACKET_REG: frame_length is %d", $time, reg_wdata[15:0]);
-                $display("%t (reg_mgt.v)TX_PACKET_REG: body_num is %d", $time, reg_wdata[39:16]);
-                $display("%t (reg_mgt.v)TX_PACKET_REG: tail_length is %d", $time, reg_wdata[55:40]);
-                $display("%t (reg_mgt.v)TX_PACKET_REG: pre-set is %d", $time, reg_wdata[59]);
-                $display("%t (reg_mgt.v)TX_PACKET_REG: mode is %d", $time, reg_wdata[62:60]);
-                $display("%t (reg_mgt.v)TX_PACKET_REG: loop-back is %d", $time, reg_wdata[63]);
-            end 
-            RX_ADDR_REG: rx_base_addr_reg <= reg_wdata;
-            RX_CTRL_REG: rx_ctrl_reg <= reg_wdata;
-            RX_CTRL_REG2: begin
-                rx_ctrl_reg2 <= reg_wdata;
-                $display("%t RX_CTRL_REG2: line_num_per_intr is %d", $time, reg_wdata[23:0]);
-            end
-            default;
-          endcase
-    end
-
-    assign o_tx_base_addr = tx_base_addr_reg[ADDR_WIDTH-1:0];
-    assign o_tx_total_length = tx_length_reg[31:0];
-    assign o_tx_packet_body = tx_packet_reg[15:0];
-    assign o_tx_body_num = tx_packet_reg[8+16+15:16];
-    assign o_tx_packet_tail = tx_packet_reg[15+40:40];
-    assign o_tx_pre = tx_packet_reg[59];
-    assign o_tx_mode = tx_packet_reg[62:60];
-    assign o_loopback_ena = tx_packet_reg[63];
-    
-    assign o_rx_base_addr = rx_base_addr_reg[ADDR_WIDTH-1:0];
-    assign o_rx_fifo_rd = rx_ctrl_reg[0];
-    assign o_link_loss_detect_ena = rx_ctrl_reg[1];
-    assign o_sync_loss_detect_ena = rx_ctrl_reg[2];
-    assign auto_intr_start = rx_ctrl_reg[3];
-    assign auto_intr_times = rx_ctrl_reg[11:4];
-    assign auto_intr_gap = rx_ctrl_reg[39:12];
-    assign auto_intr_width = rx_ctrl_reg[47:40];
-
-    assign o_line_num_per_intr = rx_ctrl_reg2[23:0];
-
-    always @(posedge clk) begin
-        if (usr_reg_ren & reg_rd_sel_2d) begin
-            case(usr_reg_raddr)
-                RX_STATUS_REG: begin
-                    reg_rdata[5:0] <= i_rx_status;
-                    reg_rdata[59:6] <= 'h0;
-                    reg_rdata[63:60] <= 'ha;
-                end
-                TX_STATUS_REG: begin
-                    reg_rdata[9:0] <= i_tx_status;
-                    reg_rdata[59:10] <= 'h0;
-                    reg_rdata[63:60] <= 'h9;
-                end
-                IRQ_REG: reg_rdata <= rx_intr_status;
-                TX_ADDR_REG: reg_rdata <= tx_base_addr_reg;
-                TX_LENGTH_REG: reg_rdata <= tx_length_reg;
-                TX_PACKET_REG: reg_rdata <= tx_packet_reg;
-                RX_ADDR_REG: reg_rdata <= rx_base_addr_reg;
-                RX_CTRL_REG: reg_rdata <= rx_ctrl_reg;
-                default: begin
-                    reg_rdata <= 'h0;
-                end
-            endcase
-        end else begin
-            reg_rdata <= 'h0;
+always@(posedge clk)begin
+    if(rst)
+        reg_wen <= 0;
+    else begin
+        if(usr_reg_wen & reg_sel_2d) begin
+            reg_waddr <= usr_reg_waddr;
+            reg_wdata <= usr_reg_wdata;
         end
+        reg_wen <= usr_reg_wen & reg_sel_2d;
+    end        
+end
+
+always@(posedge clk) begin
+    // for tx config done
+    if( reg_wen && ( reg_waddr == TX_CFG_REG ) ) //&& (reg_wdata[3:0] == 4'h5a)
+        o_tx_config_done <=  1'b1;
+    else 
+        o_tx_config_done <= 1'b0;
+
+    if( reg_wen && ( reg_waddr == RX_CFG_REG )) // for rx config done
+        o_rx_config_done <=  1'b1;
+    else 
+        o_rx_config_done <= 1'b0;
+end
+
+assign o_tx_base_addr = tx_base_addr_reg[ADDR_WIDTH-1:0];
+assign o_tx_total_length = tx_length_reg[31:0];
+assign o_tx_packet_body = tx_packet_reg[15:0];
+assign o_tx_body_num = tx_packet_reg[8+16+15:16];
+assign o_tx_packet_tail = tx_packet_reg[15+40:40];
+assign o_tx_pre = tx_packet_reg[59];
+assign o_tx_mode = tx_packet_reg[62:60];
+assign o_loopback_ena = tx_packet_reg[63];
+
+assign o_rx_base_addr = rx_base_addr_reg[ADDR_WIDTH-1:0];
+assign o_rx_fifo_rd = rx_ctrl_reg[0];
+assign o_link_loss_detect_ena = rx_ctrl_reg[1];
+assign o_sync_loss_detect_ena = rx_ctrl_reg[2];
+assign auto_intr_start = rx_ctrl_reg[3];
+assign auto_intr_times = rx_ctrl_reg[11:4];
+assign auto_intr_gap = rx_ctrl_reg[39:12];
+assign auto_intr_width = rx_ctrl_reg[47:40];
+
+assign o_line_num_per_intr = rx_ctrl_reg2[23:0];
+
+//////////////////////////////////////////////////////////////////////////
+//  IRQ control configuration
+/////////////////////////////////////////////////////////////////////////
+
+reg [63:0]          irq_ctrl_reg;
+
+always @(*) begin
+    case(irq_ctrl_reg)
+    4'd1: o_tx_intr_width = irq_ctrl_reg[15:0];
+    4'd2: o_rx_intr_width = irq_ctrl_reg[15:0];
+    4'd3: o_link_intr_width = irq_ctrl_reg[15:0];
+    default: begin
+        o_tx_intr_width = 16'd1;
+        o_rx_intr_width = 16'd1;
+        o_link_intr_width = 16'd1;
     end
+    endcase
+end
+
+always@(posedge clk) begin
+    if( reg_wen ) begin
+        case(reg_waddr)
+        //tx
+        TX_ADDR_REG: tx_base_addr_reg <= reg_wdata;
+        TX_LENGTH_REG: tx_length_reg <= reg_wdata;
+        TX_PACKET_REG: begin
+            tx_packet_reg <= reg_wdata;
+            $display("%t (reg_mgt.v)TX_PACKET_REG: frame_length is %d", $time, reg_wdata[15:0]);
+            $display("%t (reg_mgt.v)TX_PACKET_REG: body_num is %d", $time, reg_wdata[39:16]);
+            $display("%t (reg_mgt.v)TX_PACKET_REG: tail_length is %d", $time, reg_wdata[55:40]);
+            $display("%t (reg_mgt.v)TX_PACKET_REG: pre-set is %d", $time, reg_wdata[59]);
+            $display("%t (reg_mgt.v)TX_PACKET_REG: mode is %d", $time, reg_wdata[62:60]);
+            $display("%t (reg_mgt.v)TX_PACKET_REG: loop-back is %d", $time, reg_wdata[63]);
+        end 
+        RX_ADDR_REG: rx_base_addr_reg <= reg_wdata;
+        RX_CTRL_REG: rx_ctrl_reg <= reg_wdata;
+        RX_CTRL_REG2: begin
+            rx_ctrl_reg2 <= reg_wdata;
+            $display("%t RX_CTRL_REG2: line_num_per_intr is %d", $time, reg_wdata[23:0]);
+        end
+        IRQ_CTRL_REG: begin
+            irq_ctrl_reg <= reg_wdata;
+            $display("%t IRQ_CTRL_REG: interrupt pulse width is %d", $time, reg_wdata[15:0]);
+        end
+        default;
+        endcase
+    end
+end
+
+always @(posedge clk) begin
+    if (usr_reg_ren & reg_rd_sel_2d) begin
+        case(usr_reg_raddr)
+            RX_STATUS_REG: begin
+                reg_rdata[5:0] <= i_rx_status;
+                reg_rdata[59:6] <= 'h0;
+                reg_rdata[63:60] <= 'ha;
+            end
+            TX_STATUS_REG: begin
+                reg_rdata[9:0] <= i_tx_status;
+                reg_rdata[59:10] <= 'h0;
+                reg_rdata[63:60] <= 'h9;
+            end
+            IRQ_REG: reg_rdata <= rx_intr_status;
+            TX_ADDR_REG: reg_rdata <= tx_base_addr_reg;
+            TX_LENGTH_REG: reg_rdata <= tx_length_reg;
+            TX_PACKET_REG: reg_rdata <= tx_packet_reg;
+            RX_ADDR_REG: reg_rdata <= rx_base_addr_reg;
+            RX_CTRL_REG: reg_rdata <= rx_ctrl_reg;
+            default: begin
+                reg_rdata <= 'h0;
+            end
+        endcase
+    end else begin
+        reg_rdata <= 'h0;
+    end
+end
 
 //////////////////////////////////////////////////////////////////////////
 //  soft_rst
 //////////////////////////////////////////////////////////////////////////
-    reg soft_rst_reg = 1'b0;
-    reg [7:0] count = 8'd0;
+reg soft_rst_reg = 1'b0;
+reg [7:0] count = 8'd0;
 
-    always @ (posedge clk) begin
-        if (usr_reg_wen && usr_reg_waddr == SOFT_R_REG & reg_sel_2d)
-            soft_rst_reg <= 1'b1;       
-        else if (count==8'hff)
-            soft_rst_reg <= 1'b0;
-    end
+always @ (posedge clk) begin
+    if (usr_reg_wen && usr_reg_waddr == SOFT_R_REG & reg_sel_2d)
+        soft_rst_reg <= 1'b1;       
+    else if (count==8'hff)
+        soft_rst_reg <= 1'b0;
+end
 
-    always @ (posedge clk) begin
-        if (soft_rst_reg==1'b1)
-            count <= count - 8'd1;
-        else
-            count <= 8'hfe;
-    end
+always @ (posedge clk) begin
+    if (soft_rst_reg==1'b1)
+        count <= count - 8'd1;
+    else
+        count <= 8'hfe;
+end
 
-    assign o_soft_rst = soft_rst_reg;
+assign o_soft_rst = soft_rst_reg;
 
 //////////////////////////////////////////////////////////////////////////
 //  Gen the interrupt automatically

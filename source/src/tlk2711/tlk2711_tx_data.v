@@ -34,6 +34,7 @@ module  tlk2711_tx_data
     input [15:0]            i_tx_packet_body, //body length in byte, 870B here for fixed value
     input [15:0]            i_tx_packet_tail, //tail length in byte
     input [23:0]            i_tx_body_num,
+    input [15:0]            i_tx_intr_width,
     
     //dma data interface 
     input                   i_dma_rd_valid,
@@ -107,6 +108,7 @@ module  tlk2711_tx_data
     localparam  tx_frame_tail = 4'd10;
     localparam  tx_end_frame = 4'd11;
     localparam  tx_backward = 4'd12;
+    localparam  tx_interrupt = 4'd13;
 
     reg         tlk2711_tkmsb;
     reg         tlk2711_tklsb;
@@ -276,6 +278,7 @@ module  tlk2711_tx_data
     reg [2:0]   state_cnt;
     reg [7:0]   test_data_cnt;
     reg         test_mode_stop_flag;
+    reg [15:0]  tx_intr_width_cnt;
 
     always @(posedge clk) begin
         if (rst | i_soft_reset) begin
@@ -325,6 +328,7 @@ module  tlk2711_tx_data
             state_cnt <= 'h0;
             test_data_cnt <= 'h0;
             channel_id <= 'h0;
+            tx_intr_width_cnt <= 16'h0;
         end else begin
             // TODO: Add a power-up state to send the 1ms sync code
             if (tx_mode == TEST_MODE) begin
@@ -382,6 +386,7 @@ module  tlk2711_tx_data
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                         tlk2711_txd   <= 'd0;
+                        tx_intr_width_cnt <= 16'h0;
                         // REVIEW: Here not fifo_empty means the to-read data has been in the FIFO, 
                         // so the send can be kicked off. But, need to confirm that the fifo should
                         // be empty after every round of sending.
@@ -429,7 +434,7 @@ module  tlk2711_tx_data
                         else if (head_cnt)                 
                             tx_state <= tx_file_sign;
                     end        
-                    tx_file_sign:begin
+                    tx_file_sign: begin
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                         if (tx_mode == NORM_MODE) begin
@@ -460,7 +465,7 @@ module  tlk2711_tx_data
                         else
                             tx_state <= tx_frame_num;
                     end        
-                    tx_frame_num:begin
+                    tx_frame_num: begin
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                         $display("%g (tx_data.v)tx state at tx_frame_num", $time);
@@ -470,7 +475,7 @@ module  tlk2711_tx_data
                         else
                             tx_state <= tx_vld_dlen;
                     end        
-                    tx_vld_dlen:begin
+                    tx_vld_dlen: begin
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                         tlk2711_txd   <= valid_dlen;
@@ -480,7 +485,7 @@ module  tlk2711_tx_data
                         else
                             tx_state <= tx_vld_data;
                     end        
-                    tx_vld_data:begin
+                    tx_vld_data: begin
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                         tlk2711_txd   <= fifo_rdata;
@@ -492,7 +497,7 @@ module  tlk2711_tx_data
                             $display("%g (tx_data.v)tx state at tx_vld_data DONE", $time);
                         end
                     end        
-                    tx_frame_tail:begin
+                    tx_frame_tail: begin
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b0;
                        // tlk2711_txd   <= verif_dcnt;
@@ -503,7 +508,7 @@ module  tlk2711_tx_data
                         else
                             tx_state <= tx_end_frame;
                     end        
-                    tx_end_frame:begin
+                    tx_end_frame: begin
                         tlk2711_tkmsb <= 'b1;
                         tlk2711_tklsb <= 'b1;
                         tlk2711_txd   <= {K29_7, K30_7};
@@ -512,22 +517,34 @@ module  tlk2711_tx_data
                         else
                             tx_state <= tx_backward;
                     end        
-                    tx_backward:begin
+                    tx_backward: begin
                         tlk2711_tkmsb <= 'b0;
                         tlk2711_tklsb <= 'b1;
                         tlk2711_txd   <= {D5_6, K28_5};
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else if (backward_cnt == 'd255)
-                            tx_state <= tail_frame ? tx_idle : tx_start_frame;
-                    end        
+                            tx_state <= tail_frame ? tx_interrupt : tx_start_frame;
+                    end
+                    tx_interrupt: begin
+                        if (tx_intr_width_cnt == (i_tx_intr_width - 1'd1)) begin
+                            o_tx_interrupt <= 1'b0;
+                            tx_intr_width_cnt <= 16'h0;
+                            tx_state <= tx_idle;
+                        end else begin
+                            tx_intr_width_cnt <= tx_intr_width_cnt + 1'd1;
+                            o_tx_interrupt <= 1'b1;
+                        end
+                    end
+                    default;
                 endcase
 
                 if (tx_state == tx_end_frame && frame_cnt == i_tx_body_num) begin
                     tail_frame <= 'b1;
                 end else if (o_tx_interrupt)
                     tail_frame <= 'b0;
-                o_tx_interrupt <= (tx_state == tx_backward) & (backward_cnt == 'd255) & tail_frame;
+
+               // o_tx_interrupt <= (tx_state == tx_backward) & (backward_cnt == 'd255) & tail_frame;
             end    
         end
     end
