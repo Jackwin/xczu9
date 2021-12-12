@@ -367,6 +367,7 @@ module tlk2711_top
         .i_rx_base_addr(rx_base_addr),
         .i_rx_line_num_per_intr(line_num_per_intr),
         .i_rx_intr_width(rx_intr_width),
+        .i_link_intr_width(link_intr_width),
         .i_link_loss_detect_ena(link_loss_detect_ena),
         .i_sync_loss_detect_ena(sync_loss_detect_ena),
         .i_rx_fifo_rd(rx_fifo_rd),

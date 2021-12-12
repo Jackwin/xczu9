@@ -40,6 +40,7 @@ module  tlk2711_rx_link
     input  [ADDR_WIDTH-1:0]             i_rx_base_addr,
     input  [23:0]                       i_rx_line_num_per_intr,
     input  [15:0]                       i_rx_intr_width,
+    input  [15:0]                       i_link_intr_width,
 
     input                               i_link_loss_detect_ena,
     input                               i_sync_loss_detect_ena,

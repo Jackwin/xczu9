@@ -112,10 +112,12 @@ module reg_mgt
     localparam  RX_STATUS_REG   = 16'h0050 + ADDR_BASE;
     localparam  RX_CTRL_REG2    = 16'h0058 + ADDR_BASE;
 
-    localparam  IRQ_REG         = 16'h0060 + ADDR_BASE;
+    localparam  RX_IRQ_REG      = 16'h0060 + ADDR_BASE;
     localparam  IRQ_CTRL_REG    = 16'h0068 + ADDR_BASE;
 
     localparam  SOFT_R_REG      = 16'h0070 + ADDR_BASE;
+
+    localparam  TX_IRQ_REG      = 16'h0078 + ADDR_BASE;
 
     // localparam  TX_ADDR_REG     = 16'h0010 + ADDR_BASE;
     // localparam  TX_LENGTH_REG   = 16'h0018 + ADDR_BASE;
@@ -203,6 +205,7 @@ reg [63:0]          reg_wdata;
 reg [15:0]          reg_waddr;
 reg [63:0]          reg_rdata;
 reg [63:0]          rx_intr_status;
+reg [63:0]          tx_intr_status;
 reg [63:0]          tx_base_addr_reg;
 reg [63:0]          tx_length_reg;
 reg [63:0]          tx_packet_reg;
@@ -271,9 +274,9 @@ always @(*) begin
     4'd2: rx_intr_width = irq_ctrl_reg[15:0];
     4'd3: link_intr_width = irq_ctrl_reg[15:0];
     default: begin
-        tx_intr_width = 16'd1;
-        rx_intr_width = 16'd1;
-        link_intr_width = 16'd1;
+        tx_intr_width = 16'd16;
+        rx_intr_width = 16'd16;
+        link_intr_width = 16'd16;
     end
     endcase
 end
@@ -325,7 +328,8 @@ always @(posedge clk) begin
                 reg_rdata[59:10] <= 'h0;
                 reg_rdata[63:60] <= 'h9;
             end
-            IRQ_REG: reg_rdata <= rx_intr_status;
+            RX_IRQ_REG: reg_rdata <= rx_intr_status;
+            TX_IRQ_REG: reg_rdata <= tx_intr_status;
             TX_ADDR_REG: reg_rdata <= tx_base_addr_reg;
             TX_LENGTH_REG: reg_rdata <= tx_length_reg;
             TX_PACKET_REG: reg_rdata <= tx_packet_reg;
@@ -469,7 +473,7 @@ always @ (posedge clk ) begin
                                 i_rx_channel_id,i_rx_file_end_flag, 
                                 i_rx_checksum_flag, i_rx_frame_num};
         else if (tx_intr_r2)
-            rx_intr_status <= {4'd1, 28'd0, tx_intr_cnt, 16'h5aa5};
+            tx_intr_status <= {4'd1, 28'd0, tx_intr_cnt, 16'h5aa5};
         else if (i_loss_interrupt) 
             rx_intr_status <= {4'd3, 32'h0, 20'h0, i_rx_status, i_sync_loss, i_link_loss};
         else if(auto_intr_signal) begin
@@ -514,10 +518,10 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
     .probe27(auto_intr_start),
     .probe28(auto_intr_times),
     .probe29(auto_intr_gap),
-    .probe30(auto_intr_width),
-    .probe31(auto_intr_gen),
+    .probe30(o_rx_intr_width),
+    .probe31(irq_ctrl_reg[63:60]),
     .probe32(auto_intr_signal),
-    .probe33(auto_intr_counter),
+    .probe33(tx_intr_status),
     .probe34(auto_intr_signal_count)
 
 

@@ -1,4 +1,5 @@
 
+#tlk2711b -> bank 44 48
 set_property PACKAGE_PIN AF15 [get_ports {tlk2711b_txd[0]}]
 set_property PACKAGE_PIN AN14 [get_ports {tlk2711b_txd[1]}]
 set_property PACKAGE_PIN AG15 [get_ports {tlk2711b_txd[2]}]
@@ -65,7 +66,7 @@ set_property IOSTANDARD LVCMOS25 [get_ports tlk2711b_rx_clk]
 set_property IOSTANDARD LVCMOS25 [get_ports tlk2711b_testen]
 set_property IOSTANDARD LVCMOS25 [get_ports tlk2711b_rkmsb]
 
-## tlk2711 A
+## tlk2711a -> bank 49 50
 
 set_property PACKAGE_PIN H10 [get_ports {tlk2711a_txd[0]}]
 set_property PACKAGE_PIN J10 [get_ports {tlk2711a_txd[1]}]
