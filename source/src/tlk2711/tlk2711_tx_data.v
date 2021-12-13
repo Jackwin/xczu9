@@ -64,7 +64,7 @@ module  tlk2711_tx_data
 
     localparam KCODE_MODE = 3'd1;
     localparam TEST_MODE = 3'd2; // chip to chip test
-    localparam SPECIFiC_MODE = 3'd3;
+    localparam SPECIFIC_MODE = 3'd3;
  
     //sync code
     localparam K28_5 = 8'hBC;
@@ -155,7 +155,7 @@ module  tlk2711_tx_data
     always@(posedge clk) begin
         if (rst | i_soft_reset) 
             fifo_enable <= 'b0;
-        else if (i_tx_start && i_tx_mode == NORM_MODE)
+        else if (i_tx_start && (i_tx_mode == NORM_MODE | i_tx_mode == SPECIFIC_MODE))
             fifo_enable <= 'b1;
     end
     
@@ -440,7 +440,7 @@ module  tlk2711_tx_data
                             tlk2711_txd   <= (frame_cnt == i_tx_body_num) ? {TX_IND, FILE_END} : {TX_IND, 8'b0};
                             $display("%g (tx_data.v)tx mode is NOMR_MODE, state at tx_file_sign", $time);
 
-                        end else if (tx_mode == SPECIFiC_MODE) begin
+                        end else if (tx_mode == SPECIFIC_MODE) begin
                             //file ending flag
                             tlk2711_txd[15] <= 'h0;
                             tlk2711_txd[14] <= (frame_cnt == i_tx_body_num) ? {TX_IND, FILE_END} : {TX_IND, 8'b0};

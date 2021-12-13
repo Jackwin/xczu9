@@ -268,15 +268,15 @@ reg [15:0]          tx_intr_width;
 reg [15:0]          rx_intr_width;
 reg [15:0]          link_intr_width;
 
-always @(*) begin
+always @(posedge clk) begin
     case(irq_ctrl_reg[63:60])
-    4'd1: tx_intr_width = irq_ctrl_reg[15:0];
-    4'd2: rx_intr_width = irq_ctrl_reg[15:0];
-    4'd3: link_intr_width = irq_ctrl_reg[15:0];
+    4'd1: tx_intr_width <= irq_ctrl_reg[15:0];
+    4'd2: rx_intr_width <= irq_ctrl_reg[15:0];
+    4'd3: link_intr_width <= irq_ctrl_reg[15:0];
     default: begin
-        tx_intr_width = 16'd16;
-        rx_intr_width = 16'd16;
-        link_intr_width = 16'd16;
+        tx_intr_width <= 16'd16;
+        rx_intr_width <= 16'd16;
+        link_intr_width <= 16'd16;
     end
     endcase
 end
@@ -519,7 +519,7 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
     .probe28(auto_intr_times),
     .probe29(auto_intr_gap),
     .probe30(o_rx_intr_width),
-    .probe31(irq_ctrl_reg[63:60]),
+    .probe31(irq_ctrl_reg),
     .probe32(auto_intr_signal),
     .probe33(tx_intr_status),
     .probe34(auto_intr_signal_count)
