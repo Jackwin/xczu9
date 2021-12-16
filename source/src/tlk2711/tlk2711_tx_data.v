@@ -383,8 +383,8 @@ module  tlk2711_tx_data
                     end
                     tx_idle: begin
                         tlk2711_tkmsb <= 'b0;
-                        tlk2711_tklsb <= 'b0;
-                        tlk2711_txd   <= 'd0;
+                        tlk2711_tklsb <= 'b1;
+                        tlk2711_txd   <= {D5_6, K28_5};
                         tx_intr_width_cnt <= 16'h0;
                         // REVIEW: Here not fifo_empty means the to-read data has been in the FIFO, 
                         // so the send can be kicked off. But, need to confirm that the fifo should
@@ -398,8 +398,8 @@ module  tlk2711_tx_data
                     end        
                     tx_begin: begin
                         tlk2711_tkmsb <= 'b0;
-                        tlk2711_tklsb <= 'b0;
-                        tlk2711_txd   <= 'd0;
+                        tlk2711_tklsb <= 'b1;
+                        tlk2711_txd   <= {D5_6, K28_5};
                         if (i_soft_reset)
                             tx_state <= tx_idle;
                         else       
@@ -446,16 +446,16 @@ module  tlk2711_tx_data
                             tlk2711_txd[14] <= (frame_cnt == i_tx_body_num) ? {TX_IND, FILE_END} : {TX_IND, 8'b0};
                             tlk2711_txd[13] <= 'h0;
                             tlk2711_txd[12] <= channel_id;
-                            $display("%g (tx_data.v)tx mode is SPECIFiC_MODE; channel_id %d", $time, channel_id);
+                            $display("%g (tx_data.v)tx mode is SPECIFIC_MODE; channel_id %d", $time, channel_id);
                             channel_id <= ~channel_id;
                             // Sweeping mode
                             tlk2711_txd[11:8] <= 'h1;
                             tlk2711_txd[7:0] <= frame_cnt[23:16];
 
                             if (frame_cnt == i_tx_body_num) begin
-                                $display("%g (tx_data.v)tx mode is SPECIFiC_MODE; FILE END", $time);
+                                $display("%g (tx_data.v)tx mode is SPECIFIC_MODE; FILE END", $time);
                             end else begin
-                                $display("%g (tx_data.v)tx mode is SPECIFiC_MODE; NOT FILE END", $time);
+                                $display("%g (tx_data.v)tx mode is SPECIFIC_MODE; NOT FILE END", $time);
                             end
                             
                         end
@@ -522,7 +522,7 @@ module  tlk2711_tx_data
                         tlk2711_txd   <= {D5_6, K28_5};
                         if (i_soft_reset)
                             tx_state <= tx_idle;
-                        else if (backward_cnt == 'd255)
+                        else if (backward_cnt == 'd256)
                             tx_state <= tail_frame ? tx_interrupt : tx_start_frame;
                     end
                     tx_interrupt: begin
