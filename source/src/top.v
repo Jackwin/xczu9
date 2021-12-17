@@ -219,6 +219,44 @@ assign phy_resetn = &eth_rst_cnt;
 assign tlk2711b_gtx_clk = clk_100;
 assign tlk2711a_gtx_clk = clk_100;
 
+reg [15:0]  tlk2711b_rxd_1r, tlk2711b_rxd_2r, tlk2711b_rxd_3r;
+reg [15:0]  tlk2711a_rxd_1r, tlk2711a_rxd_2r, tlk2711a_rxd_3r;
+reg tlk2711b_rklsb_1r, tlk2711b_rklsb_2r, tlk2711b_rklsb_3r;
+reg tlk2711b_rkmsb_1r, tlk2711b_rkmsb_2r, tlk2711b_rkmsb_3r;
+reg tlk2711a_rklsb_1r, tlk2711a_rklsb_2r, tlk2711a_rklsb_3r;
+reg tlk2711a_rkmsb_1r, tlk2711a_rkmsb_2r, tlk2711a_rkmsb_3r;
+
+always @(posedge tlk2711b_rx_clk) begin
+    tlk2711b_rxd_1r <= tlk2711b_rxd;
+    tlk2711b_rklsb_1r <= tlk2711b_rklsb;
+    tlk2711b_rkmsb_1r <= tlk2711b_rkmsb;
+end
+
+always @(posedge tlk2711a_rx_clk) begin
+    tlk2711a_rxd_1r <= tlk2711a_rxd;
+    tlk2711a_rklsb_1r <= tlk2711a_rklsb;
+    tlk2711a_rkmsb_1r <= tlk2711a_rkmsb;
+end
+
+always @(posedge clk_100) begin
+    tlk2711b_rxd_2r <= tlk2711b_rxd_1r;
+    tlk2711b_rxd_3r <= tlk2711b_rxd_2r;
+    tlk2711b_rklsb_2r <= tlk2711b_rklsb_1r;
+    tlk2711b_rklsb_3r <= tlk2711b_rklsb_2r;
+    tlk2711b_rkmsb_2r <= tlk2711b_rkmsb_1r;
+    tlk2711b_rkmsb_3r <= tlk2711b_rkmsb_2r;
+
+    tlk2711a_rxd_2r <= tlk2711a_rxd_1r;
+    tlk2711a_rxd_3r <= tlk2711a_rxd_2r;
+
+    tlk2711a_rklsb_2r <= tlk2711a_rklsb_1r;
+    tlk2711a_rklsb_3r <= tlk2711a_rklsb_2r;
+    tlk2711a_rkmsb_2r <= tlk2711a_rkmsb_1r;
+    tlk2711a_rkmsb_3r <= tlk2711a_rkmsb_2r;
+
+
+end
+
 tlk2711_wrapper #(  
     .DEBUG_ENA(DEBUG_ENA),  
     .ADDR_WIDTH(DDR_ADDR_WIDTH),
@@ -252,9 +290,9 @@ tlk2711_wrapper #(
     .o_2711b_rx_irq(tlk2711b_rx_irq),
     .o_2711b_loss_irq(tlk2711b_loss_irq),
 
-    .i_2711b_rkmsb(tlk2711b_rkmsb),
-    .i_2711b_rklsb(tlk2711b_rklsb),
-    .i_2711b_rxd(tlk2711b_rxd),
+    .i_2711b_rkmsb(tlk2711b_rkmsb_3r),
+    .i_2711b_rklsb(tlk2711b_rklsb_3r),
+    .i_2711b_rxd(tlk2711b_rxd_3r),
 
     .o_2711b_tkmsb(tlk2711b_tkmsb),
     .o_2711b_tklsb(tlk2711b_tklsb),
@@ -308,9 +346,9 @@ tlk2711_wrapper #(
     .o_2711a_rx_irq(tlk2711a_rx_irq),
     .o_2711a_loss_irq(tlk2711a_loss_irq),
 
-    .i_2711a_rkmsb(tlk2711a_rkmsb),
-    .i_2711a_rklsb(tlk2711a_rklsb),
-    .i_2711a_rxd(tlk2711a_rxd),
+    .i_2711a_rkmsb(tlk2711a_rkmsb_3r),
+    .i_2711a_rklsb(tlk2711a_rklsb_3r),
+    .i_2711a_rxd(tlk2711a_rxd_3r),
 
     .o_2711a_tkmsb(tlk2711a_tkmsb),
     .o_2711a_tklsb(tlk2711a_tklsb),
@@ -473,11 +511,18 @@ mpsoc mpsoc_inst (
     .uart_0_txd(uart_0_txd)
 );
 
-ila_2711_rx ila_2711_rx_inst (
+ila_2711_rx ila_2711b_rx_inst (
 	.clk(tlk2711b_rx_clk), // input wire clk
 	.probe0(tlk2711b_rklsb), // input wire [0:0]  probe0  
 	.probe1(tlk2711b_rkmsb), // input wire [0:0]  probe1 
 	.probe2(tlk2711b_rxd) // input wire [15:0]  probe2
+);
+
+ila_2711_rx ila_2711a_rx_inst (
+	.clk(tlk2711a_rx_clk), // input wire clk
+	.probe0(tlk2711a_rklsb), // input wire [0:0]  probe0  
+	.probe1(tlk2711a_rkmsb), // input wire [0:0]  probe1 
+	.probe2(tlk2711a_rxd) // input wire [15:0]  probe2
 );
 
 endmodule

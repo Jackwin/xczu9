@@ -34,11 +34,17 @@ module  tlk2711_tx_cmd
 
     input                      i_dma_rd_last, 
     input                      i_tx_start,
+    input [2:0]                i_tx_mode,
     input [ADDR_WIDTH-1:0]     i_tx_base_addr,
     input [15:0]               i_tx_packet_body, //body length in byte, 870B here for fixed value
     input [15:0]               i_tx_packet_tail, //tail length in byte
     input [15:0]               i_tx_body_num
 );
+
+    localparam NORM_MODE = 3'd0;
+    localparam KCODE_MODE = 3'd1;
+    localparam TEST_MODE = 3'd2; // chip to chip test
+    localparam SPECIFIC_MODE = 3'd3;
 
     reg [15:0] tx_frame_cnt = 'd0;
     reg [DLEN_WIDTH-1:0] rd_bbt = 'd0;
@@ -47,8 +53,10 @@ module  tlk2711_tx_cmd
     reg tx_start;
     
     always@(posedge clk) begin
-        tx_start_r <= i_tx_start;
-        tx_start <= ~tx_start_r & i_tx_start;
+        tx_start_r <= i_tx_start & (i_tx_mode == NORM_MODE | 
+                        i_tx_mode == SPECIFIC_MODE);
+        tx_start <= ~tx_start_r & i_tx_start & (i_tx_mode == NORM_MODE | 
+                        i_tx_mode == SPECIFIC_MODE);
     end
 
     assign o_rd_cmd_data = {rd_addr, rd_bbt};
