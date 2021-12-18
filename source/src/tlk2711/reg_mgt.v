@@ -85,13 +85,13 @@ module reg_mgt
     input  [15:0]               i_rx_frame_length,
     input  [23:0]               i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
     
-    input [5:0]                 i_rx_status,
+    input [6:0]                 i_rx_status,
     input [9:0]                 i_tx_status,
     input [3:0]                 i_rx_data_type,
     input                       i_rx_file_end_flag,
     input                       i_rx_checksum_flag,
     input [1:0]                 i_rx_channel_id,
-
+   
     input                       i_loss_interrupt,
     input                       i_sync_loss,
     input                       i_link_loss,
@@ -321,8 +321,8 @@ always @(posedge clk) begin
     if (usr_reg_ren & reg_rd_sel_2d) begin
         case(usr_reg_raddr)
             RX_STATUS_REG: begin
-                reg_rdata[5:0] <= i_rx_status;
-                reg_rdata[59:6] <= 'h0;
+                reg_rdata[6:0] <= i_rx_status;
+                reg_rdata[59:7] <= 'h0;
                 reg_rdata[63:60] <= 'ha;
             end
             TX_STATUS_REG: begin

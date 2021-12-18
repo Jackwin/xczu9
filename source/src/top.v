@@ -62,6 +62,7 @@ output          usr_led
 );
 
 parameter DEBUG_ENA = "TRUE";
+parameter RX_CDC_CFG = "FIFO"; // rx clock domain crossing
 parameter DDR_ADDR_WIDTH = 40;
 parameter HP0_DATA_WIDTH = 128;
 parameter STREAM_DATA_WIDTH = 64;
@@ -215,48 +216,89 @@ end
 assign phy1_resetn = &eth_rst_cnt;
 assign phy_resetn = &eth_rst_cnt;
 
-// ------------------------ TLK2711-B --------------------------
+// ------------------------ TLK2711 --------------------------
+wire [15:0]     tlk2711a_rxd_w;
+wire            tlk2711a_rkmsb_w;
+wire            tlk2711a_rklsb_w;
+
+wire [15:0]     tlk2711b_rxd_w;
+wire            tlk2711b_rkmsb_w;
+wire            tlk2711b_rklsb_w;
+
 assign tlk2711b_gtx_clk = clk_100;
 assign tlk2711a_gtx_clk = clk_100;
 
-reg [15:0]  tlk2711b_rxd_1r, tlk2711b_rxd_2r, tlk2711b_rxd_3r;
-reg [15:0]  tlk2711a_rxd_1r, tlk2711a_rxd_2r, tlk2711a_rxd_3r;
-reg tlk2711b_rklsb_1r, tlk2711b_rklsb_2r, tlk2711b_rklsb_3r;
-reg tlk2711b_rkmsb_1r, tlk2711b_rkmsb_2r, tlk2711b_rkmsb_3r;
-reg tlk2711a_rklsb_1r, tlk2711a_rklsb_2r, tlk2711a_rklsb_3r;
-reg tlk2711a_rkmsb_1r, tlk2711a_rkmsb_2r, tlk2711a_rkmsb_3r;
+// clock domain crossing
+if (RX_CDC_CFG == "REG") begin
+    reg [15:0]  tlk2711b_rxd_1r, tlk2711b_rxd_2r, tlk2711b_rxd_3r;
+    reg tlk2711b_rklsb_1r, tlk2711b_rklsb_2r, tlk2711b_rklsb_3r;
+    reg tlk2711b_rkmsb_1r, tlk2711b_rkmsb_2r, tlk2711b_rkmsb_3r;
 
-always @(posedge tlk2711b_rx_clk) begin
-    tlk2711b_rxd_1r <= tlk2711b_rxd;
-    tlk2711b_rklsb_1r <= tlk2711b_rklsb;
-    tlk2711b_rkmsb_1r <= tlk2711b_rkmsb;
+    reg [15:0]  tlk2711a_rxd_1r, tlk2711a_rxd_2r, tlk2711a_rxd_3r;
+    reg tlk2711a_rklsb_1r, tlk2711a_rklsb_2r, tlk2711a_rklsb_3r;
+    reg tlk2711a_rkmsb_1r, tlk2711a_rkmsb_2r, tlk2711a_rkmsb_3r;
+
+    always @(posedge tlk2711b_rx_clk) begin
+        tlk2711b_rxd_1r <= tlk2711b_rxd;
+        tlk2711b_rklsb_1r <= tlk2711b_rklsb;
+        tlk2711b_rkmsb_1r <= tlk2711b_rkmsb;
+    end
+
+    always @(posedge tlk2711a_rx_clk) begin
+        tlk2711a_rxd_1r <= tlk2711a_rxd;
+        tlk2711a_rklsb_1r <= tlk2711a_rklsb;
+        tlk2711a_rkmsb_1r <= tlk2711a_rkmsb;
+    end
+
+    always @(posedge clk_100) begin
+        tlk2711b_rxd_2r <= tlk2711b_rxd_1r;
+        tlk2711b_rxd_3r <= tlk2711b_rxd_2r;
+        tlk2711b_rklsb_2r <= tlk2711b_rklsb_1r;
+        tlk2711b_rklsb_3r <= tlk2711b_rklsb_2r;
+        tlk2711b_rkmsb_2r <= tlk2711b_rkmsb_1r;
+        tlk2711b_rkmsb_3r <= tlk2711b_rkmsb_2r;
+
+        tlk2711a_rxd_2r <= tlk2711a_rxd_1r;
+        tlk2711a_rxd_3r <= tlk2711a_rxd_2r;
+
+        tlk2711a_rklsb_2r <= tlk2711a_rklsb_1r;
+        tlk2711a_rklsb_3r <= tlk2711a_rklsb_2r;
+        tlk2711a_rkmsb_2r <= tlk2711a_rkmsb_1r;
+        tlk2711a_rkmsb_3r <= tlk2711a_rkmsb_2r;
+    end
+
+    assign tlk2711ba_rkmsb_w = tlk2711a_rkmsb_3r;
+    assign tlk2711ba_rklsb_w = tlk2711a_rklsb_3r;
+    assign tlk2711ba_rxd_w = tlk2711a_rxd_3r;
+
+    assign tlk2711b_rkmsb_w = tlk2711b_rkmsb_3r;
+    assign tlk2711b_rklsb_w = tlk2711b_rklsb_3r;
+    assign tlk2711b_rxd_w = tlk2711b_rxd_3r;
 end
 
-always @(posedge tlk2711a_rx_clk) begin
-    tlk2711a_rxd_1r <= tlk2711a_rxd;
-    tlk2711a_rklsb_1r <= tlk2711a_rklsb;
-    tlk2711a_rkmsb_1r <= tlk2711a_rkmsb;
+if (RX_CDC_CFG == "FIFO") begin
+    tlk2711_rx_cdc  #(
+        .DATAWIDTH(18)
+    ) tlk2711a_rx_cdc_inst (
+        .tlk2711_rx_clk(tlk2711a_rx_clk),
+        .i_tlk2711_data({tlk2711a_rkmsb, tlk2711a_rklsb, tlk2711a_rxd}),
+        .clk(clk_100),
+        .rst(clk_100_rst),
+        .i_soft_rst(clk_100_rst),
+        .o_tlk2711_data({tlk2711a_rkmsb_w, tlk2711a_rklsb_w, tlk2711a_rxd_w})
+    );
+
+    tlk2711_rx_cdc  #(
+        .DATAWIDTH(18)
+    ) tlk2711b_rx_cdc_inst (
+        .tlk2711_rx_clk(tlk2711b_rx_clk),
+        .i_tlk2711_data({tlk2711b_rkmsb, tlk2711b_rklsb, tlk2711b_rxd}),
+        .clk(clk_100),
+        .rst(clk_100_rst),
+        .i_soft_rst(clk_100_rst),
+        .o_tlk2711_data({tlk2711b_rkmsb_w, tlk2711b_rklsb_w, tlk2711b_rxd_w})
+    );
 end
-
-always @(posedge clk_100) begin
-    tlk2711b_rxd_2r <= tlk2711b_rxd_1r;
-    tlk2711b_rxd_3r <= tlk2711b_rxd_2r;
-    tlk2711b_rklsb_2r <= tlk2711b_rklsb_1r;
-    tlk2711b_rklsb_3r <= tlk2711b_rklsb_2r;
-    tlk2711b_rkmsb_2r <= tlk2711b_rkmsb_1r;
-    tlk2711b_rkmsb_3r <= tlk2711b_rkmsb_2r;
-
-    tlk2711a_rxd_2r <= tlk2711a_rxd_1r;
-    tlk2711a_rxd_3r <= tlk2711a_rxd_2r;
-
-    tlk2711a_rklsb_2r <= tlk2711a_rklsb_1r;
-    tlk2711a_rklsb_3r <= tlk2711a_rklsb_2r;
-    tlk2711a_rkmsb_2r <= tlk2711a_rkmsb_1r;
-    tlk2711a_rkmsb_3r <= tlk2711a_rkmsb_2r;
-
-
-end
-
 tlk2711_wrapper #(  
     .DEBUG_ENA(DEBUG_ENA),  
     .ADDR_WIDTH(DDR_ADDR_WIDTH),
@@ -290,9 +332,9 @@ tlk2711_wrapper #(
     .o_2711b_rx_irq(tlk2711b_rx_irq),
     .o_2711b_loss_irq(tlk2711b_loss_irq),
 
-    .i_2711b_rkmsb(tlk2711b_rkmsb_3r),
-    .i_2711b_rklsb(tlk2711b_rklsb_3r),
-    .i_2711b_rxd(tlk2711b_rxd_3r),
+    .i_2711b_rkmsb(tlk2711b_rkmsb_w),
+    .i_2711b_rklsb(tlk2711b_rklsb_w),
+    .i_2711b_rxd(tlk2711b_rxd_w),
 
     .o_2711b_tkmsb(tlk2711b_tkmsb),
     .o_2711b_tklsb(tlk2711b_tklsb),
@@ -346,9 +388,9 @@ tlk2711_wrapper #(
     .o_2711a_rx_irq(tlk2711a_rx_irq),
     .o_2711a_loss_irq(tlk2711a_loss_irq),
 
-    .i_2711a_rkmsb(tlk2711a_rkmsb_3r),
-    .i_2711a_rklsb(tlk2711a_rklsb_3r),
-    .i_2711a_rxd(tlk2711a_rxd_3r),
+    .i_2711a_rkmsb(tlk2711a_rkmsb_w),
+    .i_2711a_rklsb(tlk2711a_rklsb_w),
+    .i_2711a_rxd(tlk2711a_rxd_w),
 
     .o_2711a_tkmsb(tlk2711a_tkmsb),
     .o_2711a_tklsb(tlk2711a_tklsb),

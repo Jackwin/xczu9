@@ -450,6 +450,7 @@ module  tlk2711_tx_data
                         if (test_backward_cnt == 9'd256) begin
                             state_cnt <= 4'd2;
                             test_data <= 'h0;
+                            test_backward_cnt <= 'h0;
                         end
                     end
                     default: tlk2711_txd <= 'h0;

@@ -11,7 +11,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 module tlk2711_rx_cdc # (
-    parameter DATAWIDTH = 32
+    parameter DATAWIDTH = 16
 )
 (
     input                   tlk2711_rx_clk,
@@ -24,20 +24,28 @@ module tlk2711_rx_cdc # (
 );
 
 wire        empty;
-
+wire        full;
 
 fifo_fwft_18_1024 fifo_rx_cdc (
     .rst(rst | i_soft_rst),
     .wr_clk(tlk2711_rx_clk),
     .din(i_tlk2711_data),
-    .wr_ena(1'b1),
-    .full(),
+    .wr_en(1'b1),
+    .full(full),
 
     .rd_clk(clk),
     .dout(o_tlk2711_data),
-    .rd_ena(~empty),
+    .rd_en(~empty),
     .empty(empty)
 
+);
+
+ila_fifo_cdc ila_fifo_cdc_inst (
+	.clk(clk), 
+	.probe0(i_tlk2711_data),  
+	.probe1(o_tlk2711_data), 
+	.probe2(empty),
+    .probe3(full)
 );
 
 

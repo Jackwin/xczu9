@@ -164,7 +164,7 @@ module tlk2711_top
     wire                                dma_wr_ready;
     wire                                wr_finish;
             
-    wire [5:0]                          rx_status;
+    wire [6:0]                          rx_status;
     wire [9:0]                          tx_status;
     wire                                rx_fifo_rd;
     wire                                link_loss_detect_ena;
@@ -218,6 +218,7 @@ module tlk2711_top
        .i_rx_data_type(rx_data_type),
        .i_rx_file_end_flag(rx_file_end_flag),
        .i_rx_checksum_flag(rx_checksum_flag),
+       .i_rx_channel_id(rx_channel_id),
 
        .i_tx_status(tx_status),
        .i_rx_status(rx_status),
@@ -386,6 +387,7 @@ module tlk2711_top
         .o_rx_data_type(rx_data_type),
         .o_rx_file_end_flag(rx_file_end_flag),
         .o_rx_checksum_flag(rx_checksum_flag),
+        .o_rx_channel_id(rx_channel_id),
         .i_2711_rkmsb(i_2711_rkmsb),
         .i_2711_rklsb(i_2711_rklsb),
         .i_2711_rxd(i_2711_rxd),

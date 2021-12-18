@@ -67,7 +67,7 @@ module  tlk2711_rx_link
     input                               i_2711_rklsb,
     input  [15:0]                       i_2711_rxd,
 
-    output [5:0]                        o_rx_status,
+    output [6:0]                        o_rx_status,
     output                              o_loss_interrupt,
     output                              o_sync_loss,
     output                              o_link_loss
@@ -144,6 +144,7 @@ module  tlk2711_rx_link
     assign o_rx_data_type = data_type;
     assign o_rx_file_end_flag = file_end_flag[0];
     assign o_rx_checksum_flag = checksum_error;
+    assign o_rx_channel_id = channel_id;
 
     assign o_wr_cmd_data = {wr_addr, wr_bbt};
 
@@ -278,8 +279,7 @@ module  tlk2711_rx_link
             end
         end
     end
-
-
+    
     // Calculate the checksum
     // TODO check not an integrated frame 9-10
     always @(posedge clk) begin
@@ -569,7 +569,7 @@ module  tlk2711_rx_link
 
     // Output the status to the host
     // data_type, file_end_flag
-    assign o_rx_status = {fifo_empty, fifo_full, cs};
+    assign o_rx_status = {check_error, fifo_empty, fifo_full, cs};
 
 // TODO debug rx
 
