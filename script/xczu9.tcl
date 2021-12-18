@@ -363,18 +363,18 @@ set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
 set_property -name "file_type" -value "XDC" -objects $file_obj
 
 # Add/Import constrs file and set constrs file properties
-set file "[file normalize "$origin_dir/../source/constr/debug.xdc"]"
-set file_added [add_files -norecurse -fileset $obj [list $file]]
-set file "$origin_dir/../source/constr/debug.xdc"
-set file [file normalize $file]
-set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
-set_property -name "file_type" -value "XDC" -objects $file_obj
+# set file "[file normalize "$origin_dir/../source/constr/debug.xdc"]"
+# set file_added [add_files -norecurse -fileset $obj [list $file]]
+# set file "$origin_dir/../source/constr/debug.xdc"
+# set file [file normalize $file]
+# set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
+# set_property -name "file_type" -value "XDC" -objects $file_obj
 
 # Set 'constrs_1' fileset properties
-set obj [get_filesets constrs_1]
-set_property -name "target_constrs_file" -value "[file normalize "$origin_dir/../source/constr/debug.xdc"]" -objects $obj
-set_property -name "target_part" -value "xczu9eg-ffvb1156-2-i" -objects $obj
-set_property -name "target_ucf" -value "[file normalize "$origin_dir/../source/constr/debug.xdc"]" -objects $obj
+# set obj [get_filesets constrs_1]
+# set_property -name "target_constrs_file" -value "[file normalize "$origin_dir/../source/constr/debug.xdc"]" -objects $obj
+# set_property -name "target_part" -value "xczu9eg-ffvb1156-2-i" -objects $obj
+# set_property -name "target_ucf" -value "[file normalize "$origin_dir/../source/constr/debug.xdc"]" -objects $obj
 
 # Create 'sim_1' fileset (if not found)
 if {[string equal [get_filesets -quiet sim_1] ""]} {
@@ -392,11 +392,11 @@ set files [list \
 add_files -norecurse -fileset $obj $files
 
 # Import local files from the original project
-set files [list \
- [file normalize "${origin_dir}/../vivado/xczu9/xczu9.sim/sim_1/behav/tlk2711_tb_behav.wcfg" ]\
- [file normalize "${origin_dir}/../vivado/xczu9/xczu9.sim/sim_1/fpga_mgt_tb_behav.wcfg" ]\
-]
-set imported_files [import_files -fileset sim_1 $files]
+# set files [list \
+#  [file normalize "${origin_dir}/../vivado/xczu9/xczu9.sim/sim_1/behav/tlk2711_tb_behav.wcfg" ]\
+#  [file normalize "${origin_dir}/../vivado/xczu9/xczu9.sim/sim_1/fpga_mgt_tb_behav.wcfg" ]\
+# ]
+# set imported_files [import_files -fileset sim_1 $files]
 
 # Set 'sim_1' fileset file properties for remote files
 set file "$origin_dir/../source/sim/fpga_mgt/fpga_mgt_tb.sv"

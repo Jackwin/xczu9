@@ -44,6 +44,7 @@ module  tlk2711_rx_link
 
     input                               i_link_loss_detect_ena,
     input                               i_sync_loss_detect_ena,
+    input                               i_check_ena,
 
     // To read the remained data in FIFO when link/sync loss happens
     input                               i_rx_fifo_rd,
@@ -249,6 +250,35 @@ module  tlk2711_rx_link
         end
         endcase 
     end
+
+    // When the check is enabled, the rx will check the received data automatically
+    reg     check_error;
+    reg     check_ena;
+    reg [15:0] data_gen;
+
+    always @(posedge clk) begin
+        check_ena <= i_check_ena;
+    end
+
+    always @(posedge clk) begin
+        if (rst | i_soft_rst) begin
+            check_error <= 1'b0;
+            data_gen <= 16'h0;
+        end else begin
+            if (check_ena) begin
+                if (cs == RECV_DATA_s) begin
+                    data_gen <= data_gen + 1'd1;
+                    check_error <= data_gen != i_2711_rxd;
+                end else begin
+                    data_gen <= 16'h0;
+                end
+            end else begin
+                check_error <= 'h0;
+                data_gen <= 16'h0;
+            end
+        end
+    end
+
 
     // Calculate the checksum
     // TODO check not an integrated frame 9-10
@@ -593,7 +623,11 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe32(fifo_rden),
         .probe33(i_dma_wr_ready),
         .probe34(rd_cnt),
-        .probe35(o_dma_wr_data)
+        .probe35(o_dma_wr_data),
+        .probe36(check_ena),
+        .probe37(check_error),
+        .probe38(data_gen)
+
     );
 
 endmodule 
