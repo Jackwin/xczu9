@@ -165,7 +165,7 @@ module  tlk2711_tx_data
             else
                 tlk2711_txd_1r <= tlk2711_txd;
         end else if (tx_mode == TEST_MODE) begin
-            if (tx_state == TEST_EOF_s)
+            if (state_cnt == TEST_EOF_s)
                 tlk2711_txd_1r <= test_checksum;
             else
                 tlk2711_txd_1r <= tlk2711_txd;
@@ -244,10 +244,10 @@ module  tlk2711_tx_data
             test_checksum <= 'd0;
         else begin
             case(state_cnt)
-                TEST_IDLE_s, TEST_SYNC_s, TEST_SOF_s, TEST_HOF_s, TEST_HOF2_s: begin
+                TEST_IDLE_s, TEST_SYNC_s, TEST_SOF_s, TEST_HOF_s, TEST_HOF2_s, TEST_FILEEND_s: begin
                     test_checksum <= 'h0;
                 end
-                TEST_FILEEND_s, TEST_FRAME_CNT_s, TEST_LENGTH_s, TEST_DATA_s, TEST_CHECKSUM_s: begin
+                TEST_FRAME_CNT_s, TEST_LENGTH_s, TEST_DATA_s, TEST_CHECKSUM_s: begin
                      test_checksum <= test_checksum + tlk2711_txd;
                  end
                  default: test_checksum <= 'h0;

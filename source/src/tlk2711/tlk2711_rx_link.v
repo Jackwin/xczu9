@@ -234,6 +234,7 @@ module  tlk2711_rx_link
         RECV_DATA_s: begin
             
             // data length must be larger than or equal to 2
+            // TODO: Adapt to the pixel number
             if (frame_data_cnt == data_length[15:1] - 1) begin
                 ns <= CHECK_DATA_s;
                 $display("%t (rx_link.v)rx state at RECV_DATA_s DONE", $time);
