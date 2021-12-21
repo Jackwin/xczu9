@@ -45,6 +45,7 @@ module  tlk2711_rx_link
     input                               i_link_loss_detect_ena,
     input                               i_sync_loss_detect_ena,
     input                               i_check_ena,
+    input                               i_rx_length_unit,
 
     // To read the remained data in FIFO when link/sync loss happens
     input                               i_rx_fifo_rd,
@@ -234,10 +235,15 @@ module  tlk2711_rx_link
         RECV_DATA_s: begin
             
             // data length must be larger than or equal to 2
-            // TODO: Adapt to the pixel number
-            if (frame_data_cnt == data_length[15:1] - 1) begin
-                ns <= CHECK_DATA_s;
-                $display("%t (rx_link.v)rx state at RECV_DATA_s DONE", $time);
+            if (i_rx_length_unit) begin
+                if (frame_data_cnt == data_length - 1) begin // Unit in 2Byte
+                    ns <= CHECK_DATA_s;
+                end
+            end else begin
+                if (frame_data_cnt == data_length[15:1] - 1) begin
+                    ns <= CHECK_DATA_s;
+                    $display("%t (rx_link.v)rx state at RECV_DATA_s DONE", $time);
+                end
             end
         end
         CHECK_DATA_s: begin
