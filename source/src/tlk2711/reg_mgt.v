@@ -66,6 +66,8 @@ module reg_mgt
     // the number of receied lines to trig the interrupt
     output [23:0]               o_line_num_per_intr,
 
+    output [19:0]               o_backward_cycle_num,
+
     // tx interrupt pulse width
     output [15:0]               o_tx_intr_width,
     output [15:0]               o_rx_intr_width,
@@ -240,6 +242,7 @@ always@(posedge clk) begin
 end
 
 assign o_tx_base_addr = tx_base_addr_reg[ADDR_WIDTH-1:0];
+assign o_backward_cycle_num = tx_base_addr_reg[19+ADDR_WIDTH:ADDR_WIDTH];
 assign o_tx_total_length = tx_length_reg[31:0];
 assign o_tx_packet_body = tx_packet_reg[15:0];
 assign o_tx_body_num = tx_packet_reg[8+16+15:16];

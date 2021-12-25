@@ -16,10 +16,10 @@ module tlk2711_tb(
 	//integer  			frame_length = 'd870;
 	integer             tx_total_packet = FRAME_LENGTH * FRAME_NUM; // total packet bytes
 	reg[15:0]           tx_packet_body = 'd870; 
-	reg[15:0]           tx_packet_tail = 'd870;
-	reg[23:0] 			tx_body_num = 5;
+	reg[15:0]           tx_packet_tail = 'd800;
+	reg[23:0] 			tx_body_num = 0;
 	
-	integer             tx_mode = 3'd2; //0--norm mode, 1--kcode mode, 2--test mode, 3--specific mode 4--protocal test mode
+	integer             tx_mode = 3'd0; //0--norm mode, 1--kcode mode, 2--test mode, 3--specific mode 4--protocal test mode
 	integer  			rx_check_ena = 1'd1;
 
 	reg[23:0] 			rx_line_num_per_intr = LINE_NUM_PER_INTR;

@@ -35,6 +35,7 @@ module  tlk2711_tx_data
     input [15:0]            i_tx_packet_tail, //tail length in byte
     input [23:0]            i_tx_body_num,
     input [15:0]            i_tx_intr_width,
+    input [19:0]            i_backward_cycle_num,
     
     //dma data interface 
     input                   i_dma_rd_valid,
@@ -288,7 +289,7 @@ module  tlk2711_tx_data
     reg [16:0] pwr_sync_cnt; //for 1ms in 100MHz clk, count 100000 cycles
     reg        head_cnt; //frame head counter, count 2 cycles
     reg [8:0]  vld_data_cnt; //valid data counter, count 435 cycles
-    reg [8:0]  backward_cnt; //backward counter between frames, count 257 cycles
+    reg [19:0]  backward_cnt; //backward counter between frames, count 257 cycles
 
     always@(posedge clk) begin
         if (tx_state == tx_begin)
@@ -447,7 +448,7 @@ module  tlk2711_tx_data
                         tlk2711_tklsb <= 'b1;
                         tlk2711_txd <= {D5_6, K28_5};
                         test_backward_cnt <= test_backward_cnt + 1'd1;
-                        if (test_backward_cnt == 9'd256) begin
+                        if (test_backward_cnt == 'd256) begin
                             state_cnt <= 4'd2;
                             test_data <= 'h0;
                             test_backward_cnt <= 'h0;
@@ -501,6 +502,9 @@ module  tlk2711_tx_data
                     tx_pwr_sync: begin
                         //if (pwr_sync_cnt == 16'd9999) tx_state <= tx_idle
                         if (pwr_sync_cnt == 16'd99) tx_state <= tx_idle;
+                        tlk2711_txd   <= {D5_6, K28_5};
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b1;
                     end
                     tx_idle: begin
                         tlk2711_tkmsb <= 'b0;
@@ -643,8 +647,14 @@ module  tlk2711_tx_data
                         tlk2711_txd   <= {D5_6, K28_5};
                         if (i_soft_reset)
                             tx_state <= tx_idle;
-                        else if (backward_cnt == 'd256)
-                            tx_state <= tail_frame ? tx_interrupt : tx_start_frame;
+                        else begin
+                            if (tx_mode == NORM_MODE & backward_cnt == 'd256)
+                                tx_state <= tail_frame ? tx_interrupt : tx_start_frame;
+                            else if (tx_mode == SPECIFIC_MODE & 
+                                    backward_cnt == i_backward_cycle_num - 1)
+                                tx_state <= tail_frame ? tx_interrupt : tx_start_frame;
+                        end
+
                     end
                     tx_interrupt: begin
                         if (tx_intr_width_cnt == (i_tx_intr_width - 1'd1)) begin

@@ -35,7 +35,7 @@ fifo_fwft_18_1024 fifo_rx_cdc (
 
     .rd_clk(clk),
     .dout(o_tlk2711_data),
-    .rd_en(~empty),
+    .rd_en(1'b1),
     .empty(empty)
 
 );

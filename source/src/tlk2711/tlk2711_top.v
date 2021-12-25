@@ -132,6 +132,7 @@ module tlk2711_top
     wire [15:0]             rx_packet_tail;
     wire [23:0]             rx_frame_num;
     wire [23:0]             line_num_per_intr;
+    wire [19:0]             backward_cycle_num;
 
     wire [15:0]             tx_intr_width;
     wire [15:0]             rx_intr_width;
@@ -205,6 +206,8 @@ module tlk2711_top
        .i_tx_interrupt(tx_interrupt), 
        .o_tx_pre(tx_pre),
        .o_line_num_per_intr(line_num_per_intr),
+       .o_backward_cycle_num(backward_cycle_num),
+
        .o_rx_base_addr(rx_base_addr), 
        .o_rx_config_done(rx_config_done),
        .o_rx_fifo_rd(rx_fifo_rd),
@@ -336,6 +339,7 @@ module tlk2711_top
         .i_tx_packet_tail(tx_packet_tail),
         .i_tx_body_num(tx_body_num),
         .i_tx_intr_width(tx_intr_width),
+        .i_backward_cycle_num(backward_cycle_num),
         .i_tx_pre(tx_pre),
         .i_dma_rd_valid(dma_rd_valid),
         .i_dma_rd_last(dma_rd_last),
