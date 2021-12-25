@@ -171,6 +171,7 @@ module tlk2711_top
     wire                                link_loss_detect_ena;
     wire                                sync_loss_detect_ena;
     wire                                check_ena;
+    wire                                rx_length_unit;
 
    reg_mgt #(
        .DEBUG_ENA(DEBUG_ENA),
@@ -214,6 +215,7 @@ module tlk2711_top
        .o_link_loss_detect_ena(link_loss_detect_ena),
        .o_sync_loss_detect_ena(sync_loss_detect_ena),
        .o_rx_check_ena(check_ena),
+       .o_rx_length_unit(rx_length_unit),
 
        .i_rx_interrupt(rx_interrupt), 
        .i_rx_frame_length(rx_frame_length),
@@ -379,6 +381,7 @@ module tlk2711_top
         .i_link_loss_detect_ena(link_loss_detect_ena),
         .i_sync_loss_detect_ena(sync_loss_detect_ena),
         .i_check_ena(check_ena),
+        .i_rx_length_unit(rx_length_unit),
         .i_rx_fifo_rd(rx_fifo_rd),
         .i_dma_wr_ready(dma_wr_ready),
         .i_wr_finish(wr_finish),

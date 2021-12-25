@@ -81,7 +81,8 @@ module reg_mgt
     output reg                  o_rx_config_done,
     output                      o_link_loss_detect_ena,
     output                      o_sync_loss_detect_ena,
-     output                     o_rx_check_ena,
+    output                      o_rx_check_ena,
+    output                      o_rx_length_unit,
 
     input                       i_rx_interrupt, //when asserted, the packet information is valid at the same time
     input  [15:0]               i_rx_frame_length,
@@ -262,6 +263,7 @@ assign auto_intr_width = rx_ctrl_reg[47:40];
 
 assign o_line_num_per_intr = rx_ctrl_reg2[23:0];
 assign o_rx_check_ena = rx_ctrl_reg2[24];
+assign o_rx_length_unit = rx_ctrl_reg2[25];
 
 //////////////////////////////////////////////////////////////////////////
 //  IRQ control configuration
