@@ -288,7 +288,7 @@ module  tlk2711_tx_data
     reg [16:0] sync_cnt; //for 1ms in 100MHz clk, count 100000 cycles
     reg [16:0] pwr_sync_cnt; //for 1ms in 100MHz clk, count 100000 cycles
     reg        head_cnt; //frame head counter, count 2 cycles
-    reg [8:0]  vld_data_cnt; //valid data counter, count 435 cycles
+    reg [15:0]  vld_data_cnt; //valid data counter, count 435 cycles
     reg [19:0]  backward_cnt; //backward counter between frames, count 257 cycles
 
     always@(posedge clk) begin
