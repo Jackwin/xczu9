@@ -160,7 +160,7 @@ module  tlk2711_tx_data
     always @(posedge clk) begin
         tlk2711_tkmsb_1r <= tlk2711_tkmsb;
         tlk2711_tklsb_1r <= tlk2711_tklsb;
-        if (tx_mode == NORM_MODE) begin
+        if (tx_mode == NORM_MODE | tx_mode == SPECIFIC_MODE) begin
             if (tx_state == tx_end_frame)
                 tlk2711_txd_1r <= checksum;
             else
