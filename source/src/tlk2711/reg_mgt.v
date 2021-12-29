@@ -59,6 +59,8 @@ module reg_mgt
     output                      o_loopback_ena,
     // configured when all the above register is done and start the transfer 
     output reg                  o_tx_config_done,
+     
+    output reg                  o_tx_stop_test,
     // inform cpu after the total packet transfer is finished
     input                       i_tx_interrupt, 
     // tlk2711 pre-emphasis
@@ -79,6 +81,8 @@ module reg_mgt
     output                      o_rx_fifo_rd,
 
     output reg                  o_rx_config_done,
+    // stop the data check in data-test mode
+    output reg                  o_rx_start_test,
     output                      o_link_loss_detect_ena,
     output                      o_sync_loss_detect_ena,
     output                      o_rx_check_ena,
@@ -231,15 +235,33 @@ end
 
 always@(posedge clk) begin
     // for tx config done
-    if( reg_wen && ( reg_waddr == TX_CFG_REG ) ) //&& (reg_wdata[3:0] == 4'h5a)
-        o_tx_config_done <=  1'b1;
-    else 
-        o_tx_config_done <= 1'b0;
+    if( reg_wen && ( reg_waddr == TX_CFG_REG )) begin//&& (reg_wdata[3:0] == 4'h5a)
+        if (reg_wdata[1:0] == 2'h3) begin
+            o_tx_config_done <=  1'b1;
+        end else begin
+            o_tx_config_done <= 1'b0;
+        end
 
-    if( reg_wen && ( reg_waddr == RX_CFG_REG )) // for rx config done
-        o_rx_config_done <=  1'b1;
-    else 
-        o_rx_config_done <= 1'b0;
+        if (reg_wdata[2] == 1'h1) begin
+            o_tx_stop_test <= 1'b1;
+        end else begin
+            o_tx_stop_test <= 1'b0;
+        end
+    end
+
+    if( reg_wen && ( reg_waddr == RX_CFG_REG )) begin // for rx config done
+        if (reg_wdata[1:0] == 2'h3) begin
+            o_rx_config_done <=  1'b1;
+        end else begin
+            o_rx_config_done <= 1'b0;
+        end
+
+        if (reg_wdata[2] == 1'h1) begin
+            o_rx_start_test <= 1'b1;
+        end else begin
+            o_rx_start_test <= 1'b0;
+        end
+    end
 end
 
 assign o_tx_base_addr = tx_base_addr_reg[ADDR_WIDTH-1:0];
@@ -296,6 +318,7 @@ always@(posedge clk) begin
     if( reg_wen ) begin
         case(reg_waddr)
         //tx
+
         TX_ADDR_REG: tx_base_addr_reg <= reg_wdata;
         TX_LENGTH_REG: tx_length_reg <= reg_wdata;
         TX_PACKET_REG: begin
@@ -344,11 +367,13 @@ always @(posedge clk) begin
             RX_CTRL_REG: reg_rdata <= rx_ctrl_reg;
             default: begin
                 reg_rdata <= 'h0;
+                
             end
         endcase
-    end else begin
-        reg_rdata <= 'h0;
     end
+    // end else begin
+    //     reg_rdata <= 'h0;
+    // end
 end
 
 //////////////////////////////////////////////////////////////////////////
@@ -529,7 +554,8 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
     .probe31(irq_ctrl_reg),
     .probe32(auto_intr_signal),
     .probe33(tx_intr_status),
-    .probe34(auto_intr_signal_count)
+    .probe34(auto_intr_signal_count),
+    .probe35({o_tx_config_done, o_rx_config_done, o_tx_stop_test, o_rx_start_test})
 
 
 );

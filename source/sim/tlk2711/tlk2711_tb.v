@@ -135,9 +135,9 @@ initial begin
 		
 	write_reg(IRQ_CTRL_REG_ADDR, 64'h2000_0000_0000_0010);
 
-	write_reg(TX_ENA_REG_ADDR, 64'h0);
+	write_reg(TX_ENA_REG_ADDR, 64'h3);
 
-	write_reg(RX_ENA_REG_ADDR, 64'h0);	
+	write_reg(RX_ENA_REG_ADDR, 64'h3);	
 
 end
 

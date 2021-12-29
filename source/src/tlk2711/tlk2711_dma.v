@@ -51,7 +51,7 @@ module  tlk2711_dma
     
     //write data interface
     input                               i_dma_wr_valid,
-    input  [STREAM_WBYTE_WIDTH-1:0]      i_dma_wr_keep,
+    input  [STREAM_WBYTE_WIDTH-1:0]     i_dma_wr_keep,
     input  [STREAM_WDATA_WIDTH-1:0]     i_dma_wr_data,
     output                              o_dma_wr_ready,
 

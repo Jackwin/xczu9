@@ -28,6 +28,7 @@ module  tlk2711_rx_link
     input                               clk,
     input                               rst,
     input                               i_soft_rst,
+    input                               i_rx_start_test,
 
     input                               i_2711_rx_clk,
 
@@ -189,6 +190,7 @@ module  tlk2711_rx_link
             end
         end
     end
+    // todo line_cnt
 
     // Rx state
 
@@ -365,7 +367,7 @@ module  tlk2711_rx_link
 
     always @(posedge clk) begin
         if (rst | i_soft_rst) begin
-            wr_addr      <= 'd0;
+            wr_addr      <= 'h50000000;
             o_wr_cmd_req <= 'b0;
             wr_bbt       <= 'd0;
             frame_length <= 'h0;
@@ -633,7 +635,9 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe35(o_dma_wr_data),
         .probe36(check_ena),
         .probe37(check_error),
-        .probe38(data_gen)
+        .probe38(data_gen),
+        .probe39(line_cnt),
+        .probe40(i_rx_line_num_per_intr)
 
     );
 

@@ -172,6 +172,8 @@ module tlk2711_top
     wire                                sync_loss_detect_ena;
     wire                                check_ena;
     wire                                rx_length_unit;
+    wire                                tx_stop_test;
+    wire                                rx_start_test;
 
    reg_mgt #(
        .DEBUG_ENA(DEBUG_ENA),
@@ -203,7 +205,8 @@ module tlk2711_top
        .o_tx_body_num(tx_body_num),  
        .o_tx_mode(tx_mode), 
        .o_loopback_ena(loopback_ena),
-       .o_tx_config_done(tx_config_done),  
+       .o_tx_config_done(tx_config_done),
+       .o_tx_stop_test(tx_stop_test),
        .i_tx_interrupt(tx_interrupt), 
        .o_tx_pre(tx_pre),
        .o_line_num_per_intr(line_num_per_intr),
@@ -211,6 +214,7 @@ module tlk2711_top
 
        .o_rx_base_addr(rx_base_addr), 
        .o_rx_config_done(rx_config_done),
+       .o_rx_start_test(rx_start_test),
        .o_rx_fifo_rd(rx_fifo_rd),
        .o_link_loss_detect_ena(link_loss_detect_ena),
        .o_sync_loss_detect_ena(sync_loss_detect_ena),
@@ -334,6 +338,7 @@ module tlk2711_top
         .clk(clk),
         .rst(rst),
         .i_soft_reset(soft_rst),
+        .i_stop_test(tx_stop_test),
         .i_tx_mode(tx_mode),
         .i_loopback_ena(loopback_ena),
         .i_tx_start(tx_config_done),
@@ -364,12 +369,13 @@ module tlk2711_top
         .DEBUG_ENA(DEBUG_ENA),
         .ADDR_WIDTH(ADDR_WIDTH),
         .DLEN_WIDTH(DLEN_WIDTH), 
-        .DATA_WIDTH(STREAM_WDATA_WIDTH),
+        .DATA_WIDTH(STREAM_RDATA_WIDTH),
         .WBYTE_WIDTH(STREAM_WBYTE_WIDTH)
     ) tlk2711_rx_link (
         .clk(clk),
         .rst(rst),
         .i_soft_rst(soft_rst),
+        .i_rx_start_test(rx_start_test),
         .i_wr_cmd_ack(wr_cmd_ack),
         .o_wr_cmd_req(wr_cmd_req),
         .o_wr_cmd_data(wr_cmd_data), 

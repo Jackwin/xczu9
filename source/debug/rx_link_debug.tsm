@@ -1,5 +1,5 @@
 state recv_rx_intr:
-    if (tlk2711_wrapper/tlk2711b_top/tlk2711_rx_link/o_rx_interrupt == 1'b1) then
+    if (tlk2711_wrapper/tlk2711a_top/tlk2711_rx_link/o_rx_interrupt == 1'b1) then
     trigger;
     else 
     goto recv_rx_intr;

@@ -89,10 +89,10 @@ module  tlk2711_tx_data
     localparam FILE_END = 8'h01;
 
     // FSM for testing 
-    localparam COMMA1_s = 2'd0;
-    localparam COMMA2_s = 2'd1;
-    localparam SOF_s = 2'd2;
-    localparam DATA_s = 2'd3;
+    // localparam COMMA1_s = 2'd0;
+    // localparam COMMA2_s = 2'd1;
+    // localparam SOF_s = 2'd2;
+    // localparam DATA_s = 2'd3;
 	
 	parameter BODY_LENGTH = 16'd870;
 
@@ -330,7 +330,7 @@ module  tlk2711_tx_data
             if (i_stop_test) begin
                 test_mode_stop_flag <= 1'b1;
             end 
-            if (test_mode_stop_flag & state_cnt == DATA_s & (&test_data_cnt))
+            if (test_mode_stop_flag & state_cnt == TEST_DATA_s & (&test_data_cnt))
                 test_mode_stop_flag <= 1'b0;
         end
     end
