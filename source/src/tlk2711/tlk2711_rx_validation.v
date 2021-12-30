@@ -65,6 +65,8 @@ reg [15:0]  data_length;
 
 reg [15:0]  last_line_num;
 
+reg [15:0]  data_gen;
+
 reg         tlk2711_rklsb;
 reg         tlk2711_rkmsb;
 
@@ -148,6 +150,7 @@ always @(posedge clk) begin
         error_status <= 'h0;
         check_error <= 'h0;
         last_line_num <= 'h0;
+        data_gen <= 'h0;
     end else begin
         case(cs)
         TEST_IDLE_s: begin
@@ -213,11 +216,18 @@ always @(posedge clk) begin
             end
         end
         TEST_LENGTH_s: begin
-            if (tlk2711_rxd
-
-        ns <= TEST_DATA_s;
+            if (tlk2711_rxd != 16'h366) begin
+                check_error <= 1'b1;
+                error_status <= 'h7;
+            end
         end
         TEST_DATA_s: begin
+            if (tlk2711_rxd != data_gen) begin
+                check_error <= 1'b1;
+                error_status <= 'h8;
+            end else begin
+                data_gen <= data_gen + 1'd1;
+            end
             if (frame_data_cnt == data_length[15:1] - 1) begin
                 ns <= TEST_CHECKSUM_s;
             end 

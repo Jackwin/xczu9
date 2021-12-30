@@ -376,6 +376,7 @@ module tlk2711_top
         .rst(rst),
         .i_soft_rst(soft_rst),
         .i_rx_start_test(rx_start_test),
+        .i_tx_mode(tx_mode), 
         .i_wr_cmd_ack(wr_cmd_ack),
         .o_wr_cmd_req(wr_cmd_req),
         .o_wr_cmd_data(wr_cmd_data), 

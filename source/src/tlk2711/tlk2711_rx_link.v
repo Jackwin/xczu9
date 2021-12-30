@@ -37,6 +37,8 @@ module  tlk2711_rx_link
     output reg                          o_wr_cmd_req,
     output [ADDR_WIDTH+DLEN_WIDTH-1:0]  o_wr_cmd_data, //high for saddr, low for byte len
 
+    input [2:0]                         i_tx_mode,
+
     input                               i_rx_start,
     input  [ADDR_WIDTH-1:0]             i_rx_base_addr,
     input  [23:0]                       i_rx_line_num_per_intr,
@@ -387,8 +389,12 @@ module  tlk2711_rx_link
             if (i_rx_start)
                 wr_addr <= i_rx_base_addr;
             // REVIEW: Get the wr_addr from the fpga_mgt?
-            else if (frame_end)
-                wr_addr <= wr_addr + wr_bbt;
+            else if (frame_end) begin
+                // In tx test mode, keep the addr unchanged
+                if (i_tx_mode != 2'd2) begin 
+                    wr_addr <= wr_addr + wr_bbt;
+                end
+            end
         end
     end
 
