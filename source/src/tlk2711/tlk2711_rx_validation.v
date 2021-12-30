@@ -10,7 +10,7 @@
 // Email: 
 ///////////////////////////////////////////////////////////////////////////////
 
-module tlk2711_rx_cdc # (
+module tlk2711_rx_validation # (
     parameter DATAWIDTH = 16
 )
 (
@@ -21,9 +21,9 @@ module tlk2711_rx_cdc # (
     input                   i_2711_rklsb,
     input  [15:0]           i_2711_rxd,
 
-    input                   i_rx_start_test,
+    input                   i_check_ena,
     output                  o_check_error,
-    output                  o_error_status
+    output [3:0]            o_error_status
 );
 
 //frame start
@@ -56,19 +56,31 @@ localparam TEST_BACKWARD_s = 4'd11;
 localparam TEST_END_s = 4'd12;
 
 reg [3:0]   cs, ns;
-reg [3:0]   error_status;
-reg         check_error;
+reg [3:0]   error_status = 'h0;
+reg         check_error = 1'b0;
 
 reg [15:0]  tlk2711_rxd;
-reg [15:0]  frame_data_cnt;
-reg [15:0]  data_length;
 
-reg [15:0]  last_line_num;
+reg [15:0]  last_line_num = 'h0;
 
 reg [15:0]  data_gen;
+reg [15:0]  backward_cnt;
+reg [15:0]  checksum = 'h0;
 
 reg         tlk2711_rklsb;
 reg         tlk2711_rkmsb;
+
+reg         check_ena;
+reg [15:0]  data_cnt;
+reg [15:0]  data_length;
+
+
+assign o_check_error = check_error;
+assign o_error_status = error_status;
+
+always @(posedge clk) begin
+    check_ena <= i_check_ena;
+end
 
 always @(posedge clk) begin
     tlk2711_rxd <= i_2711_rxd;
@@ -86,62 +98,64 @@ always @(posedge clk) begin
 end
 
 always @(*) begin
-    ns = cs;
-    case(cs): 
-    TEST_IDLE_s: begin
-        if (~i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {D5_6, K28_5})) begin
-            ns <= TEST_SYNC_s;
+    if (check_ena) begin
+        ns = cs;
+        case(cs) 
+        TEST_IDLE_s: begin
+            if (~tlk2711_rkmsb & tlk2711_rklsb & (tlk2711_rxd == {D5_6, K28_5})) begin
+                ns = TEST_SYNC_s;
+            end
         end
-    end
-    TEST_SYNC_s: begin
-        if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K28_2, K27_7})) begin
-            ns <= TEST_SOF_s;
+        TEST_SYNC_s: begin
+            if (i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {K28_2, K27_7})) begin
+                ns = TEST_SOF_s;
+            end
         end
-    end
-    TEST_SOF_s: begin
-        ns <= TEST_HOF0_s;
+        TEST_SOF_s: begin
+            ns = TEST_HOF0_s;
 
-    end
-    TEST_HOF0_s: begin
-        ns <= TEST_HOF1_s;
+        end
+        TEST_HOF0_s: begin
+            ns = TEST_HOF1_s;
+        end
 
-    end
+        TEST_HOF1_s: begin
+            ns = TEST_FILEEND_s;
+        end
+        TEST_FILEEND_s: begin
+            ns = TEST_FRAME_CNT_s;
+        end
+        TEST_FRAME_CNT_s: begin
+            ns = TEST_LENGTH_s;
+        end
+        TEST_LENGTH_s: begin
+            ns = TEST_DATA_s;
+        end
+        TEST_DATA_s: begin
+            if (data_cnt == data_length[15:1] - 1'd1)
+            ns = TEST_CHECKSUM_s;
+        end
 
-    TEST_HOF1_s: begin
-        ns <= TEST_FILEEND_s;
-    end
-    TEST_FILEEND_s: begin
-        ns <= TEST_FRAME_CNT_s
-    end
-    TEST_FRAME_CNT_s: begin
-       ns <= TEST_LENGTH_s;
-    end
-    TEST_LENGTH_s: begin
+        TEST_CHECKSUM_s: begin
+            ns = TEST_EOF_s;
+        end
 
-       ns <= TEST_DATA_s;
-    end
-    TEST_DATA_s: begin
-        if (frame_data_cnt == data_length[15:1] - 1) begin
-            ns <= TEST_CHECKSUM_s;
-         end 
-    end
+        TEST_EOF_s: begin
+            ns = TEST_BACKWARD_s;
+        end
 
-    TEST_CHECKSUM_s: begin
-        ns <= TEST_EOF_s;
+        TEST_BACKWARD_s: begin
+            if (backward_cnt == 'd256) begin
+                ns = TEST_SYNC_s;
+            end 
+        end
+        default: begin
+            ns = TEST_IDLE_s;
+        end
+        endcase
+    end else begin
+        ns = TEST_IDLE_s;
     end
-
-    TEST_EOF_s: begin
-        ns <= TEST_BACKWARD_s;
-    end
-
-    TEST_BACKWARD_s: begin
-        ns <= TEST_IDLE_s;
-        
-    end
-    default: begin
-        ns <= TEST_IDLE_s
-    end
-    endcase
 
 end
 
@@ -151,107 +165,140 @@ always @(posedge clk) begin
         check_error <= 'h0;
         last_line_num <= 'h0;
         data_gen <= 'h0;
+        backward_cnt <= 'h0;
+        data_cnt <= 'h0;
+        data_length <= 'h0;
     end else begin
-        case(cs)
-        TEST_IDLE_s: begin
-            if (~i_2711_rkmsb & i_2711_rklsb & (i_2711_rxd == {D5_6, K28_5})) begin
-                check_error <= 1'b0;
-                error_status <= 'h0;
-            end else begin
-                check_error <= 1'b1;
-                error_status <= 'h1;
-            end
-        end
-
-        TEST_SYNC_s: begin
-            if (~tlk2711_rkmsb & tlk2711_rklsb & (tlk2711_rxd == {D5_6, K28_5})) begin
-                check_error <= 1'b0;
-                error_status <= 'h0;
-            end else begin
-                check_error <= 1'b1;
-                error_status <= 'h1;
-            end
-        end
- 
-        TEST_SOF_s: begin
-            if (tlk2711_rxd != {K28_2, K27_7}) begin
-                check_error <= 1'b1;
-                error_status <= 'h2;
-            end
-
-        end
-        TEST_HOF0_s: begin
-            if (tlk2711_rxd != HEAD_0) begin
-                check_error <= 1'b1;
-                error_status <= 'h3;
-            end
-        end
-        TEST_HOF1_s: begin
-            if (tlk2711_rxd != HEAD_1) begin
-                check_error <= 1'b1;
-                error_status <= 'h4;
-            end
-        end
-
-        TEST_FILEEND_s: begin
-            if (tlk2711_rxd != 'h0 | tlk2711_rxd != 'h1) begin
-                check_error <= 1'b1;
-                error_status <= 'h5;
-            end
-        end
-        TEST_FRAME_CNT_s: begin
-            last_line_num <= tlk2711_rxd;
-            if (last_line_num == 'h0) begin
-                if (tlk2711_rxd != 'h0) begin
+        data_gen <= 'h0;
+        backward_cnt <= 'h0;
+        check_error <= 1'b0;
+        error_status <= 'h0;
+        data_cnt <= 'h0;
+        if(check_ena) begin
+            case(cs)
+            TEST_IDLE_s: begin
+                if (~tlk2711_rkmsb & tlk2711_rklsb & (tlk2711_rxd == {D5_6, K28_5})) begin
+                    check_error <= 1'b0;
+                    error_status <= 'h0;
+                end else begin
                     check_error <= 1'b1;
-                    error_status <= 'h6;
+                    error_status <= 'h1;
                 end
-            end else begin
-                if (last_line_num != tlk2711_rxd - 1'd1) begin
+            end
+
+            TEST_SYNC_s: begin
+                if (~tlk2711_rkmsb & tlk2711_rklsb & (tlk2711_rxd == {D5_6, K28_5})) begin
+                    check_error <= 1'b0;
+                    error_status <= 'h0;
+                end else begin
+                    check_error <= 1'b1;
+                    error_status <= 'h1;
+                end
+            end
+    
+            TEST_SOF_s: begin
+                if (tlk2711_rxd != {K28_2, K27_7}) begin
+                    check_error <= 1'b1;
+                    error_status <= 'h2;
+                end
+
+            end
+            TEST_HOF0_s: begin
+                if (tlk2711_rxd != HEAD_0) begin
+                    check_error <= 1'b1;
+                    error_status <= 'h3;
+                end
+            end
+            TEST_HOF1_s: begin
+                if (tlk2711_rxd != HEAD_1) begin
+                    check_error <= 1'b1;
+                    error_status <= 'h4;
+                end
+            end
+
+            TEST_FILEEND_s: begin
+                if (tlk2711_rxd != 16'h8101) begin
+                    check_error <= 1'b1;
+                    error_status <= 'h5;
+                end
+            end
+            TEST_FRAME_CNT_s: begin
+                last_line_num <= tlk2711_rxd;
+                if (last_line_num == 'h0) begin
                     if (tlk2711_rxd != 'h0) begin
                         check_error <= 1'b1;
                         error_status <= 'h6;
-                 end
+                    end
+                end else begin
+                    if (last_line_num != tlk2711_rxd - 1'd1) begin
+                        //if (tlk2711_rxd != 'h0) begin
+                        check_error <= 1'b1;
+                        error_status <= 'h6;
+                        //end
+                    end
                 end
             end
-        end
-        TEST_LENGTH_s: begin
-            if (tlk2711_rxd != 16'h366) begin
-                check_error <= 1'b1;
-                error_status <= 'h7;
+            TEST_LENGTH_s: begin
+                data_length <= tlk2711_rxd;
+                // if (tlk2711_rxd != 16'h366) begin
+                //     check_error <= 1'b1;
+                //     error_status <= 'h7;
+                // end
             end
-        end
-        TEST_DATA_s: begin
-            if (tlk2711_rxd != data_gen) begin
-                check_error <= 1'b1;
-                error_status <= 'h8;
-            end else begin
-                data_gen <= data_gen + 1'd1;
+            TEST_DATA_s: begin
+                if (tlk2711_rxd != data_gen) begin
+                    check_error <= 1'b1;
+                    error_status <= 'h8;
+                end else begin
+                    data_gen <= data_gen + 1'd1;
+                end
+                data_cnt <= data_cnt + 1'd1;
             end
-            if (frame_data_cnt == data_length[15:1] - 1) begin
-                ns <= TEST_CHECKSUM_s;
-            end 
+
+            TEST_CHECKSUM_s: begin
+                if (tlk2711_rxd != checksum) begin
+                    check_error <= 1'b1;
+                    error_status <= 'h9;
+                end
+            end
+
+            TEST_EOF_s: begin
+                if (tlk2711_rxd != {K29_7, K30_7}) begin
+                    check_error <= 1'b1;
+                    error_status <= 'h10;
+                end
+            end
+
+            TEST_BACKWARD_s: begin
+                backward_cnt <= backward_cnt + 1'd1;
+            end
+            default: begin
+                check_error <= 1'b0;
+                error_status <= 'h0;
+            end
+            endcase
+        end else begin
+            check_error <= 1'b0;
+            error_status <= 'h0;
         end
-
-        TEST_CHECKSUM_s: begin
-            ns <= TEST_EOF_s;
-        end
-
-        TEST_EOF_s: begin
-            ns <= TEST_BACKWARD_s;
-        end
-
-        TEST_BACKWARD_s: begin
-            ns <= TEST_IDLE_s;
-            
-        end
-
-
     end
-
 end
 
-
-
+ always @(posedge clk) begin
+    if (rst | i_soft_rst) begin
+        checksum <= 'h0; 
+        
+    end else begin
+        case(cs)
+        TEST_IDLE_s, TEST_SYNC_s, TEST_EOF_s, TEST_BACKWARD_s, TEST_END_s: begin
+            checksum <= 'h0;
+        end
+        TEST_HOF1_s, TEST_FILEEND_s, TEST_FRAME_CNT_s, TEST_LENGTH_s, TEST_DATA_s: begin
+            checksum <= checksum + i_2711_rxd;
+        end
+        default: checksum <= 'h0;
+        endcase
+    end
+end
 
 endmodule

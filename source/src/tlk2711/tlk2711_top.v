@@ -174,6 +174,7 @@ module tlk2711_top
     wire                                rx_length_unit;
     wire                                tx_stop_test;
     wire                                rx_start_test;
+    wire [3:0]                          rx_test_error;
 
    reg_mgt #(
        .DEBUG_ENA(DEBUG_ENA),
@@ -230,6 +231,7 @@ module tlk2711_top
        .i_rx_channel_id(rx_channel_id),
 
        .i_tx_status(tx_status),
+       .i_rx_test_error(rx_test_error),
        .i_rx_status(rx_status),
        .i_loss_interrupt(loss_interrupt),
        .i_sync_loss(sync_loss),
@@ -406,6 +408,7 @@ module tlk2711_top
         .i_2711_rklsb(i_2711_rklsb),
         .i_2711_rxd(i_2711_rxd),
         .o_rx_status(rx_status),
+        .o_rx_test_error(rx_test_error),
         .o_loss_interrupt(loss_interrupt),
         .o_sync_loss(sync_loss),
         .o_link_loss(link_loss)

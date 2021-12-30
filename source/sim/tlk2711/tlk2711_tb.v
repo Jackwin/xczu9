@@ -19,7 +19,7 @@ module tlk2711_tb(
 	reg[15:0]           tx_packet_tail = 'd10752;
 	reg[23:0] 			tx_body_num = 24'd3;
 	
-	integer             tx_mode = 3'd3; //0--norm mode, 1--kcode mode, 2--test mode, 3--specific mode 4--protocal test mode
+	integer             tx_mode = 3'd2; //0--norm mode, 1--kcode mode, 2--test mode, 3--specific mode 4--protocal test mode
 	integer  			rx_check_ena = 1'd1;
 
 	reg[23:0] 			rx_line_num_per_intr = LINE_NUM_PER_INTR;

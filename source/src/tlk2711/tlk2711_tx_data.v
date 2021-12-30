@@ -138,7 +138,7 @@ module  tlk2711_tx_data
 
     reg         tlk2711_tkmsb_1r;
     reg         tlk2711_tklsb_1r;
-    reg [15:0]  tlk2711_txd_1r;
+    reg [15:0]  tlk2711_txd_1r = 16'hc5bc;
 
     reg         fifo_enable;
     wire        fifo_full, fifo_wren, fifo_rden;

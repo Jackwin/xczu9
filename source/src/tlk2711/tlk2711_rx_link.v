@@ -72,6 +72,7 @@ module  tlk2711_rx_link
     input  [15:0]                       i_2711_rxd,
 
     output [6:0]                        o_rx_status,
+    output [3:0]                        o_rx_test_error,
     output                              o_loss_interrupt,
     output                              o_sync_loss,
     output                              o_link_loss
@@ -264,32 +265,47 @@ module  tlk2711_rx_link
     end
 
     // When the check is enabled, the rx will check the received data automatically
-    reg     check_error;
+    wire    check_error;
     reg     check_ena;
-    reg [15:0] data_gen;
+    //reg [15:0] data_gen;
 
     always @(posedge clk) begin
         check_ena <= i_check_ena;
     end
 
-    always @(posedge clk) begin
-        if (rst | i_soft_rst) begin
-            check_error <= 1'b0;
-            data_gen <= 16'h0;
-        end else begin
-            if (check_ena) begin
-                if (cs == RECV_DATA_s) begin
-                    data_gen <= data_gen + 1'd1;
-                    check_error <= data_gen != i_2711_rxd;
-                end else begin
-                    data_gen <= 16'h0;
-                end
-            end else begin
-                check_error <= 'h0;
-                data_gen <= 16'h0;
-            end
-        end
-    end
+    // always @(posedge clk) begin
+    //     if (rst | i_soft_rst) begin
+    //         check_error <= 1'b0;
+    //         data_gen <= 16'h0;
+    //     end else begin
+    //         if (check_ena) begin
+    //             if (cs == RECV_DATA_s) begin
+    //                 data_gen <= data_gen + 1'd1;
+    //                 check_error <= data_gen != i_2711_rxd;
+    //             end else begin
+    //                 data_gen <= 16'h0;
+    //             end
+    //         end else begin
+    //             check_error <= 'h0;
+    //             data_gen <= 16'h0;
+    //         end
+    //     end
+    // end
+
+
+    tlk2711_rx_validation tlk2711_rx_validation_inst (
+        .clk(clk),
+        .rst(rst),
+        .i_soft_rst(i_soft_rst),
+        .i_2711_rkmsb(i_2711_rkmsb),
+        .i_2711_rklsb(i_2711_rklsb),
+        .i_2711_rxd(i_2711_rxd),
+
+        .i_check_ena(i_check_ena),
+        .o_check_error(check_error),
+        .o_error_status(o_error_status)
+
+    );
     
     // Calculate the checksum
     // TODO check not an integrated frame 9-10

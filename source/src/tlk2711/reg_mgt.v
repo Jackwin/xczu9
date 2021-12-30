@@ -93,6 +93,7 @@ module reg_mgt
     input  [23:0]               i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
     
     input [6:0]                 i_rx_status,
+    input [3:0]                 i_rx_test_error,
     input [9:0]                 i_tx_status,
     input [3:0]                 i_rx_data_type,
     input                       i_rx_file_end_flag,
@@ -350,7 +351,8 @@ always @(posedge clk) begin
         case(usr_reg_raddr)
             RX_STATUS_REG: begin
                 reg_rdata[6:0] <= i_rx_status;
-                reg_rdata[59:7] <= 'h0;
+                reg_rdata[10:7] <= i_rx_test_error;
+                reg_rdata[59:11] <= 'h0;
                 reg_rdata[63:60] <= 'ha;
             end
             TX_STATUS_REG: begin
