@@ -233,7 +233,7 @@ module tlk2711_top
        //.i_rx_test_error_status(rx_test_error_status),
        
        .i_tx_status(tx_status),
-       .i_rx_test_error(rx_test_error),
+       //.i_rx_test_error(rx_test_error),
        .i_rx_status(rx_status),
        .i_loss_interrupt(loss_interrupt),
        .i_sync_loss(sync_loss),

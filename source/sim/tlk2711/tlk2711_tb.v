@@ -87,6 +87,8 @@ module tlk2711_tb(
 	
 	reg clk,rst;
 
+	reg [63:0]	reg_rdata;
+
 	initial begin  
 		clk = 1'b0;  
 		rst = 1'b1;
@@ -139,10 +141,10 @@ initial begin
 
 	write_reg(RX_ENA_REG_ADDR, 64'h3);
 
-	#5000;
+	#50000;
 
-	task_reg_read(RX_STATUS_REG_ADDR);
-	task_reg_read(RX_CTRL_REG2_ADDR);
+	task_reg_read(RX_STATUS_REG_ADDR, reg_rdata);
+	task_reg_read(RX_CTRL_REG2_ADDR, reg_rdata);
 
 end
 
