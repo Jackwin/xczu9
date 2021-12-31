@@ -165,7 +165,7 @@ module tlk2711_top
     wire                                dma_wr_ready;
     wire                                wr_finish;
             
-    wire [6:0]                          rx_status;
+    wire [10:0]                         rx_status;
     wire [9:0]                          tx_status;
     wire                                rx_fifo_rd;
     wire                                link_loss_detect_ena;
@@ -173,7 +173,7 @@ module tlk2711_top
     wire                                check_ena;
     wire                                rx_length_unit;
     wire                                tx_stop_test;
-    wire                                rx_start_test;
+    //wire                                rx_start_test;
     wire [3:0]                          rx_test_error;
 
    reg_mgt #(
@@ -215,7 +215,7 @@ module tlk2711_top
 
        .o_rx_base_addr(rx_base_addr), 
        .o_rx_config_done(rx_config_done),
-       .o_rx_start_test(rx_start_test),
+      // .o_rx_start_test(rx_start_test),
        .o_rx_fifo_rd(rx_fifo_rd),
        .o_link_loss_detect_ena(link_loss_detect_ena),
        .o_sync_loss_detect_ena(sync_loss_detect_ena),
@@ -229,7 +229,9 @@ module tlk2711_top
        .i_rx_file_end_flag(rx_file_end_flag),
        .i_rx_checksum_flag(rx_checksum_flag),
        .i_rx_channel_id(rx_channel_id),
-
+      // .i_rx_test_check_error(rx_test_check_error),
+       //.i_rx_test_error_status(rx_test_error_status),
+       
        .i_tx_status(tx_status),
        .i_rx_test_error(rx_test_error),
        .i_rx_status(rx_status),
@@ -377,7 +379,7 @@ module tlk2711_top
         .clk(clk),
         .rst(rst),
         .i_soft_rst(soft_rst),
-        .i_rx_start_test(rx_start_test),
+        //.i_rx_start_test(rx_start_test),
         .i_tx_mode(tx_mode), 
         .i_wr_cmd_ack(wr_cmd_ack),
         .o_wr_cmd_req(wr_cmd_req),
@@ -404,6 +406,7 @@ module tlk2711_top
         .o_rx_file_end_flag(rx_file_end_flag),
         .o_rx_checksum_flag(rx_checksum_flag),
         .o_rx_channel_id(rx_channel_id),
+        
         .i_2711_rkmsb(i_2711_rkmsb),
         .i_2711_rklsb(i_2711_rklsb),
         .i_2711_rxd(i_2711_rxd),
@@ -413,6 +416,8 @@ module tlk2711_top
         .o_sync_loss(sync_loss),
         .o_link_loss(link_loss)
     );
+
+    
 
 endmodule
 

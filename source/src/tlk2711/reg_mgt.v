@@ -82,7 +82,7 @@ module reg_mgt
 
     output reg                  o_rx_config_done,
     // stop the data check in data-test mode
-    output reg                  o_rx_start_test,
+    //output reg                  o_rx_start_test,
     output                      o_link_loss_detect_ena,
     output                      o_sync_loss_detect_ena,
     output                      o_rx_check_ena,
@@ -92,14 +92,13 @@ module reg_mgt
     input  [15:0]               i_rx_frame_length,
     input  [23:0]               i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
     
-    input [6:0]                 i_rx_status,
-    input [3:0]                 i_rx_test_error,
+    input [10:0]                i_rx_status,
     input [9:0]                 i_tx_status,
     input [3:0]                 i_rx_data_type,
     input                       i_rx_file_end_flag,
     input                       i_rx_checksum_flag,
     input [1:0]                 i_rx_channel_id,
-   
+    
     input                       i_loss_interrupt,
     input                       i_sync_loss,
     input                       i_link_loss,
@@ -256,12 +255,6 @@ always@(posedge clk) begin
         end else begin
             o_rx_config_done <= 1'b0;
         end
-
-        if (reg_wdata[2] == 1'h1) begin
-            o_rx_start_test <= 1'b1;
-        end else begin
-            o_rx_start_test <= 1'b0;
-        end
     end
 end
 
@@ -291,9 +284,7 @@ assign o_rx_length_unit = rx_ctrl_reg2[25];
 //////////////////////////////////////////////////////////////////////////
 //  IRQ control configuration
 /////////////////////////////////////////////////////////////////////////
-
 reg [63:0]          irq_ctrl_reg = 64'h0;
-
 reg [15:0]          tx_intr_width;
 reg [15:0]          rx_intr_width;
 reg [15:0]          link_intr_width;
@@ -350,8 +341,7 @@ always @(posedge clk) begin
     if (usr_reg_ren & reg_rd_sel_2d) begin
         case(usr_reg_raddr)
             RX_STATUS_REG: begin
-                reg_rdata[6:0] <= i_rx_status;
-                reg_rdata[10:7] <= i_rx_test_error;
+                reg_rdata[10:0] <= i_rx_status;
                 reg_rdata[59:11] <= 'h0;
                 reg_rdata[63:60] <= 'ha;
             end
@@ -509,7 +499,7 @@ always @ (posedge clk ) begin
         else if (tx_intr_r2)
             tx_intr_status <= {4'd1, 28'd0, tx_intr_cnt, 16'h5aa5};
         else if (i_loss_interrupt) 
-            rx_intr_status <= {4'd3, 32'h0, 20'h0, i_rx_status, i_sync_loss, i_link_loss};
+            rx_intr_status <= {4'd3, 32'h0, 20'h0, i_rx_status[6:0], i_sync_loss, i_link_loss};
         else if(auto_intr_signal) begin
             rx_intr_status <= {4'd4, 28'd0, 8'h0, auto_intr_signal_count, 16'hffff};
         end
@@ -557,7 +547,7 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
     .probe32(auto_intr_signal),
     .probe33(tx_intr_status),
     .probe34(auto_intr_signal_count),
-    .probe35({o_tx_config_done, o_rx_config_done, o_tx_stop_test, o_rx_start_test})
+    .probe35({o_tx_config_done, o_rx_config_done, o_tx_stop_test, o_rx_check_ena})
 
 
 );

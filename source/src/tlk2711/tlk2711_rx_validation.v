@@ -307,6 +307,39 @@ always @(posedge clk) begin
     checksum_1r <= checksum;
 end
 
+ila_rx_validation ila_rx_validation_inst (
+    .clk(clk),
 
+    .probe0(cs),
+    .probe1(check_error),
+    .probe2(),
+    .probe3(tlk2711_rxd),
+    .probe4(last_line_num),
+    .probe5(checksum_1r),
+    .probe6(),
+    .probe7(),
+    .probe8(check_ena),
+    .probe9(error_status)
+);
+
+reg [3:0]   cs, ns;
+reg [3:0]   error_status = 'h0;
+reg         check_error = 1'b0;
+
+reg [15:0]  tlk2711_rxd;
+
+reg [15:0]  last_line_num = 'h0;
+
+reg [15:0]  data_gen;
+reg [15:0]  backward_cnt;
+reg [15:0]  checksum = 'h0;
+reg [15:0]  checksum_1r;
+
+reg         tlk2711_rklsb;
+reg         tlk2711_rkmsb;
+
+reg         check_ena;
+reg [15:0]  data_cnt;
+reg [15:0]  data_length;
 
 endmodule

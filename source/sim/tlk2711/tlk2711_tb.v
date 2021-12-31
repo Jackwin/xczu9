@@ -137,7 +137,12 @@ initial begin
 
 	write_reg(TX_ENA_REG_ADDR, 64'h3);
 
-	write_reg(RX_ENA_REG_ADDR, 64'h3);	
+	write_reg(RX_ENA_REG_ADDR, 64'h3);
+
+	#5000;
+
+	task_reg_read(RX_STATUS_REG_ADDR);
+	task_reg_read(RX_CTRL_REG2_ADDR);
 
 end
 

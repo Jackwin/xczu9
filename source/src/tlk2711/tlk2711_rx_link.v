@@ -28,7 +28,6 @@ module  tlk2711_rx_link
     input                               clk,
     input                               rst,
     input                               i_soft_rst,
-    input                               i_rx_start_test,
 
     input                               i_2711_rx_clk,
 
@@ -71,7 +70,7 @@ module  tlk2711_rx_link
     input                               i_2711_rklsb,
     input  [15:0]                       i_2711_rxd,
 
-    output [6:0]                        o_rx_status,
+    output [10:0]                        o_rx_status,
     output [3:0]                        o_rx_test_error,
     output                              o_loss_interrupt,
     output                              o_sync_loss,
@@ -265,8 +264,9 @@ module  tlk2711_rx_link
     end
 
     // When the check is enabled, the rx will check the received data automatically
-    wire    check_error;
-    reg     check_ena;
+    wire        check_error;
+    reg         check_ena;
+    wire [3:0]  error_status;
     //reg [15:0] data_gen;
 
     always @(posedge clk) begin
@@ -303,7 +303,7 @@ module  tlk2711_rx_link
 
         .i_check_ena(i_check_ena),
         .o_check_error(check_error),
-        .o_error_status(o_error_status)
+        .o_error_status(error_status)
 
     );
     
@@ -600,7 +600,7 @@ module  tlk2711_rx_link
 
     // Output the status to the host
     // data_type, file_end_flag
-    assign o_rx_status = {check_error, fifo_empty, fifo_full, cs};
+    assign o_rx_status = {error_status, check_error, fifo_empty, fifo_full, cs};
 
 // TODO debug rx
 
