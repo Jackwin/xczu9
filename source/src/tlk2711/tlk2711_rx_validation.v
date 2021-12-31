@@ -66,6 +66,7 @@ reg [15:0]  last_line_num = 'h0;
 reg [15:0]  data_gen;
 reg [15:0]  backward_cnt;
 reg [15:0]  checksum = 'h0;
+reg [15:0]  checksum_1r;
 
 reg         tlk2711_rklsb;
 reg         tlk2711_rkmsb;
@@ -145,9 +146,10 @@ always @(*) begin
         end
 
         TEST_BACKWARD_s: begin
-            if (backward_cnt == 'd256) begin
-                ns = TEST_SYNC_s;
-            end 
+            // if (backward_cnt == 'd256) begin
+            //     ns = TEST_SYNC_s;
+            // end
+            ns = TEST_IDLE_s;
         end
         default: begin
             ns = TEST_IDLE_s;
@@ -163,7 +165,7 @@ always @(posedge clk) begin
     if (rst | i_soft_rst) begin
         error_status <= 'h0;
         check_error <= 'h0;
-        last_line_num <= 'h0;
+        last_line_num <= 'hFFFF;
         data_gen <= 'h0;
         backward_cnt <= 'h0;
         data_cnt <= 'h0;
@@ -224,19 +226,19 @@ always @(posedge clk) begin
             end
             TEST_FRAME_CNT_s: begin
                 last_line_num <= tlk2711_rxd;
-                if (last_line_num == 'h0) begin
-                    if (tlk2711_rxd != 'h0) begin
-                        check_error <= 1'b1;
-                        error_status <= 'h6;
-                    end
-                end else begin
-                    if (last_line_num != tlk2711_rxd - 1'd1) begin
-                        //if (tlk2711_rxd != 'h0) begin
-                        check_error <= 1'b1;
-                        error_status <= 'h6;
-                        //end
-                    end
+                // if (last_line_num == 'h0) begin
+                //     if (tlk2711_rxd != 'h0) begin
+                //         check_error <= 1'b1;
+                //         error_status <= 'h6;
+                //     end
+                // end else begin
+                if (last_line_num != tlk2711_rxd - 1'd1) begin
+                    //if (tlk2711_rxd != 'h0) begin
+                    check_error <= 1'b1;
+                    error_status <= 'h6;
+                    //end
                 end
+                // end
             end
             TEST_LENGTH_s: begin
                 data_length <= tlk2711_rxd;
@@ -256,7 +258,7 @@ always @(posedge clk) begin
             end
 
             TEST_CHECKSUM_s: begin
-                if (tlk2711_rxd != checksum) begin
+                if (tlk2711_rxd != checksum_1r) begin
                     check_error <= 1'b1;
                     error_status <= 'h9;
                 end
@@ -300,5 +302,11 @@ end
         endcase
     end
 end
+
+always @(posedge clk) begin
+    checksum_1r <= checksum;
+end
+
+
 
 endmodule
