@@ -62,7 +62,7 @@ output          usr_led
 );
 
 parameter DEBUG_ENA = "TRUE";
-parameter RX_CDC_CFG = "FIFO"; // rx clock domain crossing
+parameter RX_CDC_CFG = "REG"; // rx clock domain crossing
 parameter DDR_ADDR_WIDTH = 40;
 parameter HP0_DATA_WIDTH = 128;
 parameter STREAM_DATA_WIDTH = 64;
