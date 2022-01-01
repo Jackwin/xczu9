@@ -70,7 +70,7 @@ module  tlk2711_rx_link
     input                               i_2711_rklsb,
     input  [15:0]                       i_2711_rxd,
 
-    output [10:0]                        o_rx_status,
+    output [10:0]                       o_rx_status,
     output [3:0]                        o_rx_test_error,
     output                              o_loss_interrupt,
     output                              o_sync_loss,
@@ -406,8 +406,10 @@ module  tlk2711_rx_link
                 wr_addr <= i_rx_base_addr;
             // REVIEW: Get the wr_addr from the fpga_mgt?
             else if (frame_end) begin
-                // In tx test mode, keep the addr unchanged
-                if (i_tx_mode != 2'd2) begin 
+                // In tx test mode or rx validation, keep the addr unchanged
+                if (i_tx_mode == 2'd2 | check_ena) begin
+                    wr_addr <= wr_addr;
+                end else begin 
                     wr_addr <= wr_addr + wr_bbt;
                 end
             end
