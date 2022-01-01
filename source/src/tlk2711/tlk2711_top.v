@@ -340,9 +340,9 @@ module tlk2711_top
         .DEBUG_ENA(DEBUG_ENA),
         .DATA_WIDTH(STREAM_RDATA_WIDTH)
     ) tlk2711_tx_data (
-        .clk(clk),
+        //.clk(clk),
         // Uncomment the followig clock to make sure tx_clk equal to rx_clk
-        //.clk(i_2711_rx_clk),
+        .clk(i_2711_rx_clk),
         .rst(rst),
         .i_soft_reset(soft_rst),
         .i_stop_test(tx_stop_test),

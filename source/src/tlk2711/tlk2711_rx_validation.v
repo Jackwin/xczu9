@@ -5,6 +5,7 @@
 // Author: Chunjie Wang
 // Reference:  
 // Revision History:
+//   Rev 1.1 - Support CDC, chunjie, 2022-1-1
 //   Rev 1.0 - First created, chunjie, 2021-12-29
 //   
 // Email: 
