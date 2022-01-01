@@ -307,33 +307,36 @@ assign o_rx_intr_width = rx_intr_width;
 assign o_link_intr_width = link_intr_width;
 
 always@(posedge clk) begin
-    if( reg_wen ) begin
-        case(reg_waddr)
-        //tx
-
-        TX_ADDR_REG: tx_base_addr_reg <= reg_wdata;
-        TX_LENGTH_REG: tx_length_reg <= reg_wdata;
-        TX_PACKET_REG: begin
-            tx_packet_reg <= reg_wdata;
-            $display("%t (reg_mgt.v)TX_PACKET_REG: frame_length is %d", $time, reg_wdata[15:0]);
-            $display("%t (reg_mgt.v)TX_PACKET_REG: body_num is %d", $time, reg_wdata[39:16]);
-            $display("%t (reg_mgt.v)TX_PACKET_REG: tail_length is %d", $time, reg_wdata[55:40]);
-            $display("%t (reg_mgt.v)TX_PACKET_REG: pre-set is %d", $time, reg_wdata[59]);
-            $display("%t (reg_mgt.v)TX_PACKET_REG: mode is %d", $time, reg_wdata[62:60]);
-            $display("%t (reg_mgt.v)TX_PACKET_REG: loop-back is %d", $time, reg_wdata[63]);
-        end 
-        RX_ADDR_REG: rx_base_addr_reg <= reg_wdata;
-        RX_CTRL_REG: rx_ctrl_reg <= reg_wdata;
-        RX_CTRL_REG2: begin
-            rx_ctrl_reg2 <= reg_wdata;
-            $display("%t RX_CTRL_REG2: line_num_per_intr is %d", $time, reg_wdata[23:0]);
+    if (rst) begin
+        rx_base_addr_reg[ADDR_WIDTH-1:0] <= 'h50000000;
+    end else begin
+        if( reg_wen ) begin
+            case(reg_waddr)
+            //tx
+            TX_ADDR_REG: tx_base_addr_reg <= reg_wdata;
+            TX_LENGTH_REG: tx_length_reg <= reg_wdata;
+            TX_PACKET_REG: begin
+                tx_packet_reg <= reg_wdata;
+                $display("%t (reg_mgt.v)TX_PACKET_REG: frame_length is %d", $time, reg_wdata[15:0]);
+                $display("%t (reg_mgt.v)TX_PACKET_REG: body_num is %d", $time, reg_wdata[39:16]);
+                $display("%t (reg_mgt.v)TX_PACKET_REG: tail_length is %d", $time, reg_wdata[55:40]);
+                $display("%t (reg_mgt.v)TX_PACKET_REG: pre-set is %d", $time, reg_wdata[59]);
+                $display("%t (reg_mgt.v)TX_PACKET_REG: mode is %d", $time, reg_wdata[62:60]);
+                $display("%t (reg_mgt.v)TX_PACKET_REG: loop-back is %d", $time, reg_wdata[63]);
+            end 
+            RX_ADDR_REG: rx_base_addr_reg <= reg_wdata;
+            RX_CTRL_REG: rx_ctrl_reg <= reg_wdata;
+            RX_CTRL_REG2: begin
+                rx_ctrl_reg2 <= reg_wdata;
+                $display("%t RX_CTRL_REG2: line_num_per_intr is %d", $time, reg_wdata[23:0]);
+            end
+            IRQ_CTRL_REG: begin
+                irq_ctrl_reg <= reg_wdata;
+                $display("%t IRQ_CTRL_REG: interrupt pulse width is %d", $time, reg_wdata[15:0]);
+            end
+            default;
+            endcase
         end
-        IRQ_CTRL_REG: begin
-            irq_ctrl_reg <= reg_wdata;
-            $display("%t IRQ_CTRL_REG: interrupt pulse width is %d", $time, reg_wdata[15:0]);
-        end
-        default;
-        endcase
     end
 end
 

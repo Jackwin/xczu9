@@ -659,7 +659,7 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe35(o_dma_wr_data),
         .probe36(check_ena),
         .probe37(check_error),
-        .probe38(data_gen),
+        .probe38(rx_intr_width_cnt),
         .probe39(line_cnt),
         .probe40(i_rx_line_num_per_intr)
 

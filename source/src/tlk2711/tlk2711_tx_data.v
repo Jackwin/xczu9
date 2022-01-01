@@ -368,7 +368,7 @@ module  tlk2711_tx_data
             tlk2711_txd   <= 'd0;
             tail_frame   <= 'b0;
             state_cnt <= 'h0;
-            test_data_cnt <= 'h0;
+           // test_data_cnt <= 'h0;
             channel_id <= 'h0;
             tx_intr_width_cnt <= 16'h0;
             test_frame_cnt <= 'h0;
@@ -377,7 +377,7 @@ module  tlk2711_tx_data
             if (tx_mode == TEST_MODE) begin
                 if (i_soft_reset) begin
                     state_cnt <= 'h0;
-                    test_data_cnt <= 'h0;
+                   // test_data_cnt <= 'h0;
                     test_frame_cnt <= 'h0;
                     test_data <= 'h0;
                     test_backward_cnt <= 'h0;
@@ -454,49 +454,17 @@ module  tlk2711_tx_data
                             test_backward_cnt <= 'h0;
                         end
                     end
-                    default: tlk2711_txd <= 'h0;
+                    default: begin
+                        tlk2711_tkmsb <= 'b0;
+                        tlk2711_tklsb <= 'b1;
+                        tlk2711_txd <= {D5_6, K28_5};
+                    end
                     endcase
                 end
-
-                // // TODO Add an idle state
-                // COMMA1_s: begin // send K-code to sync the link
-                //     tlk2711_tkmsb <= 'b0;
-                //     tlk2711_tklsb <= 'b1;
-                //     tlk2711_txd <= {D5_6, K28_5};
-                //     state_cnt <= state_cnt + 1'd1;
-                //     test_data_cnt <= 'h0;
-                // end
-
-                // COMMA2_s: begin
-                //     tlk2711_tkmsb <= 'b0;
-                //     tlk2711_tklsb <= 'b1;
-                //     tlk2711_txd <= {D5_6, K28_5};
-                //     state_cnt <= state_cnt + 1'd1;
-                // end
-                // SOF_s: begin
-                //     tlk2711_tkmsb <= 'b1;
-                //     tlk2711_tklsb <= 'b1;
-                //     tlk2711_txd <= {K28_2, K27_7};
-                //     state_cnt <= state_cnt + 1'd1;
-                // end
-                // DATA_s: begin
-                //     tlk2711_tkmsb <= 'b0;
-                //     tlk2711_tklsb <= 'b1;
-                //     tlk2711_txd <= {2{test_data_cnt}};
-                //     tlk2711_tkmsb <= 'b0;
-                //     tlk2711_tklsb <= 'b0;
-                //     if (&test_data_cnt) begin
-                //         test_data_cnt <= 'h0;
-                //         state_cnt <= 'h0;
-                //     end
-                //     else test_data_cnt <= test_data_cnt + 16'h0101;
-                // end
-                // default: test_data_cnt <= 'h0;
-                // endcase
             end else if (tx_mode == KCODE_MODE) begin
-                tlk2711_tkmsb <= 'b1;
+                tlk2711_tkmsb <= 'b0;
                 tlk2711_tklsb <= 'b1;
-                tlk2711_txd   <= {K28_2, K27_7};
+                tlk2711_txd <= {D5_6, K28_5};
             end else begin
                 case(tx_state)
                     tx_pwr_sync: begin
@@ -690,7 +658,7 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe2(i_tx_start),
         .probe3(tx_state),
         .probe4(state_cnt),
-        .probe5(test_data_cnt),
+        .probe5(test_data),
         .probe6(tlk2711_txd),
         .probe7(tlk2711_tkmsb),
         .probe8(tlk2711_tklsb),
