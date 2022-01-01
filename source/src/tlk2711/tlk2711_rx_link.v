@@ -47,6 +47,7 @@ module  tlk2711_rx_link
     input                               i_link_loss_detect_ena,
     input                               i_sync_loss_detect_ena,
     input                               i_check_ena,
+    input                               i_loopback_ena,
     input                               i_rx_length_unit,
 
     // To read the remained data in FIFO when link/sync loss happens
@@ -158,7 +159,7 @@ module  tlk2711_rx_link
 
     // Generate the specified width interrupt
     
-    always @(posedge clk) begin
+    always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             rx_intr_width_cnt <= 16'h0;
             rx_intr_width_cnt_ena <= 'h0;
@@ -181,13 +182,13 @@ module  tlk2711_rx_link
     assign o_rx_interrupt = rx_intr_width_cnt_ena;
     // calculate the number of input lines
 
-    always @(posedge clk) begin
+    always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             line_cnt <= 'h0;
         end else begin
             if (cs == LINE_INFOR_s) begin
                 line_cnt <= line_cnt + 1'd1;
-            end else if (o_rx_interrupt) begin
+            end else if (rx_intr_width_cnt_ena) begin
                 line_cnt <= 0;
             end
         end
@@ -196,7 +197,7 @@ module  tlk2711_rx_link
 
     // Rx state
 
-    always @(posedge clk) begin
+    always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             cs <= IDLE_s;
         end else begin
@@ -269,7 +270,7 @@ module  tlk2711_rx_link
     wire [3:0]  error_status;
     //reg [15:0] data_gen;
 
-    always @(posedge clk) begin
+    always @(posedge i_2711_rx_clk) begin
         check_ena <= i_check_ena;
     end
 
@@ -294,7 +295,7 @@ module  tlk2711_rx_link
 
 
     tlk2711_rx_validation tlk2711_rx_validation_inst (
-        .clk(clk),
+        .clk(i_2711_rx_clk),
         .rst(rst),
         .i_soft_rst(i_soft_rst),
         .i_2711_rkmsb(i_2711_rkmsb),
@@ -304,12 +305,11 @@ module  tlk2711_rx_link
         .i_check_ena(i_check_ena),
         .o_check_error(check_error),
         .o_error_status(error_status)
-
     );
     
     // Calculate the checksum
     // TODO check not an integrated frame 9-10
-    always @(posedge clk) begin
+    always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             checksum <= 'h0; 
             checksum_error <= 1'b0;
@@ -339,7 +339,7 @@ module  tlk2711_rx_link
         end
     end
 
-    always @(posedge clk) begin
+    always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             data_type <= 0;
             file_end_flag <= 'h0;
@@ -360,7 +360,7 @@ module  tlk2711_rx_link
         end
     end
 
-    always @(posedge clk) begin
+    always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             frame_data_cnt <= 'h0;
             frame_valid <= 'h0;
@@ -379,35 +379,71 @@ module  tlk2711_rx_link
         end
     end
 
-    always @(posedge clk) begin
+    always @(posedge i_2711_rx_clk) begin
         tlk2711_rxd <= i_2711_rxd;
     end
 
+    reg                     wr_cmd_req;
+    reg                     wr_cmd_req_1r;
+    reg                     wr_cmd_req_2r;
+    wire                    wr_cmd_ack_2711;
+    reg                     wr_cmd_ack_2711_1q;
+    reg [DLEN_WIDTH-1:0]    wr_bbt_1r;
+
+    // cmd_req delay more than wr_bbt and wr_addr to ensure wr_bbt and wr_addr stable
     always @(posedge clk) begin
+        wr_cmd_req_1r <= wr_cmd_req_2711;
+        wr_cmd_req_2r <= wr_cmd_req_1r;
+        o_wr_cmd_req <= wr_cmd_req_2r;
+
+        wr_bbt <= wr_bbt_2711;
+    end
+   // assign wr_bbt = wr_bbt_1r;
+
+    always @(posedge i_2711_rx_clk) begin
+        wr_cmd_ack_2711_1q <= i_wr_cmd_ack;
+
+    end
+    assign wr_cmd_ack_2711 = wr_cmd_ack_2711_1q | i_wr_cmd_ack;
+
+    // tlk2711 clock domain
+    reg [DLEN_WIDTH-1:0]    wr_bbt_2711 = 'd0;
+    reg [ADDR_WIDTH-1:0]    wr_addr_2711 = 'd0;
+    reg [15:0]              frame_length_2711;
+    reg                     wr_cmd_req_2711;
+
+    always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
-            wr_addr      <= 'h50000000;
-            o_wr_cmd_req <= 'b0;
-            wr_bbt       <= 'd0;
-            frame_length <= 'h0;
+            wr_cmd_req_2711 <= 'b0;
+            wr_bbt_2711 <= 'd0;
+            frame_length_2711 <= 'h0;
         end else begin
             if (cs == DATA_LENGTH_s) begin
                 // Recv data length is 882B, 10752B, 4608B. When write data to 
                 // DDR, the unit number is 8byte, so the software needs to
                 // tailor the correct number. For example, the received data
                 // is 882 bytes, but 888 bytes data will be written to DDR.
-                wr_bbt[DLEN_WIDTH-1:3] <= i_2711_rxd[15:3] + |i_2711_rxd[2:0]; 
-                wr_bbt[2:0]  <= 'd0;
-                o_wr_cmd_req <= 1'b1;
-                frame_length <= i_2711_rxd;
-            end else if (i_wr_cmd_ack) begin
-                o_wr_cmd_req <= 1'b0;
+                wr_bbt_2711[DLEN_WIDTH-1:3] <= i_2711_rxd[15:3] + |i_2711_rxd[2:0]; 
+                wr_bbt_2711[2:0]  <= 'd0;
+                wr_cmd_req_2711 <= 1'b1;
+                frame_length_2711 <= i_2711_rxd;
+            end else if (wr_cmd_ack_2711) begin
+                wr_cmd_req_2711 <= 1'b0;
             end
+        end
+    end
+
+    // FPGA logic clock domain
+    always @(posedge clk) begin
+        if (rst | i_soft_rst) begin
+            wr_addr <= 'h50000000;
+        end else begin
             if (i_rx_start)
                 wr_addr <= i_rx_base_addr;
             // REVIEW: Get the wr_addr from the fpga_mgt?
             else if (frame_end) begin
                 // In tx test mode or rx validation, keep the addr unchanged
-                if (i_tx_mode == 2'd2 | check_ena) begin
+                if ((i_tx_mode == 2'd2 & i_loopback_ena) | check_ena) begin
                     wr_addr <= wr_addr;
                 end else begin 
                     wr_addr <= wr_addr + wr_bbt;
@@ -415,6 +451,39 @@ module  tlk2711_rx_link
             end
         end
     end
+
+    // always @(posedge i_2711_rx_clk) begin
+    //     if (rst | i_soft_rst) begin
+    //         wr_addr      <= 'h50000000;
+    //         wr_cmd_req <= 'b0;
+    //         wr_bbt       <= 'd0;
+    //         frame_length <= 'h0;
+    //     end else begin
+    //         if (cs == DATA_LENGTH_s) begin
+    //             // Recv data length is 882B, 10752B, 4608B. When write data to 
+    //             // DDR, the unit number is 8byte, so the software needs to
+    //             // tailor the correct number. For example, the received data
+    //             // is 882 bytes, but 888 bytes data will be written to DDR.
+    //             wr_bbt[DLEN_WIDTH-1:3] <= i_2711_rxd[15:3] + |i_2711_rxd[2:0]; 
+    //             wr_bbt[2:0]  <= 'd0;
+    //             wr_cmd_req <= 1'b1;
+    //             frame_length <= i_2711_rxd;
+    //         end else if (wr_cmd_ack) begin
+    //             wr_cmd_req <= 1'b0;
+    //         end
+    //         if (i_rx_start)
+    //             wr_addr <= i_rx_base_addr;
+    //         // REVIEW: Get the wr_addr from the fpga_mgt?
+    //         else if (frame_end) begin
+    //             // In tx test mode or rx validation, keep the addr unchanged
+    //             if ((i_tx_mode == 2'd2 & i_loopback_ena) | check_ena) begin
+    //                 wr_addr <= wr_addr;
+    //             end else begin 
+    //                 wr_addr <= wr_addr + wr_bbt;
+    //             end
+    //         end
+    //     end
+    // end
 
     reg  fifo_wren;
     wire fifo_empty, fifo_full;
@@ -425,7 +494,7 @@ module  tlk2711_rx_link
     assign o_dma_wr_valid = ~fifo_empty & i_dma_wr_ready;
     assign o_dma_wr_keep = {WBYTE_WIDTH{1'b1}};
 
-    always @(posedge clk) begin
+    always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             fifo_wren <= 1'b0;
         end else begin
@@ -456,22 +525,22 @@ module  tlk2711_rx_link
         end
     end
 
-    always@(posedge clk)begin
-        if (rst | i_soft_rst) begin
-            valid_data_num <= 'd0;
-            trans_data_num <= 'd0;
-        end else begin
-            trans_data_num <= wr_bbt[15:1] + 4;
-            valid_data_num <= valid_byte[15:1] + 4;
-        end
-    end
+    // always@(posedge clk)begin
+    //     if (rst | i_soft_rst) begin
+    //         valid_data_num <= 'd0;
+    //         trans_data_num <= 'd0;
+    //     end else begin
+    //         trans_data_num <= wr_bbt[15:1] + 4;
+    //         valid_data_num <= valid_byte[15:1] + 4;
+    //     end
+    // end
 
     // Generate interrupt.
     // Note the DMA trans
 
     reg     one_frame_done;
 
-    always @(posedge clk) begin
+    always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             one_frame_done <= 1'b0;
         end else begin
@@ -489,20 +558,34 @@ module  tlk2711_rx_link
 
     assign o_fifo_status = fifo_empty;
     // TODO Add more data to ensure the valid data are readout
+    // fifo_fwft_16_2048 fifo_fwft_rx (
+    //     .clk(clk),
+    //     .srst(rst | i_soft_rst),
+    //     .din(fifo_din),
+    //     .wr_en(fifo_wren),
+    //     .rd_en(fifo_rden),
+    //     .dout(fifo_dout),
+    //     .full(fifo_full),
+    //     .empty(fifo_empty)
+    // );
+
     fifo_fwft_16_2048 fifo_fwft_rx (
-        .clk(clk),
-        .srst(rst | i_soft_rst),
+        
+        .wr_clk(i_2711_rx_clk),
+        .rst(rst | i_soft_rst),
         .din(fifo_din),
         .wr_en(fifo_wren),
+        .full(fifo_full),
+
+        .rd_clk(clk),
         .rd_en(fifo_rden),
         .dout(fifo_dout),
-        .full(fifo_full),
         .empty(fifo_empty)
     );
 
-    always@(posedge clk) begin
+    always@(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
-            rx_frame_cnt      <= 'd0;
+            rx_frame_cnt  <= 'd0;
         end else begin
             if (i_rx_start & o_rx_interrupt)
                 rx_frame_cnt <= 'd0;
@@ -522,7 +605,7 @@ module  tlk2711_rx_link
     // After the link loss happends, another detection will be launched after 100ms to avoid 
     // frequent interrups to the host.
 
-    always@(posedge clk) begin
+    always@(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             link_loss_flag <= 1'b0;
             link_loss <= 1'b0;
@@ -565,7 +648,7 @@ module  tlk2711_rx_link
                             cs == CHECK_DATA_s;
 
     // When sync loss happens, the host issues the soft reset
-    always@(posedge clk) begin
+    always@(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             sync_loss <= 1'b0;
             sync_loss_timer <= 'h0;
@@ -620,7 +703,7 @@ always@(posedge clk) begin
 end
 if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
     ila_tlk2711_rx ila_tlk2711_rx_i(
-        .clk(clk),
+        .clk(i_2711_rx_clk),
         .probe0(i_2711_rkmsb),
         .probe1(i_2711_rklsb),
         .probe2(i_2711_rxd),

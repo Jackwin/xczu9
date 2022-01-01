@@ -57,6 +57,7 @@ module tlk2711_wrapper
     output                          o_2711b_rx_irq,
     output                          o_2711b_loss_irq,
 
+    input                           i_2711b_rx_clk,
     input                           i_2711b_rkmsb,
     input                           i_2711b_rklsb,
     input   [15:0]                  i_2711b_rxd,
@@ -120,6 +121,7 @@ module tlk2711_wrapper
     output                          o_2711a_rx_irq,
     output                          o_2711a_loss_irq,
 
+    input                           i_2711a_rx_clk,
     input                           i_2711a_rkmsb,
     input                           i_2711a_rklsb,
     input   [15:0]                  i_2711a_rxd,
@@ -214,6 +216,7 @@ tlk2711_top #(
 
     //tlk2711 interface
     // TODO rx should use rx_clk
+    .i_2711_rx_clk(i_2711b_rx_clk),
     .i_2711_rkmsb(i_2711b_rkmsb),
     .i_2711_rklsb(i_2711b_rklsb),
     .i_2711_rxd(i_2711b_rxd),
@@ -297,6 +300,7 @@ tlk2711_top #(
 
     //tlk2711 interface
     // TODO rx should use rx_clk
+    .i_2711_rx_clk(i_2711a_rx_clk),
     .i_2711_rkmsb(i_2711a_rkmsb),
     .i_2711_rklsb(i_2711a_rklsb),
     .i_2711_rxd(i_2711a_rxd),

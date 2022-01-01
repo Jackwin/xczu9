@@ -1,5 +1,8 @@
 
 #tlk2711b -> bank 44 48
+
+create_clock -name tlk2711b_rx_clk -period 10 [get_ports tlk2711b_rx_clk]
+
 set_property PACKAGE_PIN AF15 [get_ports {tlk2711b_txd[0]}]
 set_property PACKAGE_PIN AN14 [get_ports {tlk2711b_txd[1]}]
 set_property PACKAGE_PIN AG15 [get_ports {tlk2711b_txd[2]}]
@@ -49,6 +52,7 @@ set_property PACKAGE_PIN E17 [get_ports tlk2711b_rx_clk]
 set_property PACKAGE_PIN A17 [get_ports tlk2711b_testen]
 set_property PACKAGE_PIN L18 [get_ports tlk2711b_rkmsb]
 
+
 set_property IOSTANDARD LVCMOS25 [get_ports {tlk2711b_txd[*]}]
 
 set_property IOSTANDARD LVCMOS25 [get_ports tlk2711b_loopen]
@@ -67,6 +71,8 @@ set_property IOSTANDARD LVCMOS25 [get_ports tlk2711b_testen]
 set_property IOSTANDARD LVCMOS25 [get_ports tlk2711b_rkmsb]
 
 ## tlk2711a -> bank 49 50
+
+create_clock -name tlk2711a_rx_clk -period 10 [get_ports tlk2711a_rx_clk]
 
 set_property PACKAGE_PIN H10 [get_ports {tlk2711a_txd[0]}]
 set_property PACKAGE_PIN J10 [get_ports {tlk2711a_txd[1]}]

@@ -242,21 +242,19 @@ if (RX_CDC_CFG == "REG") begin
         tlk2711b_rxd_1r <= tlk2711b_rxd;
         tlk2711b_rklsb_1r <= tlk2711b_rklsb;
         tlk2711b_rkmsb_1r <= tlk2711b_rkmsb;
-    end
 
-    always @(posedge tlk2711a_rx_clk) begin
-        tlk2711a_rxd_1r <= tlk2711a_rxd;
-        tlk2711a_rklsb_1r <= tlk2711a_rklsb;
-        tlk2711a_rkmsb_1r <= tlk2711a_rkmsb;
-    end
-
-    always @(posedge clk_100) begin
         tlk2711b_rxd_2r <= tlk2711b_rxd_1r;
         tlk2711b_rxd_3r <= tlk2711b_rxd_2r;
         tlk2711b_rklsb_2r <= tlk2711b_rklsb_1r;
         tlk2711b_rklsb_3r <= tlk2711b_rklsb_2r;
         tlk2711b_rkmsb_2r <= tlk2711b_rkmsb_1r;
         tlk2711b_rkmsb_3r <= tlk2711b_rkmsb_2r;
+    end
+
+    always @(posedge tlk2711a_rx_clk) begin
+        tlk2711a_rxd_1r <= tlk2711a_rxd;
+        tlk2711a_rklsb_1r <= tlk2711a_rklsb;
+        tlk2711a_rkmsb_1r <= tlk2711a_rkmsb;
 
         tlk2711a_rxd_2r <= tlk2711a_rxd_1r;
         tlk2711a_rxd_3r <= tlk2711a_rxd_2r;
@@ -266,6 +264,23 @@ if (RX_CDC_CFG == "REG") begin
         tlk2711a_rkmsb_2r <= tlk2711a_rkmsb_1r;
         tlk2711a_rkmsb_3r <= tlk2711a_rkmsb_2r;
     end
+
+    // always @(posedge clk_100) begin
+    //     tlk2711b_rxd_2r <= tlk2711b_rxd_1r;
+    //     tlk2711b_rxd_3r <= tlk2711b_rxd_2r;
+    //     tlk2711b_rklsb_2r <= tlk2711b_rklsb_1r;
+    //     tlk2711b_rklsb_3r <= tlk2711b_rklsb_2r;
+    //     tlk2711b_rkmsb_2r <= tlk2711b_rkmsb_1r;
+    //     tlk2711b_rkmsb_3r <= tlk2711b_rkmsb_2r;
+
+    //     tlk2711a_rxd_2r <= tlk2711a_rxd_1r;
+    //     tlk2711a_rxd_3r <= tlk2711a_rxd_2r;
+
+    //     tlk2711a_rklsb_2r <= tlk2711a_rklsb_1r;
+    //     tlk2711a_rklsb_3r <= tlk2711a_rklsb_2r;
+    //     tlk2711a_rkmsb_2r <= tlk2711a_rkmsb_1r;
+    //     tlk2711a_rkmsb_3r <= tlk2711a_rkmsb_2r;
+    // end
 
     assign tlk2711ba_rkmsb_w = tlk2711a_rkmsb_3r;
     assign tlk2711ba_rklsb_w = tlk2711a_rklsb_3r;
@@ -332,6 +347,7 @@ tlk2711_wrapper #(
     .o_2711b_rx_irq(tlk2711b_rx_irq),
     .o_2711b_loss_irq(tlk2711b_loss_irq),
 
+    .i_2711b_rx_clk(tlk2711b_rx_clk),
     .i_2711b_rkmsb(tlk2711b_rkmsb_w),
     .i_2711b_rklsb(tlk2711b_rklsb_w),
     .i_2711b_rxd(tlk2711b_rxd_w),
@@ -388,6 +404,7 @@ tlk2711_wrapper #(
     .o_2711a_rx_irq(tlk2711a_rx_irq),
     .o_2711a_loss_irq(tlk2711a_loss_irq),
 
+    .i_2711a_rx_clk(tlk2711a_rx_clk),
     .i_2711a_rkmsb(tlk2711a_rkmsb_w),
     .i_2711a_rklsb(tlk2711a_rklsb_w),
     .i_2711a_rxd(tlk2711a_rxd_w),
@@ -401,7 +418,6 @@ tlk2711_wrapper #(
     .o_2711a_prbsen(tlk2711a_prbsen),
     .o_2711a_pre(tlk2711a_pre),
     .o_2711a_txd(tlk2711a_txd),
-
 
     .tlk2711a_m_axi_arready(hp2_arready),
     .tlk2711a_m_axi_arvalid(hp2_arvalid),

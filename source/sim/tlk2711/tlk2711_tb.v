@@ -85,7 +85,8 @@ module tlk2711_tb(
     reg          m_axi_bvalid = 1'b0;
     wire         m_axi_bready;
 	
-	reg clk,rst;
+	reg 		clk,rst;
+	reg 		tlk2711_rx_clk;
 
 	reg [63:0]	reg_rdata;
 
@@ -100,7 +101,14 @@ module tlk2711_tb(
 	always begin  
 		#10 clk = ~clk;  // 100M	
 	end
-	
+
+	initial begin
+		tlk2711_rx_clk = 1'b0;
+		forever begin
+			#11 tlk2711_rx_clk = ~tlk2711_rx_clk;
+		end
+	end
+
 	reg            	i_reg_wen, i_reg_ren;
 	reg  [15:0]    	i_reg_waddr, i_reg_raddr;
 	reg  [63:0]    	i_reg_wdata;
@@ -340,6 +348,7 @@ endtask
         .o_rx_irq(o_rx_irq),
         .o_loss_irq(o_loss_irq),
         //tlk2711 interface
+		.i_2711_rx_clk(tlk2711_rx_clk),
         .i_2711_rkmsb(i_2711_rkmsb),
         .i_2711_rklsb(i_2711_rklsb),
         .i_2711_rxd(i_2711_rxd),

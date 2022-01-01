@@ -267,7 +267,7 @@ always @(posedge clk) begin
             TEST_EOF_s: begin
                 if (tlk2711_rxd != {K29_7, K30_7}) begin
                     check_error <= 1'b1;
-                    error_status <= 'h10;
+                    error_status <= 'ha;
                 end
             end
 

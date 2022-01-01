@@ -55,6 +55,7 @@ module tlk2711_top
     input               clk,
     input               rst,
 
+    input               i_2711_rx_clk,
     input               i_2711_rkmsb,
     input               i_2711_rklsb,
     input   [15:0]      i_2711_rxd,
@@ -340,6 +341,8 @@ module tlk2711_top
         .DATA_WIDTH(STREAM_RDATA_WIDTH)
     ) tlk2711_tx_data (
         .clk(clk),
+        // Uncomment the followig clock to make sure tx_clk equal to rx_clk
+        //.clk(i_2711_rx_clk),
         .rst(rst),
         .i_soft_reset(soft_rst),
         .i_stop_test(tx_stop_test),
@@ -379,7 +382,7 @@ module tlk2711_top
         .clk(clk),
         .rst(rst),
         .i_soft_rst(soft_rst),
-        //.i_rx_start_test(rx_start_test),
+        .i_2711_rx_clk(i_2711_rx_clk),
         .i_tx_mode(tx_mode), 
         .i_wr_cmd_ack(wr_cmd_ack),
         .o_wr_cmd_req(wr_cmd_req),
@@ -392,6 +395,7 @@ module tlk2711_top
         .i_link_loss_detect_ena(link_loss_detect_ena),
         .i_sync_loss_detect_ena(sync_loss_detect_ena),
         .i_check_ena(check_ena),
+        .i_loopback_ena(loopback_ena),
         .i_rx_length_unit(rx_length_unit),
         .i_rx_fifo_rd(rx_fifo_rd),
         .i_dma_wr_ready(dma_wr_ready),
