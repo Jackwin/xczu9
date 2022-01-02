@@ -42,25 +42,31 @@ always @(posedge clk) begin
         data_gen <= 64'h0000000100020003;
         data_cnt <= 8'h0;
     end else begin
-        if (valid) begin
-            // In test mode, the received data length is 870 bytes, 
-            // aligning to 109 64bit.
-            if (data_cnt == 8'd108) begin
-                data_cnt <= 8'd0;
-                 data_gen <= 64'h0000000100020003;
-            end else begin
-                data_cnt <= data_cnt + 1'd1;
-                data_gen <= data_gen + 64'h0004000400040004;
-            end
-            
-            if (data != data_gen & data_cnt != 8'd108) begin
-                check_error <= 1'b1;
-            end else if (data[63:16] != data_gen[63:16] & data_cnt == 8'd108) begin
-                check_error <= 1'b1;
+        if(check_ena) begin
+            if (valid) begin
+                // In test mode, the received data length is 870 bytes, 
+                // aligning to 109 64bit.
+                if (data_cnt == 8'd108) begin
+                    data_cnt <= 8'd0;
+                    data_gen <= 64'h0000000100020003;
+                end else begin
+                    data_cnt <= data_cnt + 1'd1;
+                    data_gen <= data_gen + 64'h0004000400040004;
+                end
+                
+                if (data != data_gen & data_cnt != 8'd108) begin
+                    check_error <= 1'b1;
+                end else if (data[63:16] != data_gen[63:16] & data_cnt == 8'd108) begin
+                    check_error <= 1'b1;
+                end else begin
+                    check_error <= 1'b0;
+                end
             end else begin
                 check_error <= 1'b0;
             end
         end else begin
+            data_cnt <= 8'd0;
+            data_gen <= 64'h0000000100020003;
             check_error <= 1'b0;
         end
     end
