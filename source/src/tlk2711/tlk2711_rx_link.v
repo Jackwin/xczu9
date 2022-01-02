@@ -761,7 +761,8 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe37(check_error),
         .probe38(rx_intr_width_cnt),
         .probe39(line_cnt),
-        .probe40(i_rx_line_num_per_intr)
+        .probe40(i_rx_line_num_per_intr),
+        .probe41(fifo_rd_check_error)
 
     );
 

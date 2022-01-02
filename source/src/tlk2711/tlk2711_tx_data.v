@@ -461,11 +461,7 @@ module  tlk2711_tx_data
                     end
                     endcase
                 end
-            end else if (tx_mode == KCODE_MODE) begin
-                tlk2711_tkmsb <= 'b0;
-                tlk2711_tklsb <= 'b1;
-                tlk2711_txd <= {D5_6, K28_5};
-            end else begin
+            end else if (tx_mode == NORM_MODE | tx_mode == SPECIFIC_MODE) begin
                 case(tx_state)
                     tx_pwr_sync: begin
                         //if (pwr_sync_cnt == 16'd9999) tx_state <= tx_idle
@@ -641,7 +637,11 @@ module  tlk2711_tx_data
                     tail_frame <= 'b0;
 
                // o_tx_interrupt <= (tx_state == tx_backward) & (backward_cnt == 'd255) & tail_frame;
-            end    
+            end else begin
+                tlk2711_tkmsb <= 'b0;
+                tlk2711_tklsb <= 'b1;
+                tlk2711_txd <= {D5_6, K28_5};
+            end
         end
     end
 

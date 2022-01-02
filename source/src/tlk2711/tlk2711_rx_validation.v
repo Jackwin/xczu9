@@ -62,7 +62,7 @@ reg         check_error = 1'b0;
 
 reg [15:0]  tlk2711_rxd;
 
-reg [15:0]  last_line_num = 'h0;
+reg [15:0]  last_line_num;
 
 reg [15:0]  data_gen;
 reg [15:0]  backward_cnt;
@@ -283,6 +283,7 @@ always @(posedge clk) begin
         end else begin
             check_error <= 1'b0;
             error_status <= 'h0;
+            last_line_num <= 'hffff;
         end
     end
 end
