@@ -258,6 +258,14 @@ module  tlk2711_tx_data
 
     reg [3:0] tx_mode;
 
+    reg         tx_start_r;
+    reg         tx_start_pulse;
+
+    always @(posedge clk) begin
+        tx_start_r <= i_tx_start;
+        tx_start_pulse <= ~tx_start_r & i_tx_start;
+    end
+
     always@(posedge clk) begin
         if (rst) begin
             tlk2711_enable  <= 'b0;
@@ -267,8 +275,9 @@ module  tlk2711_tx_data
         end else begin
             if (i_soft_reset)
                 tx_mode <= 'd0; 
-            else if (i_tx_start)                          
+            else if (tx_start_pulse)                          
                 tx_mode <= i_tx_mode; 
+
             if (tx_mode == KCODE_MODE) begin
                 tlk2711_lckrefn <= 'b1;
                 tlk2711_enable  <= 'b1;
@@ -341,7 +350,7 @@ module  tlk2711_tx_data
         if (rst | i_soft_reset) begin
             tx_cfg_flag <= 1'b0;
         end else begin
-            if (i_tx_start) begin
+            if (tx_start_pulse) begin
                 tx_cfg_flag <= 1'b1;
             end else if (tx_state == tx_backward) begin
                 tx_cfg_flag <= 1'b0;
