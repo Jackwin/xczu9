@@ -137,6 +137,12 @@ module  tlk2711_rx_link
     reg                     checksum_error;
     reg [15:0]              frame_length;
 
+    reg                     fifo_wren;
+    wire                    fifo_empty, fifo_full;
+    wire                    fifo_rden;
+    wire                    [15:0] fifo_din;
+    wire                    [DATA_WIDTH-1:0] fifo_dout;
+
     // assign o_rx_interrupt = one_frame_done & i_wr_finish & 
     //                         line_cnt == i_rx_line_num_per_intr;
 
@@ -293,7 +299,7 @@ module  tlk2711_rx_link
     //     end
     // end
 
-
+    // Check the data from tlk2711 directly
     tlk2711_rx_validation tlk2711_rx_validation_inst (
         .clk(i_2711_rx_clk),
         .rst(rst),
@@ -306,6 +312,21 @@ module  tlk2711_rx_link
         .o_check_error(check_error),
         .o_error_status(error_status)
     );
+
+    // check the data from FIFO
+    wire                fifo_rd_check_error;
+    tlk2711_rx_fifo_validation  tlk2711_rx_fifo_validation_inst (
+        .clk(clk),
+        .rst(rst),
+        .i_soft_rst(i_soft_rst),
+
+        .i_valid(fifo_rden),
+        .i_data(fifo_dout),
+
+        .i_check_ena(i_check_ena),
+        .o_check_error(fifo_rd_check_error)
+);
+
     
     // Calculate the checksum
     // TODO check not an integrated frame 9-10
@@ -484,12 +505,6 @@ module  tlk2711_rx_link
     //         end
     //     end
     // end
-
-    reg  fifo_wren;
-    wire fifo_empty, fifo_full;
-    wire fifo_rden;
-    wire [15:0] fifo_din;
-    wire [DATA_WIDTH-1:0] fifo_dout;
 
     assign o_dma_wr_valid = ~fifo_empty & i_dma_wr_ready;
     assign o_dma_wr_keep = {WBYTE_WIDTH{1'b1}};
@@ -701,6 +716,8 @@ always@(posedge clk) begin
         end
     end
 end
+
+
 if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
     ila_tlk2711_rx ila_tlk2711_rx_i(
         .clk(i_2711_rx_clk),
