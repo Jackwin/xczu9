@@ -126,7 +126,7 @@ module  tlk2711_rx_link
     reg [23:0]              line_cnt;
     reg [15:0]              rx_intr_width_cnt;
     reg [15:0]              link_intr_width_cnt;
-    wire                    rx_intr_gen;
+    reg                     rx_intr_gen;
     reg                     rx_intr_width_cnt_ena;
    
     reg [15:0]              rx_frame_cnt = 'd0;
@@ -143,11 +143,11 @@ module  tlk2711_rx_link
     wire                    [15:0] fifo_din;
     wire                    [DATA_WIDTH-1:0] fifo_dout;
 
+    reg                     wr_finish_1r;
+    wire                    wr_finish_extend;
+
     // assign o_rx_interrupt = one_frame_done & i_wr_finish & 
     //                         line_cnt == i_rx_line_num_per_intr;
-
-    assign rx_intr_gen = one_frame_done & i_wr_finish & 
-                            line_cnt == i_rx_line_num_per_intr;
 
     assign o_rx_frame_num = line_number;
     assign o_rx_frame_length = data_length;
@@ -162,6 +162,21 @@ module  tlk2711_rx_link
     reg frame_end, frame_valid;
     // TODO modify the bit length to adapt to the 5120 pixels
     reg [15:0] frame_data_cnt, valid_data_num, trans_data_num;
+
+    always @(posedge clk) begin
+        wr_finish_1r <= i_wr_finish;
+    end
+
+    assign wr_finish_extend = wr_finish_1r | i_wr_finish;
+
+    always @(posedge i_2711_rx_clk) begin
+         if (rst | i_soft_rst) begin
+             rx_intr_gen <= 1'b0;
+         end else begin
+            rx_intr_gen <= one_frame_done & wr_finish_extend & 
+                            line_cnt == i_rx_line_num_per_intr;
+         end
+    end
 
     // Generate the specified width interrupt
     
@@ -411,27 +426,12 @@ module  tlk2711_rx_link
     reg                     wr_cmd_ack_2711_1q;
     reg [DLEN_WIDTH-1:0]    wr_bbt_1r;
 
-    // cmd_req delay more than wr_bbt and wr_addr to ensure wr_bbt and wr_addr stable
-    always @(posedge clk) begin
-        wr_cmd_req_1r <= wr_cmd_req_2711;
-        wr_cmd_req_2r <= wr_cmd_req_1r;
-        o_wr_cmd_req <= wr_cmd_req_2r;
-
-        wr_bbt <= wr_bbt_2711;
-    end
-   // assign wr_bbt = wr_bbt_1r;
-
-    always @(posedge i_2711_rx_clk) begin
-        wr_cmd_ack_2711_1q <= i_wr_cmd_ack;
-
-    end
-    assign wr_cmd_ack_2711 = wr_cmd_ack_2711_1q | i_wr_cmd_ack;
-
     // tlk2711 clock domain
     reg [DLEN_WIDTH-1:0]    wr_bbt_2711 = 'd0;
     reg [ADDR_WIDTH-1:0]    wr_addr_2711 = 'd0;
     reg [15:0]              frame_length_2711;
     reg                     wr_cmd_req_2711;
+    reg                     wr_cmd_req_2711_r;
 
     always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
@@ -453,6 +453,27 @@ module  tlk2711_rx_link
             end
         end
     end
+
+     // cmd_req delay more than wr_bbt and wr_addr to ensure wr_bbt and wr_addr stable
+     // undeterminde which clock is faster, so all posibilities are considered
+    always @(posedge clk) begin
+        wr_cmd_req_2711_r <= wr_cmd_req_2711;
+    end
+
+    always @(posedge clk) begin
+        wr_cmd_req_1r <= wr_cmd_req_2711 | wr_cmd_req_2711_r;
+        wr_cmd_req_2r <= wr_cmd_req_1r;
+        o_wr_cmd_req <= ~wr_cmd_req_2r & wr_cmd_req_1r;
+
+        wr_bbt <= wr_bbt_2711;
+    end
+   // assign wr_bbt = wr_bbt_1r;
+
+    always @(posedge i_2711_rx_clk) begin
+        wr_cmd_ack_2711_1q <= i_wr_cmd_ack;
+
+    end
+    assign wr_cmd_ack_2711 = wr_cmd_ack_2711_1q | i_wr_cmd_ack;
 
     // FPGA logic clock domain
     always @(posedge clk) begin
@@ -762,7 +783,8 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe38(rx_intr_width_cnt),
         .probe39(line_cnt),
         .probe40(i_rx_line_num_per_intr),
-        .probe41(fifo_rd_check_error)
+        .probe41(fifo_rd_check_error),
+        .probe42(rx_intr_gen)
 
     );
 
