@@ -582,7 +582,7 @@ module  tlk2711_rx_link
         end else begin
             if (cs == FRAME_END1_s) begin
                 one_frame_done <= 1'b1;
-            end else if (wr_finish_extend) begin
+            end else if (rx_intr_gen) begin
                 one_frame_done <= 1'b0;
             end
         end
