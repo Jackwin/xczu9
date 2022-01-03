@@ -309,19 +309,19 @@ always @(posedge clk) begin
     checksum_1r <= checksum;
 end
 
-ila_rx_validation ila_rx_validation_inst (
-    .clk(clk),
+// ila_rx_validation ila_rx_validation_inst (
+//     .clk(clk),
 
-    .probe0(cs),
-    .probe1(check_error),
-    .probe2(tlk2711_rklsb),
-    .probe3(tlk2711_rxd),
-    .probe4(last_line_num),
-    .probe5(checksum_1r),
-    .probe6(data_gen),
-    .probe7(tlk2711_rkmsb),
-    .probe8(check_ena),
-    .probe9(error_status)
-);
+//     .probe0(cs),
+//     .probe1(check_error),
+//     .probe2(tlk2711_rklsb),
+//     .probe3(tlk2711_rxd),
+//     .probe4(last_line_num),
+//     .probe5(checksum_1r),
+//     .probe6(data_gen),
+//     .probe7(tlk2711_rkmsb),
+//     .probe8(check_ena),
+//     .probe9(error_status)
+// );
 
 endmodule

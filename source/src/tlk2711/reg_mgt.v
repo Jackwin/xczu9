@@ -512,52 +512,48 @@ end
 assign o_tx_irq = i_tx_interrupt;
 assign o_rx_irq = i_rx_interrupt | auto_intr_signal;
 assign o_loss_irq = i_loss_interrupt;
-if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
-    ila_mgt ila_mgt_i (
-    .clk(clk),
-    .probe0(usr_reg_wen),
-    .probe1(usr_reg_wdata),
-    .probe2(usr_reg_waddr), 
-    .probe3(usr_reg_ren),
-    .probe4(o_reg_rdata),
-    .probe5(o_tx_total_length),
-    .probe6(o_tx_packet_body),
-    .probe7(o_tx_packet_tail),
-    .probe8(o_tx_body_num),
-    .probe9(o_tx_mode),
-    .probe10(o_rx_base_addr),
-    .probe11(rx_intr_status),
-    .probe12(usr_reg_raddr),
-    .probe13(i_rx_status),
-    .probe14(i_tx_status),
-    .probe15(i_tx_interrupt),
-    .probe16(o_tx_base_addr),
-    .probe17(i_link_loss),
-    .probe18(i_sync_loss),
-    .probe19(reg_rd_sel_2d),
-    .probe20(reg_rdata),
-    .probe21(usr_reg_rdata_1d),
-    .probe22(reg_rd_sel_1d),
-    .probe23(reg_rd_sel),
-    .probe24(i_rx_interrupt),
-    .probe25(o_link_loss_detect_ena),
-    .probe26(o_sync_loss_detect_ena),
-    .probe27(auto_intr_start),
-    .probe28(auto_intr_times),
-    .probe29(auto_intr_gap),
-    .probe30(o_rx_intr_width),
-    .probe31(irq_ctrl_reg),
-    .probe32(auto_intr_signal),
-    .probe33(tx_intr_status),
-    .probe34(auto_intr_signal_count),
-    .probe35({o_tx_config_done, o_rx_config_done, o_tx_stop_test, o_rx_check_ena})
+// if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
+//     ila_mgt ila_mgt_i (
+//     .clk(clk),
+//     .probe0(usr_reg_wen),
+//     .probe1(usr_reg_wdata),
+//     .probe2(usr_reg_waddr), 
+//     .probe3(usr_reg_ren),
+//     .probe4(o_reg_rdata),
+//     .probe5(o_tx_total_length),
+//     .probe6(o_tx_packet_body),
+//     .probe7(o_tx_packet_tail),
+//     .probe8(o_tx_body_num),
+//     .probe9(o_tx_mode),
+//     .probe10(o_rx_base_addr),
+//     .probe11(rx_intr_status),
+//     .probe12(usr_reg_raddr),
+//     .probe13(i_rx_status),
+//     .probe14(i_tx_status),
+//     .probe15(i_tx_interrupt),
+//     .probe16(o_tx_base_addr),
+//     .probe17(i_link_loss),
+//     .probe18(i_sync_loss),
+//     .probe19(reg_rd_sel_2d),
+//     .probe20(reg_rdata),
+//     .probe21(usr_reg_rdata_1d),
+//     .probe22(reg_rd_sel_1d),
+//     .probe23(reg_rd_sel),
+//     .probe24(i_rx_interrupt),
+//     .probe25(o_link_loss_detect_ena),
+//     .probe26(o_sync_loss_detect_ena),
+//     .probe27(auto_intr_start),
+//     .probe28(auto_intr_times),
+//     .probe29(auto_intr_gap),
+//     .probe30(o_rx_intr_width),
+//     .probe31(irq_ctrl_reg),
+//     .probe32(auto_intr_signal),
+//     .probe33(tx_intr_status),
+//     .probe34(auto_intr_signal_count),
+//     .probe35({o_tx_config_done, o_rx_config_done, o_tx_stop_test, o_rx_check_ena})
 
 
-);
-    
-
-
-
+// );
     
 endmodule
 

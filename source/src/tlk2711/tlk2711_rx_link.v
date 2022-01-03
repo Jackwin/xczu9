@@ -456,7 +456,7 @@ module  tlk2711_rx_link
 
      // cmd_req delay more than wr_bbt and wr_addr to ensure wr_bbt and wr_addr stable
      // undeterminde which clock is faster, so all posibilities are considered
-    always @(posedge clk) begin
+    always @(posedge i_2711_rx_clk) begin
         wr_cmd_req_2711_r <= wr_cmd_req_2711;
     end
 
@@ -739,54 +739,54 @@ always@(posedge clk) begin
 end
 
 
-if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
-    ila_tlk2711_rx ila_tlk2711_rx_i(
-        .clk(i_2711_rx_clk),
-        .probe0(i_2711_rkmsb),
-        .probe1(i_2711_rklsb),
-        .probe2(i_2711_rxd),
-        .probe3(o_loss_interrupt),
-        .probe4(i_rx_start),
-        .probe5(i_rx_base_addr),
-        .probe6(link_loss),
-        .probe7(frame_data_cnt),
-        .probe8(rx_frame_cnt),
-        .probe9(i_wr_cmd_ack),
-        .probe10(o_rx_interrupt),
-        .probe11(link_loss_timer),
-        .probe12(link_loss_flag),
-        .probe13(link_loss),
-        .probe14(fifo_wren),
-        .probe15(wr_bbt),
-        .probe16(cs),
-        .probe17(sync_loss_timer),
-        .probe18(sync_loss_flag),
-        .probe19(sync_loss),
-        .probe20(recv_data_flag),
-        .probe21(frame_end),
-        .probe22(checksum),
-        .probe23(checksum_error),
-        .probe24(one_frame_done),
-        .probe25(i_wr_finish),
-        .probe26(wr_addr),
-        .probe27(o_wr_cmd_req),
-        .probe28(i_rx_start),
-        .probe29(o_dma_wr_valid),
-        .probe30(fifo_empty),
-        .probe31(fifo_full),
-        .probe32(fifo_rden),
-        .probe33(i_dma_wr_ready),
-        .probe34(rd_cnt),
-        .probe35(o_dma_wr_data),
-        .probe36(check_ena),
-        .probe37(check_error),
-        .probe38(rx_intr_width_cnt),
-        .probe39(line_cnt),
-        .probe40(i_rx_line_num_per_intr),
-        .probe41(fifo_rd_check_error),
-        .probe42(rx_intr_gen)
+// if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
+//     ila_tlk2711_rx ila_tlk2711_rx_i(
+//         .clk(i_2711_rx_clk),
+//         .probe0(i_2711_rkmsb),
+//         .probe1(i_2711_rklsb),
+//         .probe2(i_2711_rxd),
+//         .probe3(o_loss_interrupt),
+//         .probe4(i_rx_start),
+//         .probe5(i_rx_base_addr),
+//         .probe6(link_loss),
+//         .probe7(frame_data_cnt),
+//         .probe8(rx_frame_cnt),
+//         .probe9(i_wr_cmd_ack),
+//         .probe10(o_rx_interrupt),
+//         .probe11(link_loss_timer),
+//         .probe12(link_loss_flag),
+//         .probe13(link_loss),
+//         .probe14(fifo_wren),
+//         .probe15(wr_bbt),
+//         .probe16(cs),
+//         .probe17(sync_loss_timer),
+//         .probe18(sync_loss_flag),
+//         .probe19(sync_loss),
+//         .probe20(recv_data_flag),
+//         .probe21(frame_end),
+//         .probe22(checksum),
+//         .probe23(checksum_error),
+//         .probe24(one_frame_done),
+//         .probe25(i_wr_finish),
+//         .probe26(wr_addr),
+//         .probe27(o_wr_cmd_req),
+//         .probe28(i_rx_start),
+//         .probe29(o_dma_wr_valid),
+//         .probe30(fifo_empty),
+//         .probe31(fifo_full),
+//         .probe32(fifo_rden),
+//         .probe33(i_dma_wr_ready),
+//         .probe34(rd_cnt),
+//         .probe35(o_dma_wr_data),
+//         .probe36(check_ena),
+//         .probe37(check_error),
+//         .probe38(rx_intr_width_cnt),
+//         .probe39(line_cnt),
+//         .probe40(i_rx_line_num_per_intr),
+//         .probe41(fifo_rd_check_error),
+//         .probe42(rx_intr_gen)
 
-    );
+//     );
 
 endmodule 
          

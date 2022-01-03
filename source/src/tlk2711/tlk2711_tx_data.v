@@ -659,37 +659,38 @@ module  tlk2711_tx_data
 
 // TODO  debug the port
 // tail_frame frame_cnt
-if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
-    tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
-        .clk(clk),
-        .probe0({i_loopback_ena, i_tx_mode}),
-        .probe1(i_soft_reset),
-        .probe2(i_tx_start),
-        .probe3(tx_state),
-        .probe4(state_cnt),
-        .probe5(test_data),
-        .probe6(tlk2711_txd),
-        .probe7(tlk2711_tkmsb),
-        .probe8(tlk2711_tklsb),
-        .probe9(o_tx_interrupt),
-        .probe10(sync_cnt),
-        .probe11(head_cnt),
-        .probe12(vld_data_cnt),
-        .probe13(backward_cnt),
-        .probe14(tlk2711_enable),
-        .probe15(tlk2711_loopen),
-        .probe16(i_tx_packet_body),
-        .probe17(i_tx_packet_tail),
-        .probe18(i_tx_body_num),
-        .probe19(i_dma_rd_valid),
-        .probe20(i_dma_rd_last),
-        .probe21(i_dma_rd_data),
-        .probe22(o_dma_rd_ready),
-        .probe23(o_tx_interrupt),
-        .probe24(checksum),
-        .probe25(frame_cnt),
-        .probe26(tail_frame)
-    );
+// if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") begin
+//     tlk2711_tx_data_ila tlk2711_tx_data_ila_inst(
+//         .clk(clk),
+//         .probe0({i_loopback_ena, i_tx_mode}),
+//         .probe1(i_soft_reset),
+//         .probe2(i_tx_start),
+//         .probe3(tx_state),
+//         .probe4(state_cnt),
+//         .probe5(test_data),
+//         .probe6(tlk2711_txd),
+//         .probe7(tlk2711_tkmsb),
+//         .probe8(tlk2711_tklsb),
+//         .probe9(o_tx_interrupt),
+//         .probe10(sync_cnt),
+//         .probe11(head_cnt),
+//         .probe12(vld_data_cnt),
+//         .probe13(backward_cnt),
+//         .probe14(tlk2711_enable),
+//         .probe15(tlk2711_loopen),
+//         .probe16(i_tx_packet_body),
+//         .probe17(i_tx_packet_tail),
+//         .probe18(i_tx_body_num),
+//         .probe19(i_dma_rd_valid),
+//         .probe20(i_dma_rd_last),
+//         .probe21(i_dma_rd_data),
+//         .probe22(o_dma_rd_ready),
+//         .probe23(o_tx_interrupt),
+//         .probe24(checksum),
+//         .probe25(frame_cnt),
+//         .probe26(tail_frame)
+//     );
+// end
 
 
 endmodule

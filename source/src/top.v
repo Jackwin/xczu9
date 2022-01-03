@@ -61,11 +61,11 @@ output          usr_led
 
 );
 
-parameter DEBUG_ENA = "TRUE";
+parameter DEBUG_ENA = "FALSE";
 parameter RX_CDC_CFG = "REG"; // rx clock domain crossing
 parameter DDR_ADDR_WIDTH = 40;
 parameter HP0_DATA_WIDTH = 128;
-parameter STREAM_DATA_WIDTH = 64;
+parameter STREAM_DATA_WIDTH = 128;
 
 parameter TLK2711B_ADDR_MASK = 16'h00ff;
 parameter TLK2711B_ADDR_BASE = 16'h0000;
