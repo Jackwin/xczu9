@@ -105,7 +105,7 @@ wire [3:0]                  hp0_m_axi_awuser;
 wire                        hp0_m_axi_awvalid;
 wire                        hp0_m_axi_awready;
 wire [HP0_DATA_WIDTH-1:0]   hp0_m_axi_wdata;
-wire [7:0]                  hp0_m_axi_wstrb;
+wire [15:0]                 hp0_m_axi_wstrb;
 wire                        hp0_m_axi_wlast;
 wire                        hp0_m_axi_wvalid;
 wire                        hp0_m_axi_wready;
