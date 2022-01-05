@@ -282,9 +282,9 @@ if (RX_CDC_CFG == "REG") begin
     //     tlk2711a_rkmsb_3r <= tlk2711a_rkmsb_2r;
     // end
 
-    assign tlk2711ba_rkmsb_w = tlk2711a_rkmsb_3r;
-    assign tlk2711ba_rklsb_w = tlk2711a_rklsb_3r;
-    assign tlk2711ba_rxd_w = tlk2711a_rxd_3r;
+    assign tlk2711a_rkmsb_w = tlk2711a_rkmsb_3r;
+    assign tlk2711a_rklsb_w = tlk2711a_rklsb_3r;
+    assign tlk2711a_rxd_w = tlk2711a_rxd_3r;
 
     assign tlk2711b_rkmsb_w = tlk2711b_rkmsb_3r;
     assign tlk2711b_rklsb_w = tlk2711b_rklsb_3r;
