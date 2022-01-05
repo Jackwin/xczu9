@@ -10,7 +10,9 @@
 // Email: 
 ///////////////////////////////////////////////////////////////////////////////
 
-module tlk2711_rx_fifo_validation (
+module tlk2711_rx_fifo_validation # (
+    parameter DEBUG_ENA = "TRUE"
+    )(
     input                   clk,
     input                   rst,
     input                   i_soft_rst,
@@ -39,7 +41,7 @@ end
 always @(posedge clk) begin
     if (rst | i_soft_rst) begin
         check_error <= 1'h0;
-        data_gen <= 64'h0000000100020003;
+        data_gen <= 64'h0001020304050607;
         data_cnt <= 8'h0;
     end else begin
         if(check_ena) begin
@@ -48,10 +50,10 @@ always @(posedge clk) begin
                 // aligning to 109 64bit.
                 if (data_cnt == 8'd108) begin
                     data_cnt <= 8'd0;
-                    data_gen <= 64'h0000000100020003;
+                    data_gen <= 64'h0001020304050607;
                 end else begin
                     data_cnt <= data_cnt + 1'd1;
-                    data_gen <= data_gen + 64'h0004000400040004;
+                    data_gen <= data_gen + 64'h0808080808080808;
                 end
                 
                 if (data != data_gen & data_cnt != 8'd108) begin
@@ -66,23 +68,23 @@ always @(posedge clk) begin
             end
         end else begin
             data_cnt <= 8'd0;
-            data_gen <= 64'h0000000100020003;
+            data_gen <= 64'h0001020304050607;
             check_error <= 1'b0;
         end
     end
 end
 
 assign o_check_error = check_error;
-
-ila_fifo_rx_validation  ila_fifo_rx_validation_inst (
-    .clk(clk),
-    .probe0(check_ena),
-    .probe1(check_error),
-    .probe2(data_gen),
-    .probe3(data),
-    .probe4(valid),
-    .probe5(data_cnt)
-);
+if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
+    ila_fifo_rx_validation  ila_fifo_rx_validation_inst (
+        .clk(clk),
+        .probe0(check_ena),
+        .probe1(check_error),
+        .probe2(data_gen),
+        .probe3(data),
+        .probe4(valid),
+        .probe5(data_cnt)
+    );
 
 
 endmodule

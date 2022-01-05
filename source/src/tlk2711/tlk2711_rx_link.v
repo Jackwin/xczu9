@@ -315,7 +315,9 @@ module  tlk2711_rx_link
     // end
 
     // Check the data from tlk2711 directly
-    tlk2711_rx_validation tlk2711_rx_validation_inst (
+    tlk2711_rx_validation #(
+        .DEBUG_ENA(DEBUG_ENA)
+    )tlk2711_rx_validation_inst (
         .clk(i_2711_rx_clk),
         .rst(rst),
         .i_soft_rst(i_soft_rst),
@@ -330,7 +332,9 @@ module  tlk2711_rx_link
 
     // check the data from FIFO
     wire                fifo_rd_check_error;
-    tlk2711_rx_fifo_validation  tlk2711_rx_fifo_validation_inst (
+    tlk2711_rx_fifo_validation  # (
+        .DEBUG_ENA(DEBUG_ENA)
+    )tlk2711_rx_fifo_validation_inst (
         .clk(clk),
         .rst(rst),
         .i_soft_rst(i_soft_rst),

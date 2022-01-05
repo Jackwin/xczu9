@@ -12,7 +12,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 module tlk2711_rx_validation # (
-    parameter DATAWIDTH = 16
+    parameter DATAWIDTH = 16,
+    parameter DEBUG_ENA = "TRUE"
 )
 (
     input                   clk,
@@ -167,12 +168,12 @@ always @(posedge clk) begin
         error_status <= 'h0;
         check_error <= 'h0;
         last_line_num <= 'hFFFF;
-        data_gen <= 'h0;
+        data_gen <= 'h0100;
         backward_cnt <= 'h0;
         data_cnt <= 'h0;
         data_length <= 'h0;
     end else begin
-        data_gen <= 'h0;
+        data_gen <= 'h0100;
         backward_cnt <= 'h0;
         check_error <= 1'b0;
         error_status <= 'h0;
@@ -253,7 +254,7 @@ always @(posedge clk) begin
                     check_error <= 1'b1;
                     error_status <= 'h8;
                 end else begin
-                    data_gen <= data_gen + 1'd1;
+                    data_gen <= data_gen + 16'h0202;
                 end
                 data_cnt <= data_cnt + 1'd1;
             end
@@ -308,20 +309,20 @@ end
 always @(posedge clk) begin
     checksum_1r <= checksum;
 end
+if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
+    ila_rx_validation ila_rx_validation_inst (
+        .clk(clk),
 
-ila_rx_validation ila_rx_validation_inst (
-    .clk(clk),
-
-    .probe0(cs),
-    .probe1(check_error),
-    .probe2(tlk2711_rklsb),
-    .probe3(tlk2711_rxd),
-    .probe4(last_line_num),
-    .probe5(checksum_1r),
-    .probe6(data_gen),
-    .probe7(tlk2711_rkmsb),
-    .probe8(check_ena),
-    .probe9(error_status)
-);
+        .probe0(cs),
+        .probe1(check_error),
+        .probe2(tlk2711_rklsb),
+        .probe3(tlk2711_rxd),
+        .probe4(last_line_num),
+        .probe5(checksum_1r),
+        .probe6(data_gen),
+        .probe7(tlk2711_rkmsb),
+        .probe8(check_ena),
+        .probe9(error_status)
+    );
 
 endmodule

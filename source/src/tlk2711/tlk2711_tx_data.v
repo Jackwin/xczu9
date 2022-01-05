@@ -178,7 +178,7 @@ module  tlk2711_tx_data
     always@(posedge clk) begin
         if (rst | i_soft_reset) 
             fifo_enable <= 'b0;
-        else if (i_tx_start && (i_tx_mode == NORM_MODE | i_tx_mode == SPECIFIC_MODE))
+        else if (i_tx_mode == NORM_MODE | i_tx_mode == SPECIFIC_MODE)
             fifo_enable <= 'b1;
     end
     
@@ -388,7 +388,7 @@ module  tlk2711_tx_data
                     state_cnt <= 'h0;
                    // test_data_cnt <= 'h0;
                     test_frame_cnt <= 'h0;
-                    test_data <= 'h0;
+                    test_data <= 'h0100;
                     test_backward_cnt <= 'h0;
                 end else begin
                     tlk2711_tkmsb <= 'b0;
@@ -399,7 +399,7 @@ module  tlk2711_tx_data
                         tlk2711_tklsb <= 'b1;
                         tlk2711_txd <= {D5_6, K28_5};
                         state_cnt <= state_cnt + 1'd1;
-                        test_data <= 'h0;
+                        test_data <= 'h0100;
                         test_backward_cnt <= 'h0;
                     end
                     TEST_SYNC_s: begin
@@ -437,7 +437,7 @@ module  tlk2711_tx_data
                     end
                     TEST_DATA_s: begin
                         tlk2711_txd <= test_data;
-                        test_data <= test_data + 1'd1;
+                        test_data <= test_data + 16'h0202;
                         if (test_data == 16'd434) begin
                             state_cnt <= state_cnt + 1'd1;
                         end
