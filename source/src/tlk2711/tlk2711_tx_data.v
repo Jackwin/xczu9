@@ -31,6 +31,7 @@ module  tlk2711_tx_data
     input                   i_loopback_ena,
     input                   i_tx_pre,
     input                   i_tx_start,
+    input                   i_tx_check_ena,
     input [15:0]            i_tx_packet_body, //body length in byte, 870B here for fixed value
     input [15:0]            i_tx_packet_tail, //tail length in byte
     input [23:0]            i_tx_body_num,
@@ -657,6 +658,23 @@ module  tlk2711_tx_data
     assign o_tx_interrupt = tx_state == tx_interrupt;
     assign o_tx_status = {fifo_empty, fifo_full, tx_state, tx_mode};
 
+    wire        fifo_rd_check_error;
+
+    tlk2711_tx_validation #(
+        .DEBUG_ENA(DEBUG_ENA)
+    ) tlk2711_tx_validation_inst (
+        .clk(clk),
+        .rst(rst),
+        .i_soft_rst(i_soft_rst),
+        .i_tx_mode(i_tx_mode),
+
+        .i_valid(fifo_rden),
+        .i_data(fifo_dout),
+
+        .i_check_ena(i_tx_check_ena),
+        .o_check_error(fifo_rd_check_error)
+    );
+
 // TODO  debug the port
 // tail_frame frame_cnt
 if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
@@ -688,7 +706,8 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe23(o_tx_interrupt),
         .probe24(checksum),
         .probe25(frame_cnt),
-        .probe26(tail_frame)
+        .probe26(tail_frame),
+        .probe27(fifo_rd_check_error)
     );
 
 
