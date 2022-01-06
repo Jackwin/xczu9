@@ -76,7 +76,8 @@ always @(posedge clk) begin
                     data_gen <= 16'h0001;
                 end else begin
                     data_cnt <= data_cnt + 1'd1;
-                    data_gen <= data_gen + 16'h0202;
+                    data_gen[15:8] <= data_gen[15:8] + 8'h02;
+                    data_gen[7:0] <= data_gen[7:0] + 8'h02;
                 end
                 
                 if (data != data_gen & data_cnt != frame_length) begin
