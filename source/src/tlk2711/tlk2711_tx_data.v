@@ -45,7 +45,7 @@ module  tlk2711_tx_data
     output                  o_dma_rd_ready,
     output                  o_tx_interrupt,
 
-    output [9:0]            o_tx_status,
+    output [10:0]           o_tx_status,
     // TODO Add pre-emphasis
     output                  o_2711_tkmsb,
     output                  o_2711_tklsb,
@@ -147,6 +147,7 @@ module  tlk2711_tx_data
     wire        fifo_empty;
 
     reg         channel_id;
+    wire        fifo_rd_check_error;
 
     assign o_2711_tkmsb = tlk2711_tkmsb_1r;
     assign o_2711_tklsb = tlk2711_tklsb_1r;
@@ -656,20 +657,20 @@ module  tlk2711_tx_data
     end
 
     assign o_tx_interrupt = tx_state == tx_interrupt;
-    assign o_tx_status = {fifo_empty, fifo_full, tx_state, tx_mode};
-
-    wire        fifo_rd_check_error;
+    assign o_tx_status = {fifo_rd_check_error ,fifo_empty, 
+                        fifo_full, tx_state, tx_mode};
 
     tlk2711_tx_validation #(
         .DEBUG_ENA(DEBUG_ENA)
     ) tlk2711_tx_validation_inst (
         .clk(clk),
         .rst(rst),
-        .i_soft_rst(i_soft_rst),
+        .i_soft_rst(i_soft_reset),
         .i_tx_mode(i_tx_mode),
 
         .i_valid(fifo_rden),
-        .i_data(fifo_dout),
+        .i_data(fifo_rdata),
+        .i_tx_start(i_tx_start),
 
         .i_check_ena(i_tx_check_ena),
         .o_check_error(fifo_rd_check_error)

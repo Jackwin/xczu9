@@ -18,7 +18,7 @@ module tlk2711_tx_validation # (
     input                   i_soft_rst,
 
     input                   i_valid,
-    input  [63:0]           i_data,
+    input  [15:0]           i_data,
 
     input                   i_check_ena,
     input                   i_tx_start,
@@ -64,7 +64,7 @@ end
 always @(posedge clk) begin
     if (rst | i_soft_rst) begin
         check_error <= 1'h0;
-        data_gen <= 64'h0001;
+        data_gen <= 16'h0001;
         data_cnt <= 8'h0;
     end else begin
         if(check_ena) begin

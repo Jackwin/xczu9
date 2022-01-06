@@ -12,6 +12,10 @@ module tlk2711_tb(
 	localparam FRAME_LENGTH = 10752;
 	localparam FRAME_NUM = 6;
 	localparam LINE_NUM_PER_INTR = 3;
+	localparam DDR_ADDR_WIDTH = 40;
+	localparam HP0_DATA_WIDTH = 128;
+	localparam STREAM_DATA_WIDTH = 64;
+	localparam DEBUG_ENA = "FALSE";	
 
 	//integer  			frame_length = 'd870;
 	integer             tx_total_packet = FRAME_LENGTH * FRAME_NUM; // total packet bytes
@@ -19,8 +23,9 @@ module tlk2711_tb(
 	reg[15:0]           tx_packet_tail = 'd10752;
 	reg[23:0] 			tx_body_num = 24'd3;
 	
-	integer             tx_mode = 3'd2; //0--norm mode, 1--kcode mode, 2--test mode, 3--specific mode 4--protocal test mode
+	integer             tx_mode = 3'd0; //0--norm mode, 1--kcode mode, 2--test mode, 3--specific mode 4--protocal test mode
 	integer  			rx_check_ena = 1'd1;
+	integer 			tx_check_ena = 1'd1;
 
 	reg[23:0] 			rx_line_num_per_intr = LINE_NUM_PER_INTR;
 	  
@@ -30,12 +35,7 @@ module tlk2711_tb(
 
 	reg [15:0]  IRQ_REG       = 16'h0060;
 
-	parameter DDR_ADDR_WIDTH = 40;
-	parameter HP0_DATA_WIDTH = 128;
-	parameter STREAM_DATA_WIDTH = 64;
-	localparam DEBUG_ENA = "FALSE";	
 
- 
     wire             o_tx_irq;
     wire             o_rx_irq;
     wire             o_loss_irq;
@@ -60,8 +60,8 @@ module tlk2711_tb(
     wire [3:0]   m_axi_aruser ;
     wire         m_axi_arvalid;
     reg          m_axi_arready = 1'b1;
-    reg [HP0_DATA_WIDTH-1:0]   m_axi_rdata = {16'd4, 16'd5, 16'd6, 16'd7, 
-											16'd0, 16'd1, 16'd2, 16'd3};
+    reg [HP0_DATA_WIDTH-1:0]   m_axi_rdata = {16'h0809, 16'h0a0b, 16'h0c0d, 16'h0e0f, 
+											16'h0001, 16'h0203, 16'h0405, 16'h0607};
     reg [1:0]    m_axi_rresp = 2'b00;
     wire         m_axi_rlast;
     wire         m_axi_rvalid;
@@ -127,10 +127,15 @@ module tlk2711_tb(
 	localparam RX_STATUS_REG_ADDR = 16'h0050;
 	localparam RX_CTRL_REG2_ADDR = 16'h0058;
 	localparam IRQ_CTRL_REG_ADDR = 16'h0068;
+	localparam RST_REG_ADDR = 16'h0070;
 	
 
 initial begin
 	repeat(50) @(posedge clk);
+	write_reg(TX_ENA_REG_ADDR, 'h0);
+
+	//write_reg(RST_REG_ADDR, 'h0);
+
 	write_reg(TX_BASE_REG_ADDR, {4'h0, 20'h300, tx_base_addr});
 
 	write_reg(RX_BASE_REG_ADDR, rx_base_addr);
@@ -144,8 +149,8 @@ initial begin
 	write_reg(IRQ_CTRL_REG_ADDR, 64'h1000_0000_0000_0010);
 		
 	write_reg(IRQ_CTRL_REG_ADDR, 64'h2000_0000_0000_0010);
-
-	write_reg(TX_ENA_REG_ADDR, 64'h3);
+	
+	write_reg(TX_ENA_REG_ADDR, {59'h0, tx_check_ena, 1'b0, 2'h3});
 
 	write_reg(RX_ENA_REG_ADDR, 64'h3);
 
@@ -280,7 +285,7 @@ endtask
 		    num_video <= num_video - 1;
 		 
 		if(m_axi_rready & m_axi_rvalid)
-			m_axi_rdata <= m_axi_rdata + {8{16'h8}}; // $random%1200; 
+			m_axi_rdata <= m_axi_rdata + {8{16'h1010}}; // $random%1200; 
 		
 	end
 	

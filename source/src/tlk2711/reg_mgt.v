@@ -61,6 +61,10 @@ module reg_mgt
     output reg                  o_tx_config_done,
      
     output reg                  o_tx_stop_test,
+
+    output reg                  o_tx_check_ena,
+
+    output reg                  o_tx_error_clear,
     // inform cpu after the total packet transfer is finished
     input                       i_tx_interrupt, 
     // tlk2711 pre-emphasis
@@ -93,7 +97,7 @@ module reg_mgt
     input  [23:0]               i_rx_frame_num, //870B here the same as tx configuration and no need to reported 
     
     input [10:0]                i_rx_status,
-    input [9:0]                 i_tx_status,
+    input [10:0]                i_tx_status,
     input [3:0]                 i_rx_data_type,
     input                       i_rx_file_end_flag,
     input                       i_rx_checksum_flag,
@@ -247,6 +251,19 @@ always@(posedge clk) begin
         end else begin
             o_tx_stop_test <= 1'b0;
         end
+
+        if (reg_wdata[3] == 1'h1) begin
+            o_tx_check_ena <= 1'b1;
+        end else begin
+            o_tx_check_ena <= 1'b0;
+        end
+
+        if (reg_wdata[4] == 1'h1) begin
+            o_tx_error_clear <= 1'b1;
+        end else begin
+            o_tx_error_clear <= 1'b0;
+        end
+
     end
 
     if( reg_wen && ( reg_waddr == RX_CFG_REG )) begin // for rx config done
@@ -349,8 +366,8 @@ always @(posedge clk) begin
                 reg_rdata[63:60] <= 'ha;
             end
             TX_STATUS_REG: begin
-                reg_rdata[9:0] <= i_tx_status;
-                reg_rdata[59:10] <= 'h0;
+                reg_rdata[10:0] <= i_tx_status;
+                reg_rdata[59:11] <= 'h0;
                 reg_rdata[63:60] <= 'h9;
             end
             RX_IRQ_REG: reg_rdata <= rx_intr_status;

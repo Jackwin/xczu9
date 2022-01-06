@@ -83,34 +83,34 @@ module tlk2711_top
     output          m_axi_aruser,
    
     //AXI4 Memory Mapped Read Data Interface Signals
-    input [AXI_RDATA_WIDTH-1:0]   m_axi_rdata,
-    input [1:0]     m_axi_rresp,
-    input           m_axi_rlast,
-    input           m_axi_rvalid,
-    output          m_axi_rready,
+    input [AXI_RDATA_WIDTH-1:0]     m_axi_rdata,
+    input [1:0]                     m_axi_rresp,
+    input                           m_axi_rlast,
+    input                           m_axi_rvalid,
+    output                          m_axi_rready,
 
     //AXI4 Memory Mapped Write Address Interface Signals
-    input           m_axi_awready,
-    output          m_axi_awvalid,
-    output [3:0]    m_axi_awid,
-    output [ADDR_WIDTH-1:0]   m_axi_awaddr,
-    output [7:0]    m_axi_awlen,
-    output [2:0]    m_axi_awsize,
-    output [1:0]    m_axi_awburst,
-    output [2:0]    m_axi_awprot,
-    output [3:0]    m_axi_awcache,
-    output [3:0]    m_axi_awuser,   
+    input                           m_axi_awready,
+    output                          m_axi_awvalid,
+    output [3:0]                    m_axi_awid,
+    output [ADDR_WIDTH-1:0]         m_axi_awaddr,
+    output [7:0]                    m_axi_awlen,
+    output [2:0]                    m_axi_awsize,
+    output [1:0]                    m_axi_awburst,
+    output [2:0]                    m_axi_awprot,
+    output [3:0]                    m_axi_awcache,
+    output [3:0]                    m_axi_awuser,   
 
     //AXI4 Memory Mapped Write Data Interface Signals
-    output [AXI_WDATA_WIDTH-1:0]  m_axi_wdata,
-    output [AXI_WBYTE_WIDTH-1:0]  m_axi_wstrb,
-    output          m_axi_wlast,
-    output          m_axi_wvalid,
-    input           m_axi_wready,
-
-    input [1:0]     m_axi_bresp,
-    input           m_axi_bvalid,
-    output          m_axi_bready
+    output [AXI_WDATA_WIDTH-1:0]    m_axi_wdata,
+    output [AXI_WBYTE_WIDTH-1:0]    m_axi_wstrb,
+    output                          m_axi_wlast,
+    output                          m_axi_wvalid,
+    input                           m_axi_wready,
+                
+    input [1:0]                     m_axi_bresp,
+    input                           m_axi_bvalid,
+    output                          m_axi_bready
    
 );
 
@@ -167,7 +167,7 @@ module tlk2711_top
     wire                                wr_finish;
             
     wire [10:0]                         rx_status;
-    wire [9:0]                          tx_status;
+    wire [10:0]                         tx_status;
     wire                                rx_fifo_rd;
     wire                                link_loss_detect_ena;
     wire                                sync_loss_detect_ena;
@@ -176,6 +176,7 @@ module tlk2711_top
     wire                                tx_stop_test;
     //wire                                rx_start_test;
     wire [3:0]                          rx_test_error;
+    wire                                tx_check_ena;
 
    reg_mgt #(
        .DEBUG_ENA(DEBUG_ENA),
@@ -209,6 +210,7 @@ module tlk2711_top
        .o_loopback_ena(loopback_ena),
        .o_tx_config_done(tx_config_done),
        .o_tx_stop_test(tx_stop_test),
+       .o_tx_check_ena(tx_check_ena),
        .i_tx_interrupt(tx_interrupt), 
        .o_tx_pre(tx_pre),
        .o_line_num_per_intr(line_num_per_intr),
@@ -349,6 +351,7 @@ module tlk2711_top
         .i_tx_mode(tx_mode),
         .i_loopback_ena(loopback_ena),
         .i_tx_start(tx_config_done),
+        .i_tx_check_ena(tx_check_ena),
         .i_tx_packet_body(tx_packet_body), 
         .i_tx_packet_tail(tx_packet_tail),
         .i_tx_body_num(tx_body_num),
