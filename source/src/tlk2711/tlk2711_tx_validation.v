@@ -54,9 +54,11 @@ always @(posedge clk) begin
         frame_length <= 16'd108;
     end else begin
         if (tx_start_p & i_tx_mode == 3'd3) begin
-            frame_length <= 16'd5376; // 10752/2=5376
-        end else begin
+            frame_length <= 16'd5375; // 10752/2=5376
+        end else if (tx_start_p)begin
             frame_length <= 16'd434; // 870/2= 435
+        end else begin
+            frame_length <= frame_length;
         end
     end
 end
