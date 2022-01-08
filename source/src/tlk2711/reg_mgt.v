@@ -567,7 +567,8 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
     .probe32(auto_intr_signal),
     .probe33(tx_intr_status),
     .probe34(auto_intr_signal_count),
-    .probe35({o_tx_config_done, o_rx_config_done, o_tx_stop_test, o_rx_check_ena})
+    .probe35({o_tx_config_done, o_rx_config_done, o_tx_stop_test, o_rx_check_ena}),
+    .probe36(i_rx_frame_length)
 
 
 );

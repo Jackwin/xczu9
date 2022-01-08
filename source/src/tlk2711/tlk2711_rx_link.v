@@ -788,7 +788,8 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe39(line_cnt),
         .probe40(i_rx_line_num_per_intr),
         .probe41(fifo_rd_check_error),
-        .probe42(rx_intr_gen)
+        .probe42(rx_intr_gen),
+        .porbe43(data_length)
 
     );
 
