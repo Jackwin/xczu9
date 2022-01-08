@@ -195,7 +195,7 @@ module  tlk2711_tx_data
         .srst(rst | i_soft_reset),
         .din(i_dma_rd_data),
         .wr_en(fifo_wren),
-        .rd_en(fifo_rden & (tx_state != tx_interrupt)),
+        .rd_en(fifo_rden),
         .dout(fifo_rdata),
         .full(fifo_full),
         .empty(fifo_empty)
@@ -671,7 +671,7 @@ module  tlk2711_tx_data
         .i_soft_rst(i_soft_reset),
         .i_tx_mode(i_tx_mode),
 
-        .i_valid(fifo_rden),
+        .i_valid(fifo_rden & (tx_state != tx_interrupt)),
         .i_data(fifo_rdata),
         .i_tx_start(i_tx_start),
 
