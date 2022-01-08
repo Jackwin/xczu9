@@ -674,6 +674,7 @@ module  tlk2711_tx_data
         .i_valid(fifo_rden & (tx_state != tx_interrupt)),
         .i_data(fifo_rdata),
         .i_tx_start(i_tx_start),
+        .i_tx_stop(o_tx_interrupt),
 
         .i_check_ena(i_tx_check_ena),
         .o_check_error(fifo_rd_check_error)

@@ -20,6 +20,8 @@ module tlk2711_tx_validation # (
     input                   i_valid,
     input  [15:0]           i_data,
 
+    input                   i_stop,
+
     input                   i_check_ena,
     input                   i_tx_start,
     input [2:0]             i_tx_mode,
@@ -73,22 +75,34 @@ always @(posedge clk) begin
             if (valid) begin
                 // In test mode, the received data length is 870 bytes, 
                 // aligning to 109 64bit.
-                if (data_cnt == frame_length) begin
-                    data_cnt <= 8'd0;
-                    data_gen <= 16'h0001;
-                end else begin
-                    data_cnt <= data_cnt + 1'd1;
-                    data_gen[15:8] <= data_gen[15:8] + 8'h02;
-                    data_gen[7:0] <= data_gen[7:0] + 8'h02;
-                end
+                // if (data_cnt == frame_length) begin
+                //     data_cnt <= 8'd0;
+                //     data_gen <= 16'h0001;
+                // end else begin
+                //     data_cnt <= data_cnt + 1'd1;
+                //     data_gen[15:8] <= data_gen[15:8] + 8'h02;
+                //     data_gen[7:0] <= data_gen[7:0] + 8'h02;
+                // end
+                // if (data != data_gen & data_cnt != frame_length) begin
+                //     check_error <= 1'b1;
+                // end else begin
+                //     check_error <= 1'b0;
+                // end
+
+                data_gen[15:8] <= data_gen[15:8] + 8'h02;
+                data_gen[7:0] <= data_gen[7:0] + 8'h02;
                 
-                if (data != data_gen & data_cnt != frame_length) begin
+                if (data != data_gen) begin
                     check_error <= 1'b1;
                 end else begin
                     check_error <= 1'b0;
                 end
             end else begin
                 check_error <= 1'b0;
+            end
+
+            if (i_stop) begin
+                data_gen <= 16'h0001;
             end
         end else begin
             data_cnt <= 8'd0;
@@ -107,7 +121,8 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe2(data_gen),
         .probe3(data),
         .probe4(valid),
-        .probe5(data_cnt)
+        .probe5(data_cnt),
+        .probe6(i_stop)
     );
 
 
