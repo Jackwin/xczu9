@@ -627,7 +627,7 @@ module  tlk2711_rx_link
         if (rst | i_soft_rst) begin
             rx_frame_cnt  <= 'd0;
         end else begin
-            if (i_rx_start & o_rx_interrupt)
+            if (o_rx_interrupt)
                 rx_frame_cnt <= 'd0;
             else if (frame_end)      
                 rx_frame_cnt <= rx_frame_cnt + 1;

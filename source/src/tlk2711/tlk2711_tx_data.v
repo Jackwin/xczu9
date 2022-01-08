@@ -185,8 +185,9 @@ module  tlk2711_tx_data
     end
     
     assign fifo_wren = i_dma_rd_valid & o_dma_rd_ready & fifo_enable;
-    assign fifo_rden = (tx_state == tx_vld_data | tx_state == tx_frame_tail); //cmd request 872B and only transfer 870B, the last data will be ignored
-    
+    //assign fifo_rden = (tx_state == tx_vld_data | tx_state == tx_frame_tail); //cmd request 872B and only transfer 870B, the last data will be ignored
+    assign fifo_rden = (tx_state == tx_vld_data);
+
     // TODO The data loaded from DMA is larger than the to-send, which cause bubles.
     fifo_fwft_64_512 fifo_fwft_tx (
         .clk(clk),
@@ -556,8 +557,7 @@ module  tlk2711_tx_data
                                 $display("%g (tx_data.v)tx mode is SPECIFIC_MODE; FILE END", $time);
                             end else begin
                                 $display("%g (tx_data.v)tx mode is SPECIFIC_MODE; NOT FILE END", $time);
-                            end
-                            
+                            end                            
                         end
                         if (i_soft_reset)
                             tx_state <= tx_idle;
@@ -629,7 +629,6 @@ module  tlk2711_tx_data
                                     backward_cnt == i_backward_cycle_num - 1)
                                 tx_state <= tail_frame ? tx_interrupt : tx_start_frame;
                         end
-
                     end
                     tx_interrupt: begin
                         if (tx_intr_width_cnt == (i_tx_intr_width - 1'd1)) begin
@@ -708,7 +707,12 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe24(checksum),
         .probe25(frame_cnt),
         .probe26(tail_frame),
-        .probe27(fifo_rd_check_error)
+        .probe27(fifo_rd_check_error),
+        .probe28(fifo_full),
+        .probe29(fifo_empty),
+        .probe30(fifo_rden),
+        .probe31(fifo_wren),
+        .probe32(fifo_rdata)
     );
 
 
