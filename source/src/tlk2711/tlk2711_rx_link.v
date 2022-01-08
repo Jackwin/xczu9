@@ -159,7 +159,10 @@ module  tlk2711_rx_link
 
     assign o_wr_cmd_data = {wr_addr, wr_bbt};
 
-    reg frame_end, frame_valid;
+    reg     frame_end, frame_valid;
+    reg     frame_end_2711_r1, frame_end_2711_r2;
+    wire    frame_end_2711_comb;
+    reg     frame_end_r1, frame_end_r2, frame_end_p;
     // TODO modify the bit length to adapt to the 5120 pixels
     reg [15:0] frame_data_cnt, valid_data_num, trans_data_num;
 
@@ -420,6 +423,14 @@ module  tlk2711_rx_link
     end
 
     always @(posedge i_2711_rx_clk) begin
+        frame_end_2711_r1 <= frame_end;
+        frame_end_2711_r2 <= frame_end_2711_r1;
+    end
+
+    assign frame_end_2711_comb = frame_end | frame_end_2711_r1 | 
+                                frame_end_2711_r2;
+
+    always @(posedge i_2711_rx_clk) begin
         tlk2711_rxd <= i_2711_rxd;
     end
 
@@ -480,6 +491,12 @@ module  tlk2711_rx_link
     assign wr_cmd_ack_2711 = wr_cmd_ack_2711_1q | i_wr_cmd_ack;
 
     // FPGA logic clock domain
+
+    always @(posedge clk) begin
+        frame_end_r1 <= frame_end_2711_comb;
+        frame_end_r2 <= frame_end_r1;
+        frame_end_p <= ~frame_end_r2 & frame_end_r1;
+    end
     always @(posedge clk) begin
         if (rst | i_soft_rst) begin
             wr_addr <= 'h50000000;
@@ -487,7 +504,7 @@ module  tlk2711_rx_link
             if (i_rx_start)
                 wr_addr <= i_rx_base_addr;
             // REVIEW: Get the wr_addr from the fpga_mgt?
-            else if (frame_end) begin
+            else if (frame_end_p) begin
                 // In tx test mode or rx validation, keep the addr unchanged
                 if ((i_tx_mode == 2'd2 & i_loopback_ena) | check_ena) begin
                     wr_addr <= wr_addr;
