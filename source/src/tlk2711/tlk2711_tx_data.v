@@ -186,7 +186,8 @@ module  tlk2711_tx_data
     
     assign fifo_wren = i_dma_rd_valid & o_dma_rd_ready & fifo_enable;
     //assign fifo_rden = (tx_state == tx_vld_data | tx_state == tx_frame_tail); //cmd request 872B and only transfer 870B, the last data will be ignored
-    assign fifo_rden = (tx_state == tx_vld_data | tx_state == tx_interrupt);
+    assign fifo_rden = (tx_state == tx_vld_data | 
+                        (tx_state == tx_interrupt & (~fifo_empty)));
 
     // TODO The data loaded from DMA is larger than the to-send, which cause bubles.
     fifo_fwft_64_512 fifo_fwft_tx (
@@ -194,7 +195,7 @@ module  tlk2711_tx_data
         .srst(rst | i_soft_reset),
         .din(i_dma_rd_data),
         .wr_en(fifo_wren),
-        .rd_en(fifo_rden),
+        .rd_en(fifo_rden & (tx_state != tx_interrupt)),
         .dout(fifo_rdata),
         .full(fifo_full),
         .empty(fifo_empty)
