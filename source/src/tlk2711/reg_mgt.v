@@ -379,7 +379,6 @@ always @(posedge clk) begin
             RX_CTRL_REG: reg_rdata <= rx_ctrl_reg;
             default: begin
                 reg_rdata <= 'h0;
-                
             end
         endcase
     end

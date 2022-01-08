@@ -146,6 +146,9 @@ module  tlk2711_rx_link
     reg                     wr_finish_1r;
     wire                    wr_finish_extend;
 
+    reg                     rx_start_1r;
+    reg                     rx_start_p;
+
     // assign o_rx_interrupt = one_frame_done & i_wr_finish & 
     //                         line_cnt == i_rx_line_num_per_intr;
 
@@ -497,11 +500,17 @@ module  tlk2711_rx_link
         frame_end_r2 <= frame_end_r1;
         frame_end_p <= ~frame_end_r2 & frame_end_r1;
     end
+
+    always @(posedge clk) begin
+        rx_start_1r <= i_rx_start;
+        rx_start_p <= ~i_rx_start & rx_start_1r;
+    end
+
     always @(posedge clk) begin
         if (rst | i_soft_rst) begin
             wr_addr <= 'h50000000;
         end else begin
-            if (i_rx_start)
+            if (rx_start_p)
                 wr_addr <= i_rx_base_addr;
             // REVIEW: Get the wr_addr from the fpga_mgt?
             else if (frame_end_p) begin
@@ -806,7 +815,7 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe40(i_rx_line_num_per_intr),
         .probe41(fifo_rd_check_error),
         .probe42(rx_intr_gen),
-        .porbe43(data_length)
+        .probe43(data_length)
 
     );
 
