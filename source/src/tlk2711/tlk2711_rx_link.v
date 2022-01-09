@@ -294,6 +294,7 @@ module  tlk2711_rx_link
                 end
             end else begin
                 // The recv data's length may be odd or even
+                // recv should be alignded to 64bit/8byte
                 if (frame_data_cnt == data_length[15:1] + data_length[0] - 1) begin
                     ns <= CHECK_DATA_s;
                     $display("%t (rx_link.v)rx state at RECV_DATA_s DONE", $time);
@@ -423,7 +424,14 @@ module  tlk2711_rx_link
                 // The received data length is even.
                 data_length <= i_2711_rxd;
                 // Add more data to align to 64bit in FIFO
-                to_align64 <= |i_2711_rxd[2:1] ? (3'd4 - i_2711_rxd[2:1]) : 'h0;
+                //to_align64 <= |i_2711_rxd[2:0] ? (3'd4 - i_2711_rxd[2:1]) : 'h0;
+                // The extra bytes to written to FIFO to align 64-bit
+                case(i_2711_rxd[2:0])
+                3'h0, 3'h7: to_align64 <= 2'd0;
+                3'h1, 3'h2: to_align64 <= 2'd3;
+                3'h3, 3'h4: to_align64 <= 2'd2;
+                3'h5, 3'h6: to_align64 <= 2'd1;
+                endcase
             end
         end
     end
@@ -837,7 +845,8 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe40(i_rx_line_num_per_intr),
         .probe41(fifo_rd_check_error),
         .probe42(rx_intr_gen),
-        .probe43(data_length)
+        .probe43(data_length),
+        .probe44(to_align64)
 
     );
 
