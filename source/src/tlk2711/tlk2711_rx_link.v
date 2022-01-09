@@ -177,7 +177,7 @@ module  tlk2711_rx_link
 
     always @(posedge i_2711_rx_clk) begin
          if (rst | i_soft_rst) begin
-             rx_intr_gen <= 1'b0;
+            rx_intr_gen <= 1'b0;
          end else begin
             rx_intr_gen <= one_frame_done & wr_finish_extend & 
                             line_cnt == i_rx_line_num_per_intr;
@@ -211,30 +211,30 @@ module  tlk2711_rx_link
 
     reg     line_update_2711;
     reg     line_update_2711_1r;
-    reg     line_update_2711_2r
+    reg     line_update_2711_2r;
     wire    line_update;
     wire    line_update_comb;
     reg     line_update_1r;
 
-    assign line_update = (cs == LINE_INFOR_s) | (cs == DATA_LENGTH_s);
+    // assign line_update = (cs == LINE_INFOR_s) | (cs == DATA_LENGTH_s);
 
-    always @(posedge clk) begin
-        line_update_1r <= line_update;
-    end
+    // always @(posedge clk) begin
+    //     line_update_1r <= line_update;
+    // end
 
-    assign line_update_comb = line_update_1r | line_update;
+    // assign line_update_comb = line_update_1r | line_update;
 
-    always @(posedge i_2711_rx_clk) begin
-        line_update_2711_1r <= line_update_comb;
-        line_update_2711_2r <= line_update_2711_1r;
-        line_update_2711 <= ~line_update_2711_2r & line_update_2711_1r;
-    end
+    // always @(posedge i_2711_rx_clk) begin
+    //     line_update_2711_1r <= line_update_comb;
+    //     line_update_2711_2r <= line_update_2711_1r;
+    //     line_update_2711 <= ~line_update_2711_2r & line_update_2711_1r;
+    // end
 
     always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             line_cnt <= 'h0;
         end else begin
-            if (line_update_2711) begin
+            if (cs == LINE_INFOR_s) begin
                 line_cnt <= line_cnt + 1'd1;
             end else if (rx_intr_width_cnt_ena) begin
                 line_cnt <= 0;
@@ -293,7 +293,8 @@ module  tlk2711_rx_link
                     ns <= CHECK_DATA_s;
                 end
             end else begin
-                if (frame_data_cnt == data_length[15:1] - 1) begin
+                // The recv data's length may be odd or even
+                if (frame_data_cnt == data_length[15:1] + data_length[0] - 1) begin
                     ns <= CHECK_DATA_s;
                     $display("%t (rx_link.v)rx state at RECV_DATA_s DONE", $time);
                 end

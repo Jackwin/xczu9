@@ -152,10 +152,7 @@ module  tlk2711_dma
         .mm2s_err                    (),
         .m_axis_mm2s_cmdsts_aclk     (clk),
         .m_axis_mm2s_cmdsts_aresetn  (~rst),
-        
-
-        
-
+    
         .m_axi_mm2s_arid             (m_axi_arid   ),
         .m_axi_mm2s_araddr           (m_axi_araddr ),
         .m_axi_mm2s_arlen            (m_axi_arlen  ),

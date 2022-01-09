@@ -109,7 +109,7 @@ module  tlk2711_tx_cmd
                 //rd_addr <= rd_addr + i_tx_packet_body;
                 rd_addr <= rd_addr + packet_body_align8;
             
-            rd_bbt <= tx_frame_cnt == i_tx_body_num ? packet_tail_align8 : packet_body_align8;
+            rd_bbt <= (tx_frame_cnt == i_tx_body_num) ? packet_tail_align8 : packet_body_align8;
         end
     end
 if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true") 
