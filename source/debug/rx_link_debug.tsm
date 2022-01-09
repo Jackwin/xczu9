@@ -1,5 +1,5 @@
 state recv_rx_intr:
-    if (tlk2711_wrapper/tlk2711b_top/tlk2711_rx_link/cs == 4'h3) then
+    if (tlk2711_wrapper/tlk2711b_top/tlk2711_rx_link/cs == 4'h7) then
     trigger;
     else 
     goto recv_rx_intr;

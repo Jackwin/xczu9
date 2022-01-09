@@ -19,11 +19,9 @@ module tlk2711_tx_validation # (
 
     input                   i_valid,
     input  [15:0]           i_data,
-
-    input                   i_stop,
-
     input                   i_check_ena,
     input                   i_tx_start,
+     input                  i_tx_stop,
     input [2:0]             i_tx_mode,
     output                  o_check_error
 );
@@ -101,7 +99,7 @@ always @(posedge clk) begin
                 check_error <= 1'b0;
             end
 
-            if (i_stop) begin
+            if (i_tx_stop) begin
                 data_gen <= 16'h0001;
             end
         end else begin
@@ -122,7 +120,7 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe3(data),
         .probe4(valid),
         .probe5(data_cnt),
-        .probe6(i_stop)
+        .probe6(i_tx_stop)
     );
 
 
