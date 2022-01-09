@@ -209,11 +209,32 @@ module  tlk2711_rx_link
     assign o_rx_interrupt = rx_intr_width_cnt_ena;
     // calculate the number of input lines
 
+    reg     line_update_2711;
+    reg     line_update_2711_1r;
+    reg     line_update_2711_2r
+    wire    line_update;
+    wire    line_update_comb;
+    reg     line_update_1r;
+
+    assign line_update = (cs == LINE_INFOR_s) | (cs == DATA_LENGTH_s);
+
+    always @(posedge clk) begin
+        line_update_1r <= line_update;
+    end
+
+    assign line_update_comb = line_update_1r | line_update;
+
+    always @(posedge i_2711_rx_clk) begin
+        line_update_2711_1r <= line_update_comb;
+        line_update_2711_2r <= line_update_2711_1r;
+        line_update_2711 <= ~line_update_2711_2r & line_update_2711_1r;
+    end
+
     always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
             line_cnt <= 'h0;
         end else begin
-            if (cs == LINE_INFOR_s) begin
+            if (line_update_2711) begin
                 line_cnt <= line_cnt + 1'd1;
             end else if (rx_intr_width_cnt_ena) begin
                 line_cnt <= 0;
