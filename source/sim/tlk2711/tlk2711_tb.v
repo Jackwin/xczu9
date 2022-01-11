@@ -19,8 +19,8 @@ module tlk2711_tb(
 
 	//integer  			frame_length = 'd870;
 	integer             tx_total_packet = FRAME_LENGTH * FRAME_NUM; // total packet bytes
-	reg[15:0]           tx_packet_body = 'd10752; 
-	reg[15:0]           tx_packet_tail = 'd10752;
+	reg[15:0]           tx_packet_body = 'd870; 
+	reg[15:0]           tx_packet_tail = 'd33;
 	reg[23:0] 			tx_body_num = 24'd3;
 	
 	integer             tx_mode = 3'd0; //0--norm mode, 1--kcode mode, 2--test mode, 3--specific mode 4--protocal test mode
@@ -284,8 +284,31 @@ endtask
 		else if (m_axi_rready & m_axi_rvalid)
 		    num_video <= num_video - 1;
 		 
-		if(m_axi_rready & m_axi_rvalid)
-			m_axi_rdata <= m_axi_rdata + {8{16'h1010}}; // $random%1200; 
+		if(m_axi_rready & m_axi_rvalid) begin
+			m_axi_rdata[8*1-1:8*0] <= m_axi_rdata[8*1-1:8*0] + 8'h10;
+			m_axi_rdata[8*2-1:8*1] <= m_axi_rdata[8*2-1:8*1] + 8'h10;
+			m_axi_rdata[8*3-1:8*2] <= m_axi_rdata[8*3-1:8*2] + 8'h10;
+			m_axi_rdata[8*4-1:8*3] <= m_axi_rdata[8*4-1:8*3] + 8'h10;
+			m_axi_rdata[8*5-1:8*4] <= m_axi_rdata[8*5-1:8*4] + 8'h10;
+			m_axi_rdata[8*6-1:8*5] <= m_axi_rdata[8*6-1:8*5] + 8'h10;
+			m_axi_rdata[8*7-1:8*6] <= m_axi_rdata[8*7-1:8*6] + 8'h10;
+			m_axi_rdata[8*8-1:8*7] <= m_axi_rdata[8*8-1:8*7] + 8'h10;
+
+			m_axi_rdata[8*9-1:8*8]   <= m_axi_rdata[8*9-1:8*8] + 8'h10;
+			m_axi_rdata[8*10-1:8*9]  <= m_axi_rdata[8*10-1:8*9] + 8'h10;
+			m_axi_rdata[8*11-1:8*10] <= m_axi_rdata[8*11-1:8*10] + 8'h10;
+			m_axi_rdata[8*12-1:8*11] <= m_axi_rdata[8*12-1:8*11] + 8'h10;
+			m_axi_rdata[8*13-1:8*12] <= m_axi_rdata[8*13-1:8*12] + 8'h10;
+			m_axi_rdata[8*14-1:8*13] <= m_axi_rdata[8*14-1:8*13] + 8'h10;
+			m_axi_rdata[8*15-1:8*14] <= m_axi_rdata[8*15-1:8*14] + 8'h10;
+			m_axi_rdata[8*16-1:8*15] <= m_axi_rdata[8*16-1:8*15] + 8'h10;
+
+			// for (integer i = 0; i < 16; i++) begin
+			// 	m_axi_rdata[i*8+:8] <= m_axi_rdata[i*8+:8] + 8'h10;
+			// end
+
+		end
+			//m_axi_rdata <= m_axi_rdata + {8{16'h1010}}; // $random%1200;
 		
 	end
 	

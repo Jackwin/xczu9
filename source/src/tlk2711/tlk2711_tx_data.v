@@ -142,12 +142,21 @@ module  tlk2711_tx_data
     reg [15:0]  tlk2711_txd_1r = 16'hc5bc;
 
     reg         fifo_enable;
-    wire        fifo_full, fifo_wren, fifo_rden;
+    wire        fifo_full, fifo_wren;
+    reg         fifo_rden;
     wire [15:0] fifo_rdata;
     wire        fifo_empty;
 
     reg         channel_id;
     wire        fifo_rd_check_error;
+
+    reg [23:0]  frame_cnt = 'd0;
+    reg [15:0]  valid_dlen = 'd0; 
+    reg [15:0]  verif_dcnt = 'd0;
+
+    reg [15:0]  checksum = 'h0;
+
+    reg [1:0]   to_align64;
 
     assign o_2711_tkmsb = tlk2711_tkmsb_1r;
     assign o_2711_tklsb = tlk2711_tklsb_1r;
@@ -186,8 +195,29 @@ module  tlk2711_tx_data
     
     assign fifo_wren = i_dma_rd_valid & o_dma_rd_ready & fifo_enable;
     //assign fifo_rden = (tx_state == tx_vld_data | tx_state == tx_frame_tail); //cmd request 872B and only transfer 870B, the last data will be ignored
-    assign fifo_rden = (tx_state == tx_vld_data | 
-                        (tx_state == tx_interrupt & (~fifo_empty)));
+    // assign fifo_rden = (tx_state == tx_vld_data | 
+    //                     (tx_state == tx_interrupt & (~fifo_empty)));
+
+    always @(*) begin
+        case(tx_state)
+        tx_vld_data: begin
+            fifo_rden = 1'b1;
+        end
+        tx_frame_tail: begin
+            fifo_rden = (to_align64 != 2'd0);
+        end
+        tx_end_frame: begin
+            fifo_rden = (to_align64 == 2'd2 | to_align64 == 2'd3);
+        end
+        tx_backward: begin
+            fifo_rden = (to_align64 == 2'd3 & |backward_cnt == 1'b0);
+        end
+        default: begin
+            fifo_rden = 1'b0;
+        end
+        endcase
+    end
+
 
     // TODO The data loaded from DMA is larger than the to-send, which cause bubles.
     fifo_fwft_64_512 fifo_fwft_tx (
@@ -201,14 +231,8 @@ module  tlk2711_tx_data
         .empty(fifo_empty)
     );
 
-    reg [23:0] frame_cnt = 'd0;
-    reg [15:0] valid_dlen = 'd0; 
-    reg [15:0] verif_dcnt = 'd0;
-
-    reg [15:0] checksum = 'h0;
-
     always@(posedge clk) begin
-        if (i_soft_reset)
+        if (rst | i_soft_reset)
             frame_cnt <= 'd0;
         // REVIEW 
         else if (tx_state == tx_end_frame && frame_cnt == i_tx_body_num)
@@ -216,20 +240,36 @@ module  tlk2711_tx_data
         else if (tx_state == tx_end_frame)   
             frame_cnt <= frame_cnt + 1;
 
-        if (i_soft_reset)
+        if (rst | i_soft_reset)
             valid_dlen <= 'd0;
-        else if (tx_state == tx_start_frame)    
+        else if (tx_state == tx_start_frame) begin  
             valid_dlen <= frame_cnt == i_tx_body_num ? i_tx_packet_tail : i_tx_packet_body;
+        end
 
-        if (i_soft_reset | tx_state == tx_start_frame)
+        if (rst | i_soft_reset | tx_state == tx_start_frame)
             verif_dcnt <= 'd0;
         else if (tx_state == tx_file_sign | tx_state == tx_frame_num | tx_state == tx_vld_dlen | tx_state == tx_vld_data)  
             verif_dcnt <= verif_dcnt + 2;   
     end
 
+    always @(posedge clk) begin
+        if (rst | i_soft_reset) begin
+            to_align64 <= 'h0;
+        end else begin
+            if (tx_state == tx_vld_dlen) begin
+                case(valid_dlen[2:0])
+                3'h0, 3'h7: to_align64 <= 2'd0;
+                3'h1, 3'h2: to_align64 <= 2'd3;
+                3'h3, 3'h4: to_align64 <= 2'd2;
+                3'h5, 3'h6: to_align64 <= 2'd1;
+                endcase
+            end
+        end
+    end
+
     // Calculate the checksum
     always @(posedge clk) begin
-        if (i_soft_reset)
+        if (rst | i_soft_reset)
             checksum <= 'd0;
         else begin
             case(tx_state)
@@ -245,7 +285,7 @@ module  tlk2711_tx_data
     end
 
     always @(posedge clk) begin
-        if (i_soft_reset)
+        if (rst | i_soft_reset)
             test_checksum <= 'd0;
         else begin
             case(state_cnt)
@@ -271,7 +311,7 @@ module  tlk2711_tx_data
     end
 
     always@(posedge clk) begin
-        if (rst) begin
+        if (rst | i_soft_reset) begin
             tlk2711_enable  <= 'b0;
             tlk2711_lckrefn <= 'b0;
             tlk2711_testen <= 'b0;
