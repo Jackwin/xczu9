@@ -269,7 +269,8 @@ tlk2711_top #(
     .m_axi_bready (tlk2711b_m_axi_bready )
 );
 
-tlk2711_top #(    
+tlk2711_top #(
+    .DEBUG_ENA(DEBUG_ENA),
     .ADDR_WIDTH(ADDR_WIDTH),
     .AXI_RDATA_WIDTH(AXI_RDATA_WIDTH), 
     .AXI_WDATA_WIDTH(AXI_WDATA_WIDTH), 
