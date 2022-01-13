@@ -144,6 +144,8 @@ module  tlk2711_rx_link
     wire                    [DATA_WIDTH-1:0] fifo_dout;
 
     reg                     wr_finish_1r;
+    reg                     wr_finish_2r;
+    reg                     wr_finish_3r;
     wire                    wr_finish_extend;
 
     reg                     rx_start_1r;
@@ -171,9 +173,11 @@ module  tlk2711_rx_link
 
     always @(posedge clk) begin
         wr_finish_1r <= i_wr_finish;
+        wr_finish_2r <= wr_finish_1r;
+        wr_finish_3r <= wr_finish_2r;
     end
 
-    assign wr_finish_extend = wr_finish_1r | i_wr_finish;
+    assign wr_finish_extend = wr_finish_3r | wr_finish_2r | wr_finish_1r | i_wr_finish;
 
     always @(posedge i_2711_rx_clk) begin
          if (rst | i_soft_rst) begin
