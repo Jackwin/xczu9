@@ -136,6 +136,9 @@ module  tlk2711_rx_link
     reg [15:0]              tlk2711_rxd;
     reg                     checksum_error;
     reg [15:0]              frame_length;
+    reg                     dma_timer_ena;
+    reg [15:0]              dma_timer_cnt;
+    reg                     dma_timeout;
 
     reg                     fifo_wren;
     wire                    fifo_empty, fifo_full;
@@ -483,7 +486,9 @@ module  tlk2711_rx_link
     reg [ADDR_WIDTH-1:0]    wr_addr_2711 = 'd0;
     reg [15:0]              frame_length_2711;
     reg                     wr_cmd_req_2711;
-    reg                     wr_cmd_req_2711_r;
+    reg                     wr_cmd_req_2711_1r;
+    reg                     wr_cmd_req_2711_2r;
+    wire                    wr_cmd_req_2711_comb;
 
     always @(posedge i_2711_rx_clk) begin
         if (rst | i_soft_rst) begin
@@ -508,17 +513,48 @@ module  tlk2711_rx_link
 
      // cmd_req delay more than wr_bbt and wr_addr to ensure wr_bbt and wr_addr stable
      // undeterminde which clock is faster, so all posibilities are considered
-    always @(posedge clk) begin
-        wr_cmd_req_2711_r <= wr_cmd_req_2711;
+    always @(posedge i_2711_rx_clk) begin
+        wr_cmd_req_2711_1r <= wr_cmd_req_2711;
+        wr_cmd_req_2711_2r <= wr_cmd_req_2711_1r;
     end
 
+    assign wr_cmd_req_2711_comb = wr_cmd_req_2711_2r | wr_cmd_req_2711_1r |
+                                  wr_cmd_req_2711;
+
     always @(posedge clk) begin
-        wr_cmd_req_1r <= wr_cmd_req_2711 | wr_cmd_req_2711_r;
+        wr_cmd_req_1r <= wr_cmd_req_2711_comb;
         wr_cmd_req_2r <= wr_cmd_req_1r;
         o_wr_cmd_req <= ~wr_cmd_req_2r & wr_cmd_req_1r;
 
         wr_bbt <= wr_bbt_2711;
     end
+
+    always @(posedge clk) begin
+        if (rst | i_soft_rst) begin
+          dma_timer_ena <= 1'b0;
+          dma_timeout <= 1'b0;
+        end else begin
+            if (o_wr_cmd_req) begin
+                dma_timer_ena <= 1'b1;
+            end else if (i_wr_finish) begin
+                dma_timer_ena <= 1'b0;
+            end
+
+            if (dma_timer_ena) begin
+              dma_timer_cnt <= dma_timer_cnt + 1'd1;
+            end else begin
+                dma_timer_cnt <= 'h0;
+            end
+            // > 6144(1800)
+            if (dma_timer_cnt[12:11] == 2'h3) begin
+                dma_timeout <= 1'b1;
+            end else if (i_wr_finish | o_wr_cmd_req) begin
+                dma_timeout <= 1'b0;
+            end
+        end
+    end
+
+    
    // assign wr_bbt = wr_bbt_1r;
 
     always @(posedge i_2711_rx_clk) begin
@@ -850,7 +886,10 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe41(fifo_rd_check_error),
         .probe42(rx_intr_gen),
         .probe43(data_length),
-        .probe44(to_align64)
+        .probe44(to_align64),
+        .probe45(dma_timeout),
+        .probe46(dma_timer_ena),
+        .probe47(dma_timer_cnt)
 
     );
 
