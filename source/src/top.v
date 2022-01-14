@@ -61,7 +61,8 @@ output          usr_led
 
 );
 
-parameter DEBUG_ENA = "TRUE";
+parameter TLK2711B_DEBUG_ENA = "TRUE";
+parameter TLK2711A_DEBUG_ENA = "FALSE";
 parameter RX_CDC_CFG = "REG"; // rx clock domain crossing
 parameter DDR_ADDR_WIDTH = 40;
 parameter HP0_DATA_WIDTH = 128;
@@ -315,7 +316,8 @@ if (RX_CDC_CFG == "FIFO") begin
     );
 end
 tlk2711_wrapper #(  
-    .DEBUG_ENA(DEBUG_ENA),  
+    .TLK2711A_DEBUG_ENA(TLK2711A_DEBUG_ENA), 
+    .TLK2711B_DEBUG_ENA(TLK2711B_DEBUG_ENA), 
     .ADDR_WIDTH(DDR_ADDR_WIDTH),
     .AXI_RDATA_WIDTH(HP0_DATA_WIDTH), //HP0_DATA_WIDTH
     .AXI_WDATA_WIDTH(HP0_DATA_WIDTH), // HP0_DATA_WIDTH

@@ -18,7 +18,8 @@
 
 module tlk2711_wrapper
 #(
-    parameter DEBUG_ENA = "TRUE",
+    parameter TLK2711A_DEBUG_ENA = "TRUE",
+    parameter TLK2711B_DEBUG_ENA = "TRUE",
     parameter ADDR_WIDTH = 48,
     parameter AXI_RDATA_WIDTH = 64,
     parameter AXI_WDATA_WIDTH = 64,
@@ -185,7 +186,7 @@ wire [63:0]    b_reg_rdata;
 assign o_reg_rdata = a_reg_rdata | b_reg_rdata;
 
 tlk2711_top #(
-    .DEBUG_ENA(DEBUG_ENA),
+    .DEBUG_ENA(TLK2711B_DEBUG_ENA),
     .ADDR_WIDTH(ADDR_WIDTH),
     .AXI_RDATA_WIDTH(AXI_RDATA_WIDTH), 
     .AXI_WDATA_WIDTH(AXI_WDATA_WIDTH), 
@@ -270,7 +271,7 @@ tlk2711_top #(
 );
 
 tlk2711_top #(
-    .DEBUG_ENA(DEBUG_ENA),
+    .DEBUG_ENA(TLK2711A_DEBUG_ENA),
     .ADDR_WIDTH(ADDR_WIDTH),
     .AXI_RDATA_WIDTH(AXI_RDATA_WIDTH), 
     .AXI_WDATA_WIDTH(AXI_WDATA_WIDTH), 
