@@ -475,10 +475,12 @@ module  tlk2711_rx_link
     end
 
     reg                     wr_cmd_req;
+    reg                     wr_cmd_req_p;
     reg                     wr_cmd_req_1r;
     reg                     wr_cmd_req_2r;
     wire                    wr_cmd_ack_2711;
-    reg                     wr_cmd_ack_2711_1q;
+    reg                     wr_cmd_ack_2711_1r;
+    reg                     wr_cmd_ack_2711_2r;
     reg [DLEN_WIDTH-1:0]    wr_bbt_1r;
 
     // tlk2711 clock domain
@@ -524,7 +526,13 @@ module  tlk2711_rx_link
     always @(posedge clk) begin
         wr_cmd_req_1r <= wr_cmd_req_2711_comb;
         wr_cmd_req_2r <= wr_cmd_req_1r;
-        o_wr_cmd_req <= ~wr_cmd_req_2r & wr_cmd_req_1r;
+        wr_cmd_req_p <= ~wr_cmd_req_2r & wr_cmd_req_1r;
+
+        if (wr_cmd_req_p) begin
+            o_wr_cmd_req  <= 1'b1;
+        end else if (i_wr_cmd_ack) begin
+            o_wr_cmd_req <= 1'b0;
+        end
 
         wr_bbt <= wr_bbt_2711;
     end
@@ -558,10 +566,10 @@ module  tlk2711_rx_link
    // assign wr_bbt = wr_bbt_1r;
 
     always @(posedge i_2711_rx_clk) begin
-        wr_cmd_ack_2711_1q <= i_wr_cmd_ack;
-
+        wr_cmd_ack_2711_1r <= i_wr_cmd_ack;
+        wr_cmd_ack_2711_2r <= wr_cmd_ack_2711_1r;
     end
-    assign wr_cmd_ack_2711 = wr_cmd_ack_2711_1q | i_wr_cmd_ack;
+    assign wr_cmd_ack_2711 = wr_cmd_ack_2711_2r | wr_cmd_ack_2711_1r | i_wr_cmd_ack;
 
     // FPGA logic clock domain
 
@@ -593,39 +601,6 @@ module  tlk2711_rx_link
             end
         end
     end
-
-    // always @(posedge i_2711_rx_clk) begin
-    //     if (rst | i_soft_rst) begin
-    //         wr_addr      <= 'h50000000;
-    //         wr_cmd_req <= 'b0;
-    //         wr_bbt       <= 'd0;
-    //         frame_length <= 'h0;
-    //     end else begin
-    //         if (cs == DATA_LENGTH_s) begin
-    //             // Recv data length is 882B, 10752B, 4608B. When write data to 
-    //             // DDR, the unit number is 8byte, so the software needs to
-    //             // tailor the correct number. For example, the received data
-    //             // is 882 bytes, but 888 bytes data will be written to DDR.
-    //             wr_bbt[DLEN_WIDTH-1:3] <= i_2711_rxd[15:3] + |i_2711_rxd[2:0]; 
-    //             wr_bbt[2:0]  <= 'd0;
-    //             wr_cmd_req <= 1'b1;
-    //             frame_length <= i_2711_rxd;
-    //         end else if (wr_cmd_ack) begin
-    //             wr_cmd_req <= 1'b0;
-    //         end
-    //         if (i_rx_start)
-    //             wr_addr <= i_rx_base_addr;
-    //         // REVIEW: Get the wr_addr from the fpga_mgt?
-    //         else if (frame_end) begin
-    //             // In tx test mode or rx validation, keep the addr unchanged
-    //             if ((i_tx_mode == 2'd2 & i_loopback_ena) | check_ena) begin
-    //                 wr_addr <= wr_addr;
-    //             end else begin 
-    //                 wr_addr <= wr_addr + wr_bbt;
-    //             end
-    //         end
-    //     end
-    // end
 
     assign o_dma_wr_valid = ~fifo_empty & i_dma_wr_ready;
     assign o_dma_wr_keep = {WBYTE_WIDTH{1'b1}};
@@ -661,16 +636,6 @@ module  tlk2711_rx_link
         end
     end
 
-    // always@(posedge clk)begin
-    //     if (rst | i_soft_rst) begin
-    //         valid_data_num <= 'd0;
-    //         trans_data_num <= 'd0;
-    //     end else begin
-    //         trans_data_num <= wr_bbt[15:1] + 4;
-    //         valid_data_num <= valid_byte[15:1] + 4;
-    //     end
-    // end
-
     // Generate interrupt.
     // Note the DMA trans
 
@@ -693,17 +658,6 @@ module  tlk2711_rx_link
     assign fifo_din = tlk2711_rxd;
 
     assign o_fifo_status = fifo_empty;
-    // TODO Add more data to ensure the valid data are readout
-    // fifo_fwft_16_2048 fifo_fwft_rx (
-    //     .clk(clk),
-    //     .srst(rst | i_soft_rst),
-    //     .din(fifo_din),
-    //     .wr_en(fifo_wren),
-    //     .rd_en(fifo_rden),
-    //     .dout(fifo_dout),
-    //     .full(fifo_full),
-    //     .empty(fifo_empty)
-    // );
 
     fifo_fwft_16_2048 fifo_fwft_rx (
         
