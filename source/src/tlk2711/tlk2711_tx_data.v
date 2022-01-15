@@ -757,7 +757,9 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe29(fifo_empty),
         .probe30(fifo_rden),
         .probe31(fifo_wren),
-        .probe32(fifo_rdata)
+        .probe32(fifo_rdata),
+        .probe33(i_tx_intr_width),
+        .probe34(tx_intr_width_cnt)
     );
 
 

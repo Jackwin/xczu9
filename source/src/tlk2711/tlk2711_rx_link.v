@@ -843,7 +843,9 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe44(to_align64),
         .probe45(dma_timeout),
         .probe46(dma_timer_ena),
-        .probe47(dma_timer_cnt)
+        .probe47(dma_timer_cnt),
+        .probe48(file_end_flag),
+        .probe49(line_number)
 
     );
 
