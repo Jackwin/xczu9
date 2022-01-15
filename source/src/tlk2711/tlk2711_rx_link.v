@@ -187,7 +187,8 @@ module  tlk2711_rx_link
             rx_intr_gen <= 1'b0;
          end else begin
             rx_intr_gen <= one_frame_done & wr_finish_extend & 
-                            line_cnt == i_rx_line_num_per_intr;
+                            (line_cnt == i_rx_line_num_per_intr |
+                            file_end_flag ==2'h1);
          end
     end
 
@@ -380,7 +381,7 @@ module  tlk2711_rx_link
 
         .i_check_ena(i_check_ena),
         .o_check_error(fifo_rd_check_error)
-);
+    );
 
     
     // Calculate the checksum
