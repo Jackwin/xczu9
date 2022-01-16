@@ -212,6 +212,9 @@ module  tlk2711_tx_data
         tx_backward: begin
             fifo_rden = (to_align64 == 2'd3 & |backward_cnt == 1'b0);
         end
+        tx_interrupt: begin
+            fifo_rden = ~fifo_empty;
+        end
         default: begin
             fifo_rden = 1'b0;
         end
