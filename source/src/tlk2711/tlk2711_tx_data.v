@@ -706,6 +706,8 @@ module  tlk2711_tx_data
     assign o_tx_status = {fifo_rd_check_error ,fifo_empty, 
                         fifo_full, tx_state, tx_mode};
 
+    wire    validation_valid;
+    assign validation_valid = tx_state == tx_vld_data;
     tlk2711_tx_validation #(
         .DEBUG_ENA(DEBUG_ENA)
     ) tlk2711_tx_validation_inst (
@@ -714,7 +716,7 @@ module  tlk2711_tx_data
         .i_soft_rst(i_soft_reset),
         .i_tx_mode(i_tx_mode),
 
-        .i_valid(fifo_rden & (tx_state != tx_interrupt)),
+        .i_valid(validation_valid),
         .i_data(fifo_rdata),
         .i_tx_start(i_tx_start),
         .i_tx_stop(o_tx_interrupt),
