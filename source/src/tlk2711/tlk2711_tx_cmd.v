@@ -20,7 +20,8 @@ module  tlk2711_tx_cmd
 #(
     parameter DEBUG_ENA = "TRUE", 
     parameter ADDR_WIDTH = 32,
-    parameter DLEN_WIDTH = 16
+    parameter DLEN_WIDTH = 16,
+    parameter DATA_WIDTH = 64;
 )
 (
     input                       clk,
@@ -34,7 +35,6 @@ module  tlk2711_tx_cmd
 
     //debugs 
     input                       i_dma_rd_valid,
-    input                       i_dma_rd_last,
     input [DATA_WIDTH-1:0]      i_dma_rd_data,
 
     input                       i_dma_rd_last, 

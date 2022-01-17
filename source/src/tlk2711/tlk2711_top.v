@@ -321,7 +321,8 @@ module tlk2711_top
     tlk2711_tx_cmd #(
         .DEBUG_ENA(DEBUG_ENA),
         .ADDR_WIDTH(ADDR_WIDTH),
-        .DLEN_WIDTH(DLEN_WIDTH) 
+        .DLEN_WIDTH(DLEN_WIDTH),
+        .DATA_WIDTH(STREAM_RDATA_WIDTH)
     ) tlk2711_tx_cmd (
         .clk(clk),
         .rst(rst),
@@ -330,6 +331,8 @@ module tlk2711_top
         .o_rd_cmd_req(rd_cmd_req),
         .o_rd_cmd_data(rd_cmd_data), 
         .i_dma_rd_last(dma_rd_last),
+        .i_dma_rd_valid(dma_rd_valid),
+        .i_dma_rd_data(dma_rd_data),
         .i_tx_mode(tx_mode), 
         .i_tx_start(tx_config_done),
         .i_tx_base_addr(tx_base_addr),
