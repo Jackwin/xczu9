@@ -13,7 +13,7 @@
 // Revision History:
 //   Rev 1.0 - First created, zhulin, 2021-06-27
 //   
-// Email: jewel122410@163.com
+// Email
 ////////////////////////////////////////////////////////////////////////////////
 
 module  tlk2711_tx_cmd
@@ -23,22 +23,27 @@ module  tlk2711_tx_cmd
     parameter DLEN_WIDTH = 16
 )
 (
-    input                      clk,
-    input                      rst,
-    input                      i_soft_rst,
+    input                       clk,
+    input                       rst,
+    input                       i_soft_rst,
     
     //dma cmd interface
-    input                      i_rd_cmd_ack,
-    output reg                 o_rd_cmd_req,
+    input                       i_rd_cmd_ack,
+    output reg                  o_rd_cmd_req,
     output [DLEN_WIDTH+ADDR_WIDTH-1:0] o_rd_cmd_data, //high for saddr, low for byte len
 
-    input                      i_dma_rd_last, 
-    input                      i_tx_start,
-    input [2:0]                i_tx_mode,
-    input [ADDR_WIDTH-1:0]     i_tx_base_addr,
-    input [15:0]               i_tx_packet_body, //body length in byte, 870B here for fixed value
-    input [15:0]               i_tx_packet_tail, //tail length in byte
-    input [15:0]               i_tx_body_num
+    //debugs 
+    input                       i_dma_rd_valid,
+    input                       i_dma_rd_last,
+    input [DATA_WIDTH-1:0]      i_dma_rd_data,
+
+    input                       i_dma_rd_last, 
+    input                       i_tx_start,
+    input [2:0]                 i_tx_mode,
+    input [ADDR_WIDTH-1:0]      i_tx_base_addr,
+    input [15:0]                i_tx_packet_body, //body length in byte, 870B here for fixed value
+    input [15:0]                i_tx_packet_tail, //tail length in byte
+    input [15:0]                i_tx_body_num
 );
 
     localparam NORM_MODE = 3'd0;
@@ -130,8 +135,10 @@ if (DEBUG_ENA == "TRUE" || DEBUG_ENA == "true")
         .probe11(packet_body_align8),
         .probe12(packet_tail_align8),
         .probe13(rd_addr),
-        .probe14(rd_bbt)
+        .probe14(rd_bbt),
+        .probe15(i_dma_rd_valid),
+        .probe16(i_dma_rd_last),
+        .probe17(i_dma_rd_data)
     );
 
- 
 endmodule 
