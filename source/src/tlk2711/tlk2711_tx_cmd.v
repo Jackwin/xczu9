@@ -21,7 +21,7 @@ module  tlk2711_tx_cmd
     parameter DEBUG_ENA = "TRUE", 
     parameter ADDR_WIDTH = 32,
     parameter DLEN_WIDTH = 16,
-    parameter DATA_WIDTH = 64;
+    parameter DATA_WIDTH = 64
 )
 (
     input                       clk,
